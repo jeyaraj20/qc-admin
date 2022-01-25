@@ -1,0 +1,11 @@
+.logo {
+    height: 30px;
+    width: 30px;
+    color: red;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.label {
+    font-weight: bold;
+}
