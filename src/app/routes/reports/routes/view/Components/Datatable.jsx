@@ -9,7 +9,7 @@ import Checkbox from "@material-ui/core/Checkbox";
 import TextField from '@material-ui/core/TextField';
 import { useDropzone } from "react-dropzone";
 import * as locationService from '../../../../../../services/locationService';
-import * as adminService from '../../../../../../services/adminService';
+import * as examServices from '../../../../../../services/examServices';
 import * as studentService from '../../../../../../services/studentService';
 import * as exammainCategoryService from '../../../../../../services/exammainCategoryService';
 import * as reportService from '../../../../../../services/reportService';
@@ -74,7 +74,11 @@ const DataTable = (props) => {
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [showBulkUploadBtn, setShowBulkUploadBtn] = useState(false);
   const [categoryitems, setCategoryItems] = useState([]);
+  const [mainCategoryitems, setMainCategoryItems] = useState([]);
+  const [subCategoryitems, setSubCategoryItems] = useState([]);
+  const [masterCategoryId, setMasterCategoryId] = useState('');
   const [mainCategoryId, setMainCategoryId] = useState('');
+  const [subCategoryId, setSubCategoryId] = useState('');
   const [ipaddr, setIpAddr] = useState('');
   const [datatype, setDataType] = useState('Active');
   const [txtclass, setTxtClass] = useState('bg-success text-white');
@@ -87,11 +91,17 @@ const DataTable = (props) => {
   const [showOverallmain, setShowoverallmain] = useState(false);
   const [startDate, setStartdate] = useState(Moment(new Date()).format('YYYY-MM-DD'));
   const [endDate, setEnddate] = useState(Moment(new Date()).format('YYYY-MM-DD'));
+  const [studentStartDate, setStudentStartdate] = useState(Moment(new Date()).format('YYYY-MM-DD'));
+  const [studentEndDate, setStudentEnddate] = useState(Moment(new Date()).format('YYYY-MM-DD'));
+  const [showStudentReport, setShowStudentReport] = useState(false);
+  const [studentReportData, setStudentReportData] = useState([]);
 
-  let selectedStuArr = [];
-
-
-  let selectedStudArr = [];
+  const [qcCategoryItems, setQCCategoryItems] = useState([]);
+  const [qcSubCategoryItems, setQCSubCategoryItems] = useState([]);
+  const [scMainCayegory, setSCMainCayegory] = useState('');
+  const [qcMainCayegory, setQCMainCayegory] = useState('');
+  const [qcSubCayegory, setQCSubCayegory] = useState('');
+  const [user, setUser] = useState({});
 
   const columns = [
     {
@@ -267,6 +277,58 @@ const DataTable = (props) => {
     },
   ]
 
+  const studentReportColumns = [
+    {
+      label: 'Student Name',
+      field: 'studentName',
+      width: 100,
+    },
+    {
+      label: 'Student Email',
+      field: 'studentEmail',
+      width: 100,
+    },
+    {
+      label: 'Student Mobile No',
+      field: 'studentMobileNumber',
+      width: 100,
+    },
+    {
+      label: 'Exam',
+      field: 'examName',
+      width: 50,
+    },
+    {
+      label: 'Total Questions',
+      field: 'totalQuestion',
+      width: 50,
+    },
+    {
+      label: 'Total Attend Question',
+      field: 'totalAttendQuestion',
+      width: 50,
+    },
+    {
+      label: 'Total Not Attend Question',
+      field: 'totalNotAttendQuestion',
+      width: 5,
+    },
+    {
+      label: 'Total Correct Answer',
+      field: 'totalCrtAnswer',
+      width: 5,
+    },
+    {
+      label: 'Total Wrong Answer',
+      field: 'totalWrongAnswer',
+      width: 5,
+    },
+    {
+      label: 'Total Mark',
+      field: 'totalMark',
+      width: 5,
+    },
+  ]
 
 
   const dataSet1 = [
@@ -282,11 +344,9 @@ const DataTable = (props) => {
 
 
   const handleStudChange = (event, value) => {
-    console.log(event.target.value);
     setStudId(event.target.value);
   }
   const handleCountryChange = (event, value) => {
-    console.log(event.target.value);
     setGender(event.target.value);
   }
   const handleRefresh = async () => {
@@ -310,10 +370,21 @@ const DataTable = (props) => {
     }
     setStudItems(itemArr);
     let user = auth.getCurrentUser();
-    //console.log(user.user.logintype);
-    if (user.user.logintype == 'I') {
+    setUser(user);
+    if (user.user.logintype === 'I') {
       setShowBulkUploadBtn(true);
     }
+
+    let { data: maincategoryres } = await exammainCategoryService.getExamMainCategory();
+    let { category: categories } = maincategoryres;
+    if(user && user.user && user.user.master_category_id && (user.user.op_type === "S" || user.user.op_type === "C")){
+      let master_category_id_arr = user.user.master_category_id.includes(',') ? user.user.master_category_id.split(',') : [user.user.master_category_id];
+      categories = categories.filter( s => master_category_id_arr.indexOf(String(s.exa_cat_id)) >= 0);
+    }else if(user && user.user && !user.user.master_category_id && (user.user.op_type === "S" || user.user.op_type === "C")){
+      categories = [];
+    }
+    setCategoryItems(categories);
+
     setTimeout(() => {
       setLoader(false)
     }, 1000);
@@ -328,13 +399,13 @@ const DataTable = (props) => {
   }
 
   useEffect(() => {
-    if (reporttype == 'overall')
+    if (reporttype === 'overall')
       mapRows(data);
-    else if (reporttype == 'maincat')
+    else if (reporttype === 'maincat')
       mapRows2(data);
-    else if (reporttype == 'test')
+    else if (reporttype === 'test')
       mapRows3(data);
-    else if (reporttype == 'overallmain')
+    else if (reporttype === 'overallmain')
       mapRows4(data);
   }, [data])
 
@@ -350,9 +421,7 @@ const DataTable = (props) => {
   const mapRows = (rows) => {
     let rowFields = []// fields in required order
     columns.forEach(column => rowFields.push(column.field))
-
     let studrows = rows.map((obj, index) => {
-
       let row = {};
       rowcount = rowcount + 1;
       for (let fieldName of rowFields)
@@ -370,10 +439,7 @@ const DataTable = (props) => {
   const mapRows2 = (rows) => {
     let rowFields = []// fields in required order
     columns2.forEach(column => rowFields.push(column.field))
-    console.log(columns2);
-
     let studrows = rows.map((obj, index) => {
-
       let row = {};
       rowcount = rowcount + 1;
       for (let fieldName of rowFields)
@@ -383,45 +449,32 @@ const DataTable = (props) => {
       row.waiting = <div style={{ textAlign: 'center' }}>{row.waiting}</div>
       row.active = <div style={{ textAlign: 'center' }}>{row.active}</div>
       row.inactive = <div style={{ textAlign: 'center' }}>{row.inactive}</div>
-
       return row;
     });
-    console.log(studrows);
     setStudrows(studrows);
   }
 
   const mapRows3 = (rows) => {
     let rowFields = []// fields in required order
     columns3.forEach(column => rowFields.push(column.field))
-    console.log(columns2);
-
     let studrows = rows.map((obj, index) => {
-
       let row = {};
       rowcount = rowcount + 1;
       for (let fieldName of rowFields)
         row[fieldName] = obj[fieldName] // fetching required fields in req order
       row.sno = <span>{rowcount}</span>
       row.examques = <div style={{ textAlign: 'center' }}>{row.examques}</div>
-      console.log(obj.examdate);
-      console.log(Date(obj.examdate));
       var examtimeschedule = new Date(Date(obj.examdate)).getHours() + ':' + new Date(obj.examdate).getMinutes();
-      console.log(examtimeschedule);
       row.examdateList = moment(new Date(obj.examdate)).format('DD-MM-yyyy') + ' ' + moment(examtimeschedule, "H:mm").format("h:mm a");
-
       return row;
     });
-    console.log(studrows);
     setStudrows(studrows);
   }
 
   const mapRows4 = (rows) => {
     let rowFields = []// fields in required order
     columns4.forEach(column => rowFields.push(column.field))
-    console.log(columns2);
-
     let studrows = rows.map((obj, index) => {
-
       let row = {};
       rowcount = rowcount + 1;
       for (let fieldName of rowFields)
@@ -432,15 +485,12 @@ const DataTable = (props) => {
       row.fulltests = <div style={{ textAlign: 'center' }}>{row.fulltests}</div>
       row.secsubject = <div style={{ textAlign: 'center' }}>{row.secsubject}</div>
       row.sectiming = <div style={{ textAlign: 'center' }}>{row.sectiming}</div>
-
       return row;
     });
-    console.log(studrows);
     setStudrows(studrows);
   }
 
   const valiadateProperty = (e) => {
-    console.log(e);
     let { name, value, className } = e.currentTarget;
     const obj = { [name]: value };
     const filedSchema = { [name]: schema[name] };
@@ -455,8 +505,63 @@ const DataTable = (props) => {
       e.currentTarget.className = className.replace(" is-valid", "").replace(" is-invalid", "") + " is-valid"
   }
 
-  const handleMainCategoryChange = (event, value) => {
-    setMainCategoryId(event.target.value);
+  const handleMasterCategoryChange = async (value) => {
+    let { data: subcategoryres } = await exammainCategoryService.getExamSubCategoryById(value);
+    let { category: subCategories } = subcategoryres;
+    let user = auth.getCurrentUser();
+    if(user && user.user && user.user.main_category_id && (user.user.op_type === "S" || user.user.op_type === "C")){
+      let main_category_id_arr = user.user.main_category_id.includes(',') ? user.user.main_category_id.split(',') : [user.user.main_category_id];
+      subCategories = subCategories.filter( s => main_category_id_arr.indexOf(String(s.exa_cat_id)) >= 0);
+    }
+    setMainCategoryItems(subCategories);
+    setMasterCategoryId(value);
+    setMainCategoryId('');
+    setSubCategoryId('');
+  }
+
+  const handleMainCategoryChange = async (value) => {
+    let { data: subcategoryres } = await exammainCategoryService.getExamSubSubCategoryById(value);
+    let { category: subCategories } = subcategoryres;
+    let user = auth.getCurrentUser();
+    if(user && user.user && user.user.sub_category_id && (user.user.op_type === "S" || user.user.op_type === "C")){
+      let sub_category_id_arr = user.user.sub_category_id.includes(',') ? user.user.sub_category_id.split(',') : [user.user.sub_category_id];
+      subCategories = subCategories.filter( s => sub_category_id_arr.indexOf(String(s.exa_cat_id)) >= 0);
+    }
+    setSubCategoryItems(subCategories);
+    setMainCategoryId(value);
+    setSubCategoryId('');
+  }
+
+  const handleSubCategoryChange = async (value) => {
+    setSubCategoryId(value);
+  }
+
+  const handleSCMainCategoryChange = async (value) => {
+    let result = await examServices.getQCExams();
+    let finded = categoryitems.find( c => c.exa_cat_id === value );
+    let qcCategory = [];
+    if(result && result.data && result.data.category && result.data.category.length){
+      let { category } = result.data;
+      if(finded.qc_exams_id){
+        qcCategory = category.filter( c => finded.qc_exams_id.split(',').map(Number).indexOf(c.exa_cat_id) >= 0 );
+      }
+    }
+    setQCCategoryItems(qcCategory);
+    setSCMainCayegory(value);
+    setQCMainCayegory('');
+    setQCSubCayegory('');
+  }
+
+  const handleQCMainCategoryChange = async (value) => {
+    let { data: subcategoryres } = await examServices.getQCSubExams(value);
+    let { subcategory: subCategories } = subcategoryres;
+    setQCSubCategoryItems(subCategories);
+    setQCMainCayegory(value);
+    setQCSubCayegory('');
+  }
+
+  const handleQCSubCategoryChange = async (value) => {
+    setQCSubCayegory(value);
   }
 
   const saveState = async () => {
@@ -497,11 +602,8 @@ const DataTable = (props) => {
         stud_regno: studregno,
         stud_email: studemail,
         stud_mobile: studmobile,
-
         stud_gender: studgender,
-
         ipaddress: ipaddress,
-
       }
       await studentService.updateStudent(data, stud_id);
       setAlertMessage('Student Updated Successfully');
@@ -550,61 +652,57 @@ const DataTable = (props) => {
         else {
           const searchContent = {};
           setLoader(true);
-          if (reporttype == 'overall') {
+          if (reporttype === 'overall') {
             searchContent.period = 'all';
             searchContent.startdate = startDate;
             searchContent.enddate = endDate;
-            console.log(searchContent);
             const { data: activeres } = await reportService.getOverall(searchContent);
             const { qdata: quedata } = activeres;
-            console.log(quedata);
             setData(quedata);
             setShowoverall(true);
             setShowmaincat(false);
             setShowtestcat(false);
             setShowoverallmain(false);
+            setShowStudentReport(false);
           }
-          else if (reporttype == 'maincat') {
+          else if (reporttype === 'maincat') {
             searchContent.period = 'all';
             searchContent.startdate = startDate;
             searchContent.enddate = endDate;
-            console.log(searchContent);
             const { data: activeres } = await reportService.getMaincat(searchContent);
             const { data: quedata } = activeres;
-            console.log(quedata);
             setData(quedata);
             setShowmaincat(true);
             setShowoverall(false);
             setShowtestcat(false);
             setShowoverallmain(false);
+            setShowStudentReport(false);
           }
-          else if (reporttype == 'test') {
+          else if (reporttype === 'test') {
             searchContent.period = 'all';
             searchContent.startdate = startDate;
             searchContent.enddate = endDate;
-            console.log(searchContent);
             const { data: activeres } = await reportService.getTestcat(searchContent);
             const { qdata: quedata } = activeres;
-            console.log(quedata);
             setData(quedata);
             setShowtestcat(true);
             setShowoverall(false);
             setShowmaincat(false);
             setShowoverallmain(false);
+            setShowStudentReport(false);
           }
-          else if (reporttype == 'overallmain') {
+          else if (reporttype === 'overallmain') {
             searchContent.period = 'all';
             searchContent.startdate = startDate;
             searchContent.enddate = endDate;
-            console.log(searchContent);
             const { data: activeres } = await reportService.getOverallmain(searchContent);
             const { qdata: quedata } = activeres;
-            console.log(quedata);
             setData(quedata);
             setShowoverallmain(true);
             setShowoverall(false);
             setShowmaincat(false);
             setShowtestcat(false);
+            setShowStudentReport(false);
           }
           setTimeout(() => {
             setLoader(false);
@@ -621,16 +719,174 @@ const DataTable = (props) => {
     }
   }
 
+  const searchStudentReports = async () => {
+    let user = auth.getCurrentUser();
+    if(masterCategoryId && mainCategoryId && subCategoryId && studentStartDate && studentEndDate ){
+      if( Date.parse(studentStartDate) > Date.parse(studentEndDate) ){
+        setShowMessage(true);
+        setAlertMessage('Start Date should be less than or equal to End Date');
+        setTimeout(() => {
+          setShowMessage(false)
+        }, 1500);
+      }else{
+        let data ={
+          masterCategory : masterCategoryId,
+          mainCategory : mainCategoryId,
+          subCategory : subCategoryId,
+          startDate : studentStartDate,
+          endDate : studentEndDate,
+          schoolId : user.user.schoolid
+        }
+        const result = await reportService.getSchoolReport(data);
+        if(result && result.data && result.data.data && result.data.data.length){
+          setStudentReportData(result.data.data);
+        }else{
+          setStudentReportData([]);
+        }
+        setShowStudentReport(true);
+        setShowoverall(false);
+        setShowmaincat(false);
+        setShowtestcat(false);
+        setShowoverallmain(false);
+      }
+    }else{
+      setShowMessage(true);
+      setAlertMessage('Select all the mandatory fields');
+      setTimeout(() => {
+        setShowMessage(false)
+      }, 1500);
+    }
+  }
+
+  const searchStudentQCReports = async () => {
+    let user = auth.getCurrentUser();
+    if(qcMainCayegory && qcSubCayegory && studentStartDate && studentEndDate && scMainCayegory ){
+      if( Date.parse(studentStartDate) > Date.parse(studentEndDate) ){
+        setShowMessage(true);
+        setAlertMessage('Start Date should be less than or equal to End Date');
+        setTimeout(() => {
+          setShowMessage(false)
+        }, 1500);
+      }else{
+        let data = {
+          scMainCayegory,
+          qcMainCayegory,
+          qcSubCayegory,
+          startDate : studentStartDate,
+          endDate : studentEndDate,
+          schoolId : user.user.schoolid
+        };
+        const result = await reportService.getSchoolQCReport(data);
+        if(result && result.data && result.data.data && result.data.data.length){
+          setStudentReportData(result.data.data);
+        }else{
+          setStudentReportData([]);
+        }
+        setShowStudentReport(true);
+        setShowoverall(false);
+        setShowmaincat(false);
+        setShowtestcat(false);
+        setShowoverallmain(false);
+      }
+    }else{
+      setShowMessage(true);
+      setAlertMessage('Select all the mandatory fields');
+      setTimeout(() => {
+        setShowMessage(false)
+      }, 1500);
+    }
+  }
+
+  const downloadReport = async () => {
+    let user = auth.getCurrentUser();
+    if(masterCategoryId && mainCategoryId && subCategoryId && studentStartDate && studentEndDate ){
+      if( Date.parse(studentStartDate) > Date.parse(studentEndDate) ){
+        setShowMessage(true);
+        setAlertMessage('Start Date should be less than or equal to End Date');
+        setTimeout(() => {
+          setShowMessage(false)
+        }, 1500);
+      }else{
+        let data ={
+          masterCategory : masterCategoryId,
+          mainCategory : mainCategoryId,
+          subCategory : subCategoryId,
+          startDate : studentStartDate,
+          endDate : studentEndDate,
+          schoolId : user.user.schoolid,
+          isExcel : true
+        }
+        const result = await reportService.downloadReport(data);
+        fileDownload(result, 'Report.xls');
+        setShowStudentReport(true);
+        setShowoverall(false);
+        setShowmaincat(false);
+        setShowtestcat(false);
+        setShowoverallmain(false);
+      }
+    }else{
+      setShowMessage(true);
+      setAlertMessage('Select all the mandatory fields');
+      setTimeout(() => {
+        setShowMessage(false)
+      }, 1500);
+    }
+  }
+
+  const downloadQCReport = async () => {
+    let user = auth.getCurrentUser();
+    if(qcMainCayegory && qcSubCayegory && studentStartDate && studentEndDate && scMainCayegory ){
+      if( Date.parse(studentStartDate) > Date.parse(studentEndDate) ){
+        setShowMessage(true);
+        setAlertMessage('Start Date should be less than or equal to End Date');
+        setTimeout(() => {
+          setShowMessage(false)
+        }, 1500);
+      }else{
+        let data ={
+          scMainCayegory,
+          qcMainCayegory,
+          qcSubCayegory,
+          startDate : studentStartDate,
+          endDate : studentEndDate,
+          schoolId : user.user.schoolid,
+          isExcel : true
+        }
+        const result = await reportService.downloadQCReport(data);
+        fileDownload(result, 'Report.xls');
+        setShowStudentReport(true);
+        setShowoverall(false);
+        setShowmaincat(false);
+        setShowtestcat(false);
+        setShowoverallmain(false);
+      }
+    }else{
+      setShowMessage(true);
+      setAlertMessage('Select all the mandatory fields');
+      setTimeout(() => {
+        setShowMessage(false)
+      }, 1500);
+    }
+  }
+
   const handleFromDateChange = (date) => {
     let fromdate = Moment(date).format('YYYY-MM-DD');
-    console.log(fromdate);
     setStartdate(fromdate);
   }
 
   const handleEndDateChange = (date) => {
     let todate = Moment(date).format('YYYY-MM-DD');
-    console.log(todate);
     setEnddate(todate);
+  }
+
+  const handleStudentFromDateChange = (date) => {
+    let fromdate = Moment(date).format('YYYY-MM-DD');
+    setStudentStartdate(fromdate);
+  }
+
+  const handleStudentEndDateChange = (date) => {
+    let todate = Moment(date).format('YYYY-MM-DD');
+    setStudentEnddate(todate);
   }
 
   const PDFview = async (state) => {
@@ -662,7 +918,6 @@ const DataTable = (props) => {
           doc.text(76, 15, 'Question Cloud');
           doc.setFont('times');
           var current_date = moment().format('MMM Do, YYYY');
-          console.log(current_date);
           doc.setFontSize(11);
           doc.text(175, 10, current_date);
           doc.setFontSize(12);
@@ -685,182 +940,24 @@ const DataTable = (props) => {
 
           doc.setFontSize(13);
           doc.text(75, 40, 'From ' + startdatedisplay + ' to ' + enddatedisplay);
-
           // Different Reports.
-          if (reporttype == 'overall') {
+          if (reporttype === 'overall') {
             searchContent.period = 'all';
             searchContent.startdate = startDate;
             searchContent.enddate = endDate;
-            console.log(searchContent);
             let activerespdf = await reportService.getOverallPDF(searchContent);
-
             fileDownload(activerespdf.data, 'Overall report.pdf');
-
             setLoader(false);
-
             return;
-            const { data: activeres } = await reportService.getOverall(searchContent);
-            const { qdata: quedata } = activeres;
-            console.log(quedata);
-            setData(quedata);
-            setShowoverall(true);
-            setShowmaincat(false);
-            setShowtestcat(false);
-            setShowoverallmain(false);
-
-            let overall_col = [
-              { dataKey: 'overall_count', header: 'S.no' },
-              { dataKey: 'c1', header: 'Main Category' },
-              { dataKey: 'c2', header: 'Sub Category' },
-              { dataKey: 'c3', header: 'Subcategory code' },
-              { dataKey: 'c4', header: 'Total Questions uploaded' },
-              { dataKey: 'c5', header: 'Total Questions waiting' },
-              { dataKey: 'c6', header: 'Total Questions active' },
-              { dataKey: 'c7', header: 'Total Questions inactive' },
-            ];
-            var overall_options = {
-              theme: 'grid',
-              columnStyles: {
-                overall_count: { columnWidth: 15, halign: 'center' },
-                c1: { columnWidth: 27 },
-                c2: { columnWidth: 28 },
-                c3: { columnWidth: 24, halign: 'center' },
-                c4: { columnWidth: 24, halign: 'center' },
-                c5: { columnWidth: 24, halign: 'center' },
-                c6: { columnWidth: 24, halign: 'center' },
-                c7: { columnWidth: 24, halign: 'center' }, //190
-              },
-              headStyles: {
-                fillColor: '#FFFFFF', textColor: '#222222', lineWidth: 0.05,
-                lineColor: [200, 200, 200]
-              },
-              style: { cellWidth: 'auto' },
-              margin: { top: 50, horizontal: 10 },
-            };
-            let overall_count = 1;
-            let total_uploaded = 0;
-            let total_waiting = 0;
-            let total_active = 0;
-            let total_inactive = 0;
-            let reqAmount, appAmount;
-            let overall_initialloannextRow = [];
-            if (quedata.length > 0) {
-              for (const [index, value] of quedata.entries()) {
-                overall_initialloannextRow.push({
-                  overall_count: overall_count,
-                  c1: value.maincategory,
-                  c2: value.subcategory,
-                  c3: value.subcategorycode,
-                  c4: value.uploaded,
-                  c5: value.waiting,
-                  c6: value.active,
-                  c7: value.inactive,
-                });
-                total_uploaded = total_uploaded + value.uploaded;
-                total_waiting = total_waiting + value.waiting;
-                total_active = total_active + value.active;
-                total_inactive = total_inactive + value.inactive;
-                overall_count++;
-              }
-              overall_initialloannextRow.push({
-                c3: 'Total',
-                c4: total_uploaded,
-                c5: total_waiting,
-                c6: total_active,
-                c7: total_inactive,
-              });
-            }
-            doc.autoTable(overall_col, overall_initialloannextRow, overall_options);
-
-            window.open(doc.output('bloburl'), '_blank');
-            //doc.save("Overall Report.pdf");
-
-          }
-          else if (reporttype == 'maincat') {
+          }else if (reporttype === 'maincat') {
             searchContent.period = 'all';
             searchContent.startdate = startDate;
             searchContent.enddate = endDate;
-            console.log(searchContent);
-
             let activerespdf = await reportService.getMaincatPDF(searchContent);
-
             fileDownload(activerespdf.data, 'Main Category report.pdf');
-
             setLoader(false);
-
             return;
-            const { data: activeres } = await reportService.getMaincat(searchContent);
-            const { data: quedata } = activeres;
-            console.log(quedata);
-            setData(quedata);
-            setShowmaincat(true);
-            setShowoverall(false);
-            setShowtestcat(false);
-            setShowoverallmain(false);
-
-            let overall_col = [
-              { dataKey: 'overall_count', header: 'S.no' },
-              { dataKey: 'c1', header: 'Main Category' },
-              { dataKey: 'c2', header: 'Total Questions uploaded' },
-              { dataKey: 'c3', header: 'Total Questions waiting' },
-              { dataKey: 'c4', header: 'Total Questions active' },
-              { dataKey: 'c5', header: 'Total Questions inactive' },
-            ];
-            var overall_options = {
-              theme: 'grid',
-              columnStyles: {
-                overall_count: { columnWidth: 20, halign: 'center' },
-                c1: { columnWidth: 50 },
-                c2: { columnWidth: 30, halign: 'center' },
-                c3: { columnWidth: 30, halign: 'center' },
-                c4: { columnWidth: 30, halign: 'center' },
-                c5: { columnWidth: 30, halign: 'center' }, //190
-              },
-              headStyles: {
-                fillColor: '#FFFFFF', textColor: '#222222', lineWidth: 0.05,
-                lineColor: [200, 200, 200]
-              },
-              style: { cellWidth: 'auto' },
-              margin: { top: 50, horizontal: 10 },
-            };
-            let overall_count = 1;
-            let total_questions = 0;
-            let total_waiting = 0;
-            let total_active = 0;
-            let total_inactive = 0;
-            let reqAmount, appAmount;
-            let overall_initialloannextRow = [];
-            if (quedata.length > 0) {
-              for (const [index, value] of quedata.entries()) {
-                overall_initialloannextRow.push({
-                  overall_count: overall_count,
-                  c1: value.categoryname,
-                  c2: value.total,
-                  c3: value.waiting,
-                  c4: value.active,
-                  c5: value.inactive,
-                });
-                total_questions = total_questions + value.total;
-                total_waiting = total_waiting + value.waiting;
-                total_active = total_active + value.active;
-                total_inactive = total_inactive + value.inactive;
-                overall_count++;
-              }
-              overall_initialloannextRow.push({
-                c1: 'Total',
-                c2: total_questions,
-                c3: total_waiting,
-                c4: total_active,
-                c5: total_inactive,
-              })
-            }
-            doc.autoTable(overall_col, overall_initialloannextRow, overall_options);
-
-            window.open(doc.output('bloburl'), '_blank');
-            //doc.save("Main category Report.pdf");
-
-          }
-          else if (reporttype == 'test') {
+          }else if (reporttype === 'test') {
             // Landscape
             const doc1 = new jsPDF({
               orientation: "landscape"
@@ -874,7 +971,6 @@ const DataTable = (props) => {
             doc1.text(121, 15, 'Question Cloud');
             doc1.setFont('times');
             var current_date = moment().format('MMM Do, YYYY');
-            console.log(current_date);
             doc1.setFontSize(11);
             doc1.text(260, 10, current_date);
             doc1.setFontSize(12);
@@ -901,93 +997,11 @@ const DataTable = (props) => {
             searchContent.period = 'all';
             searchContent.startdate = startDate;
             searchContent.enddate = endDate;
-            console.log(searchContent);
-
             let activerespdf = await reportService.getTestcatPDF(searchContent);
             fileDownload(activerespdf.data, 'Test Category report.pdf');
-
             setLoader(false);
-
             return;
-            const { data: activeres } = await reportService.getTestcat(searchContent);
-            const { qdata: quedata } = activeres;
-            console.log(quedata);
-            setData(quedata);
-            setShowtestcat(true);
-            setShowoverall(false);
-            setShowmaincat(false);
-            setShowoverallmain(false);
-
-            let overall_col = [
-              { dataKey: 'overall_count', header: 'S.no' },
-              { dataKey: 'c1', header: 'Master Category' },
-              { dataKey: 'c2', header: 'Main Category' },
-              { dataKey: 'c3', header: 'Sub Category' },
-              { dataKey: 'c4', header: 'Exam name' },
-              { dataKey: 'c5', header: 'Exam code' },
-              { dataKey: 'c6', header: 'Exam type' },
-              { dataKey: 'c7', header: 'No.of questions' },
-              { dataKey: 'c8', header: 'Test generated by' },
-              { dataKey: 'c9', header: 'Exam date and time' },
-            ];
-            var overall_options = {
-              theme: 'grid',
-              columnStyles: {
-                overall_count: { columnWidth: 15, halign: 'center' },
-                c1: { columnWidth: 30 },
-                c2: { columnWidth: 30 },
-                c3: { columnWidth: 30 },
-                c4: { columnWidth: 30 },
-                c5: { columnWidth: 30, halign: 'center' },
-                c6: { columnWidth: 30, halign: 'center' },
-                c7: { columnWidth: 25, halign: 'center' },
-                c8: { columnWidth: 30, halign: 'center' },
-                c9: { columnWidth: 25, halign: 'center' }, //275
-              },
-              headStyles: {
-                fillColor: '#FFFFFF', textColor: '#222222', lineWidth: 0.05,
-                lineColor: [200, 200, 200]
-              },
-              style: { cellWidth: 'auto' },
-              margin: { top: 50, horizontal: 10 },
-            };
-            let overall_count = 1;
-            let total_questions = 0;
-            let reqAmount, appAmount;
-            let overall_initialloannextRow = [];
-            if (quedata.length > 0) {
-              for (const [index, value] of quedata.entries()) {
-
-                var examtimeschedule = new Date(Date(value.examdate)).getHours() + ':' + new Date(value.examdate).getMinutes();
-                var examdateList = moment(new Date(value.examdate)).format('DD-MM-yyyy') + ' ' + moment(examtimeschedule, "H:mm").format("h:mm a");
-
-                overall_initialloannextRow.push({
-                  overall_count: overall_count,
-                  c1: value.mastercategory,
-                  c2: value.maincategory,
-                  c3: value.subcategory,
-                  c4: value.examname,
-                  c5: value.examcode,
-                  c6: value.examtypename,
-                  c7: value.examques,
-                  c8: value.staffname,
-                  c9: examdateList,
-                });
-                total_questions = total_questions + value.examques;
-                overall_count++;
-              }
-              overall_initialloannextRow.push({
-                c6: 'Total',
-                c7: total_questions,
-              });
-            }
-            doc1.autoTable(overall_col, overall_initialloannextRow, overall_options);
-
-            window.open(doc1.output('bloburl'), '_blank');
-            //doc1.save("Test category Report.pdf");
-
-          }
-          else if (reporttype == 'overallmain') {
+          }else if (reporttype === 'overallmain') {
             // Landscape
             const doc1 = new jsPDF({
               orientation: "landscape"
@@ -1028,98 +1042,11 @@ const DataTable = (props) => {
             searchContent.period = 'all';
             searchContent.startdate = startDate;
             searchContent.enddate = endDate;
-            console.log(searchContent);
-
             let activerespdf = await reportService.getOverallmainPDF(searchContent);
             fileDownload(activerespdf.data, 'Overall Main Category report.pdf');
-
             setLoader(false);
-
             return;
-            const { data: activeres } = await reportService.getOverallmain(searchContent);
-            const { qdata: quedata } = activeres;
-            console.log(quedata);
-            setData(quedata);
-            setShowoverallmain(true);
-            setShowoverall(false);
-            setShowmaincat(false);
-            setShowtestcat(false);
-
-            let overall_col = [
-              { dataKey: 'overall_count', header: 'S.no' },
-              { dataKey: 'c1', header: 'Master Category' },
-              { dataKey: 'c2', header: 'Main Category' },
-              { dataKey: 'c3', header: 'Sub Category' },
-              { dataKey: 'c4', header: 'Total questions assigned for test' },
-              { dataKey: 'c5', header: 'No.of topic wise tests' },
-              { dataKey: 'c6', header: 'No.of full tests' },
-              { dataKey: 'c7', header: 'No.of sectional subject tests' },
-              { dataKey: 'c8', header: 'No.of sectional timing tests' },
-            ];
-            var overall_options = {
-              theme: 'grid',
-              columnStyles: {
-                overall_count: { columnWidth: 20, halign: 'center' },
-                c1: { columnWidth: 35 },
-                c2: { columnWidth: 35 },
-                c3: { columnWidth: 35 },
-                c4: { columnWidth: 30, halign: 'center' },
-                c5: { columnWidth: 30, halign: 'center' },
-                c6: { columnWidth: 30, halign: 'center' },
-                c7: { columnWidth: 30, halign: 'center' },
-                c8: { columnWidth: 30, halign: 'center' }, //275
-              },
-              headStyles: {
-                fillColor: '#FFFFFF', textColor: '#222222', lineWidth: 0.05,
-                lineColor: [200, 200, 200]
-              },
-              style: { cellWidth: 'auto' },
-              margin: { top: 50, horizontal: 10 },
-            };
-            let overall_count = 1;
-            let reqAmount, appAmount;
-            let overall_initialloannextRow = [];
-            let total_questions = 0;
-            let total_topicwisereports = 0;
-            let total_fulltests = 0;
-            let total_secsubject = 0;
-            let total_sectiming = 0;
-            if (quedata.length > 0) {
-              for (const [index, value] of quedata.entries()) {
-                overall_initialloannextRow.push({
-                  overall_count: overall_count,
-                  c1: value.mastercategory,
-                  c2: value.maincategory,
-                  c3: value.subcategory,
-                  c4: value.totalquestions,
-                  c5: value.topicwisereports,
-                  c6: value.fulltests,
-                  c7: value.secsubject,
-                  c8: value.sectiming
-                });
-                total_questions = total_questions + value.totalquestions;
-                total_topicwisereports = total_topicwisereports + value.topicwisereports;
-                total_fulltests = total_fulltests + value.fulltests;
-                total_secsubject = total_secsubject + value.secsubject;
-                total_sectiming = total_sectiming + value.sectiming;
-                overall_count++;
-              }
-              overall_initialloannextRow.push({
-                c3: 'Total',
-                c4: total_questions,
-                c5: total_topicwisereports,
-                c6: total_fulltests,
-                c7: total_secsubject,
-                c8: total_sectiming
-              })
-            }
-            doc1.autoTable(overall_col, overall_initialloannextRow, overall_options);
-
-            window.open(doc1.output('bloburl'), '_blank');
-            //doc1.save("Overall Main category Report.pdf");
-
           }
-
           setTimeout(() => {
             setLoader(false);
           }, 1000);
@@ -1128,13 +1055,12 @@ const DataTable = (props) => {
     }
   }
 
-
   return (
     <>
       <div style={{ marginBottom: '0rem', padding: '10px 30px', borderRadius: '0rem', backgroundColor: '#eee' }} className="page-heading d-sm-flex justify-content-sm-between align-items-sm-center">
         <h2 className="title mb-3 mb-sm-0">Reports</h2>
       </div>
-      <div className="col-12">
+      <div className="col-12" style={{ padding : 10 }}>
         {loader &&
           <div className="loader-view w-100"
             style={{ height: 'calc(100vh - 120px)' }}>
@@ -1145,7 +1071,7 @@ const DataTable = (props) => {
           <div class="jr-card">
             <div class="jr-card-body ">
               <div class="row">
-                <div class="col-lg-2" style={{ "marginBottom": "10px" }}>
+                <div class="col-lg-4" style={{ "marginBottom": "10px" }}>
                   <FormControl className="w-100 mb-2">
                     <InputLabel htmlFor="age-simple">Report Type</InputLabel>
                     <Select value={reporttype} onChange={(event, value) => {
@@ -1158,7 +1084,7 @@ const DataTable = (props) => {
                     </Select>
                   </FormControl>
                 </div>
-                <div class="col-lg-3" style={{ "margin": "0px" }}>
+                <div class="col-lg-4" style={{ "margin": "0px" }}>
                   <DatePicker
                     label="From Date"
                     format='DD-MM-YYYY'
@@ -1168,9 +1094,10 @@ const DataTable = (props) => {
                     value={startDate}
                     onChange={handleFromDateChange}
                     animateYearScrolling={false}
+                    style={{ width : '100%'}}
                   />
                 </div>
-                <div class="col-lg-3" style={{ "margin": "0px" }}>
+                <div class="col-lg-4" style={{ "margin": "0px" }}>
                   <DatePicker
                     label="End Date"
                     format='DD-MM-YYYY'
@@ -1180,6 +1107,7 @@ const DataTable = (props) => {
                     value={endDate}
                     onChange={handleEndDateChange}
                     animateYearScrolling={false}
+                    style={{ width : '100%'}}
                   />
                 </div>
                 {/*
@@ -1196,6 +1124,8 @@ const DataTable = (props) => {
                   </FormControl>
                 </div>
                 */}
+              </div>
+              <div class="row" style={{justifyContent : 'center'}}>
                 <div class="col-lg-2" style={{ "marginBottom": "10px", "marginTop": "20px", "textAlign": "right" }}>
                   <Button onClick={() => searchReports(true)} variant="contained" color="primary" className="jr-btn">
                     <span>Search</span>
@@ -1212,12 +1142,182 @@ const DataTable = (props) => {
             </div>
           </div>
         }
+        {!loader && user && user.user &&user.user.logintype !== "G" &&
+          <div class="jr-card">
+            <div class="jr-card-body">
+              <div class="row">
+                <div class="col-lg-4" style={{ "marginBottom": "10px" }}>
+                  <FormControl className="w-100 mb-2">
+                    <InputLabel htmlFor="age-simple">Master Category *</InputLabel>
+                    <Select value={masterCategoryId} onChange={(event) => { handleMasterCategoryChange(event.target.value)}} >
+                      {categoryitems && categoryitems.length > 0 &&
+                        categoryitems.map( c =>{
+                          return(<MenuItem value={c.exa_cat_id}>{c.exa_cat_name}</MenuItem>)
+                        })
+                      }
+                    </Select>
+                  </FormControl>
+                </div>
+                <div class="col-lg-4" style={{ "marginBottom": "10px" }}>
+                  <FormControl className="w-100 mb-2">
+                    <InputLabel htmlFor="age-simple">Main Category  *</InputLabel>
+                    <Select value={mainCategoryId} onChange={(event) => { handleMainCategoryChange(event.target.value)}} >
+                      {mainCategoryitems && mainCategoryitems.length > 0 &&
+                        mainCategoryitems.map( c =>{
+                          return(<MenuItem value={c.exa_cat_id}>{c.exa_cat_name}</MenuItem>)
+                        })
+                      }
+                    </Select>
+                  </FormControl>
+                </div>
+                <div class="col-lg-4" style={{ "marginBottom": "10px" }}>
+                  <FormControl className="w-100 mb-2">
+                    <InputLabel htmlFor="age-simple">Sub Category *</InputLabel>
+                    <Select value={subCategoryId} onChange={(event) => { handleSubCategoryChange(event.target.value)}}> 
+                      {subCategoryitems && subCategoryitems.length > 0 &&
+                        subCategoryitems.map( c =>{
+                          return(<MenuItem value={c.exa_cat_id}>{c.exa_cat_name}</MenuItem>)
+                        })
+                      }
+                    </Select>
+                  </FormControl>
+                </div>
+                <div class="col-lg-4" style={{ "margin": "0px" }}>
+                  <DatePicker
+                    label="From Date"
+                    format='DD-MM-YYYY'
+                    autoOk={true}
+                    disableFuture={true}
+                    margin={'none'}
+                    value={studentStartDate}
+                    onChange={handleStudentFromDateChange}
+                    animateYearScrolling={false}
+                    style={{ width : '100%'}}
+                  />
+                </div>
+                <div class="col-lg-4" style={{ "margin": "0px" }}>
+                  <DatePicker
+                    label="End Date"
+                    format='DD-MM-YYYY'
+                    autoOk={true}
+                    disableFuture={true}
+                    margin={'none'}
+                    value={studentEndDate}
+                    onChange={handleStudentEndDateChange}
+                    animateYearScrolling={false}
+                    style={{ width : '100%'}}
+                  />
+                </div>
+              </div>
+              <div class="row" style={{justifyContent : 'center'}}>
+                <div class="col-lg-2" style={{ "marginBottom": "10px", "marginTop": "20px", "textAlign": "right" }}>
+                  <Button onClick={() => searchStudentReports()} variant="contained" color="primary" className="jr-btn">
+                    <span>Search</span>
+                    <i className="zmdi zmdi-search-in-page zmdi-hc-fw" />
+                  </Button>
+                </div>
+                <div class="col-lg-2" style={{ "marginBottom": "10px", "marginTop": "20px", "textAlign": "right" }}>
+                  <Button onClick={() => downloadReport()} variant="contained" className="jr-btn bg-primary text-white">
+                    <i className="download" />
+                    <span>Download</span>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+        {!loader && user && user.user &&user.user.logintype !== "G" &&
+          <div class="jr-card">
+            <div class="jr-card-body ">
+              <div class="row">
+                <div class="col-lg-4" style={{ "marginBottom": "10px" }}>
+                  <FormControl className="w-100 mb-2">
+                    <InputLabel htmlFor="age-simple">Class *</InputLabel>
+                    <Select value={scMainCayegory} onChange={(event) => { handleSCMainCategoryChange(event.target.value)}} >
+                      {categoryitems && categoryitems.length > 0 &&
+                        categoryitems.map( c =>{
+                          return(<MenuItem value={c.exa_cat_id}>{c.exa_cat_name}</MenuItem>)
+                        })
+                      }
+                    </Select>
+                  </FormControl>
+                </div>
+                <div class="col-lg-4" style={{ "marginBottom": "10px" }}>
+                  <FormControl className="w-100 mb-2">
+                    <InputLabel htmlFor="age-simple">QC Category *</InputLabel>
+                    <Select value={qcMainCayegory} onChange={(event) => { handleQCMainCategoryChange(event.target.value)}}> 
+                      {qcCategoryItems && qcCategoryItems.length > 0 &&
+                        qcCategoryItems.map( c =>{
+                          return(<MenuItem value={c.exa_cat_id}>{c.exa_cat_name}</MenuItem>)
+                        })
+                      }
+                    </Select>
+                  </FormControl>
+                </div>
+                <div class="col-lg-4" style={{ "marginBottom": "10px" }}>
+                  <FormControl className="w-100 mb-2">
+                    <InputLabel htmlFor="age-simple">QC SubCategory *</InputLabel>
+                    <Select value={qcSubCayegory} onChange={(event) => { handleQCSubCategoryChange(event.target.value)}}> 
+                      {qcSubCategoryItems && qcSubCategoryItems.length > 0 &&
+                        qcSubCategoryItems.map( c =>{
+                          return(<MenuItem value={c.exa_cat_id}>{c.exa_cat_name}</MenuItem>)
+                        })
+                      }
+                    </Select>
+                  </FormControl>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-4" style={{ "margin": "0px" }}>
+                  <DatePicker
+                    label="From Date"
+                    format='DD-MM-YYYY'
+                    autoOk={true}
+                    disableFuture={true}
+                    margin={'none'}
+                    value={studentStartDate}
+                    onChange={handleStudentFromDateChange}
+                    animateYearScrolling={false}
+                    style={{ width : '100%'}}
+                  />
+                </div>
+                <div class="col-lg-4" style={{ "margin": "0px" }}>
+                  <DatePicker
+                    label="End Date"
+                    format='DD-MM-YYYY'
+                    autoOk={true}
+                    disableFuture={true}
+                    margin={'none'}
+                    value={studentEndDate}
+                    onChange={handleStudentEndDateChange}
+                    animateYearScrolling={false}
+                    style={{ width : '100%'}}
+                  />
+                </div>
+              </div>
+              <div class="row" style={{justifyContent : 'center'}}>
+                <div class="col-lg-2" style={{ "marginBottom": "10px", "marginTop": "20px", "textAlign": "right" }}>
+                  <Button onClick={() => searchStudentQCReports()} variant="contained" color="primary" className="jr-btn">
+                    <span>Search</span>
+                    <i className="zmdi zmdi-search-in-page zmdi-hc-fw" />
+                  </Button>
+                </div>
+                <div class="col-lg-2" onClick={() => downloadQCReport()} style={{ "marginBottom": "10px", "marginTop": "20px", "textAlign": "right" }}>
+                  <Button  variant="contained" className="jr-btn bg-primary text-white">
+                    <i className="download" />
+                    <span>Download</span>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
         {!loader && showOverallmain &&
           <div>
             <MDBDataTable
               striped
               bordered
-              entriesOptions={[10, 20, 25, 50, 100]}
+              entriesOptions={[10, 20, 25, 50, 100, 1000]}
               entries={10}
               hover
               data={{ rows: studrows, columns: columns4 }}
@@ -1233,7 +1333,7 @@ const DataTable = (props) => {
             <MDBDataTable
               striped
               bordered
-              entriesOptions={[10, 20, 25, 50, 100]}
+              entriesOptions={[10, 20, 25, 50, 100, 1000]}
               entries={10}
               hover
               data={{ rows: studrows, columns: columns3 }}
@@ -1249,7 +1349,7 @@ const DataTable = (props) => {
             <MDBDataTable
               striped
               bordered
-              entriesOptions={[10, 20, 25, 50, 100]}
+              entriesOptions={[10, 20, 25, 50, 100, 1000]}
               entries={10}
               hover
               data={{ rows: studrows, columns: columns2 }}
@@ -1265,7 +1365,7 @@ const DataTable = (props) => {
             <MDBDataTable
               striped
               bordered
-              entriesOptions={[10, 20, 25, 50, 100]}
+              entriesOptions={[ 10, 20, 25, 50, 100, 1000 ]}
               entries={10}
               hover
               data={{ rows: studrows, columns }}
@@ -1276,7 +1376,7 @@ const DataTable = (props) => {
             />
             <Modal className="modal-box" backdrop={"static"} openview={onViewModalClose} isOpen={viewmodal}>
               {/* <ModalHeader className="modal-box-header bg-primary text-white">
-              {isView == false ? " Operator" :
+              {isView === false ? " Operator" :
                 "View "}
             </ModalHeader> */}
 
@@ -1415,7 +1515,7 @@ const DataTable = (props) => {
 
             <Modal className="modal-box" backdrop={"static"} openview={onModalClose} isOpen={newmodal}>
               <ModalHeader className="modal-box-header bg-primary text-white">
-                {isEdit == false ? "Add Student" :
+                {isEdit === false ? "Add Student" :
                   "Edit Student"}
               </ModalHeader>
 
@@ -1505,15 +1605,11 @@ const DataTable = (props) => {
                         }} control={<Radio color="primary" />} label="FEMALE" />
                       </RadioGroup>
                     </div>
-
-
-
-
                   </div>
                 </div>
               </div>
               {<ModalFooter>
-                {isEdit == false ?
+                {isEdit === false ?
                   <div className="d-flex flex-row">
                     <Button style={{ marginRight: '5%' }} onClick={() => saveState()} disabled={savedisabled} variant="contained" color="primary">Save</Button>
                     <Button variant="contained" color="secondary" onClick={onModalClose}>Cancel</Button>
@@ -1528,6 +1624,22 @@ const DataTable = (props) => {
         }
         {!loader && showBulkUpload &&
           <BulkUpload />
+        }
+        {!loader && showStudentReport &&
+          <div>
+            <MDBDataTable
+              striped
+              bordered
+              entriesOptions={[10, 20, 25, 50, 100, 1000]}
+              entries={10}
+              hover
+              data={{ rows: studentReportData, columns: studentReportColumns }}
+              small
+              responsive
+              noBottomColumns
+              disableRetreatAfterSorting={true}
+            />
+          </div>
         }
         <Snackbar
           className="mb-3 bg-info"

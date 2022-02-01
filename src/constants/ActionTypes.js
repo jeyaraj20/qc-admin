@@ -137,3 +137,16 @@ export const SET_CURRENT_TODO_NULL = 'set_current_todo_null';
 export const REMOVE_LABEL = 'remove_label';
 export const UPDATE_SEARCH = 'update_search';
 
+// Notes
+export const GET_MASTER_GATEGORY = 'GET_MASTER_GATEGORY';
+export const GET_MAIN_GATEGORY = 'GET_MAIN_GATEGORY';
+export const GET_SUB_GATEGORY = 'GET_SUB_GATEGORY';
+export const GET_MASTER_GATEGORY_SUCCESS = 'GET_MASTER_GATEGORY_SUCCESS';
+export const GET_MAIN_GATEGORY_SUCCESS = 'GET_MAIN_GATEGORY_SUCCESS';
+export const GET_SUB_GATEGORY_SUCCESS = 'GET_SUB_GATEGORY_SUCCESS';
+export const GET_NOTES = 'GET_NOTES';
+export const GET_NOTES_SUCCESS = 'GET_NOTES_SUCCESS';
+export const GET_CHAPTERS = 'GET_CHAPTERS';
+export const GET_CHAPTERS_SUCCESS = 'GET_CHAPTERS_SUCCESS';
+export const GET_VIDEOS = 'GET_VIDEOS';
+export const GET_VIDEOS_SUCCESS = 'GET_VIDEOS_SUCCESS';

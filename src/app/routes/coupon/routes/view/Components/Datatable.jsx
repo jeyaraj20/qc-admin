@@ -87,7 +87,7 @@ const DataTable = (props) => {
           setData([...data])
 
           for (var i = 0; i < selectedCatArr.length; i++) {
-            if (selectedCatArr[i] == row.coupon_id) {
+            if (selectedCatArr[i] === row.coupon_id) {
               selectedCatArr.splice(i, 1);
             }
           }
@@ -118,7 +118,7 @@ const DataTable = (props) => {
       selectedCategoryArr.push(obj.coupon_id)
     } else {
       for (var i = 0; i < selectedCategoryArr.length; i++) {
-        if (selectedCategoryArr[i] == obj.coupon_id) {
+        if (selectedCategoryArr[i] === obj.coupon_id) {
           selectedCategoryArr.splice(i, 1);
         }
       }
@@ -204,7 +204,7 @@ const DataTable = (props) => {
 
   useEffect(() => {
 
-    if (data && data.length || data.length == 0)
+    if (data && data.length || data.length === 0)
       mapRows(data);
   }, [data])
 
@@ -234,7 +234,7 @@ const DataTable = (props) => {
     let categoryrowsdata = rows.map((obj, index) => {
 
       let checkedflg = false;
-      if (obj.coupon_status == "1")
+      if (obj.coupon_status === "1")
         checkedflg = true;
 
       let row = {};
@@ -263,14 +263,14 @@ const DataTable = (props) => {
 
   const handleAction = async () => {
     let selectedCategoryObj = selectedCategory;
-    if (action == '') {
+    if (action === '') {
       setAlertMessage('Please select an action');
       setShowMessage(true);
       setTimeout(() => {
         setShowMessage(false)
       }, 1500);
     } else {
-      if (action == 'Inactive') {
+      if (action === 'Inactive') {
         selectedCategoryObj.status = 'N';
         if (selectedCategory.couponId.length != 0) {
           await couponService.changeStatus(selectedCategoryObj);
@@ -288,7 +288,7 @@ const DataTable = (props) => {
           }, 1500);
         }
       }
-      if (action == 'Active') {
+      if (action === 'Active') {
         selectedCategoryObj.status = 'Y';
         if (selectedCategory.couponId.length != 0) {
           await couponService.changeStatus(selectedCategoryObj);
@@ -345,7 +345,7 @@ const DataTable = (props) => {
   }
   const handleSaveButton = () => {
     console.log(errors['Title'], errors['Slug'], errors['Position'])
-    if (errors['categoryName'] != null || errors['categoryName'] == undefined || errors['slug'] != null || errors['slug'] == undefined || errors['position'] != null || errors['position'] == undefined) {
+    if (errors['categoryName'] != null || errors['categoryName'] === undefined || errors['slug'] != null || errors['slug'] === undefined || errors['position'] != null || errors['position'] === undefined) {
       setSavedisabled(true);
     } else {
       setSavedisabled(false);
@@ -438,7 +438,7 @@ const DataTable = (props) => {
     try {
       if (name != "") {
         let data = {};
-        if (usertype == 'G') {
+        if (usertype === 'G') {
           data.table = 'tbl__category';
         } else {
           data.table = 'tbl__school_question_category';
@@ -549,14 +549,14 @@ const DataTable = (props) => {
               <div className="col-lg-3 col-sm-6 col-12">
                 <FormControl className="w-100 mb-2">
                   <InputLabel htmlFor="age-simple">Actions</InputLabel>
-                  {datatype == 'Active' &&
+                  {datatype === 'Active' &&
                     <Select onChange={(event, value) => {
                       onActionChange(event, value)
                     }} >
                       <MenuItem value={'Inactive'}>Inactive</MenuItem>
                     </Select>
                   }
-                  {datatype == 'Inactive' &&
+                  {datatype === 'Inactive' &&
                     <Select onChange={(event, value) => {
                       onActionChange(event, value)
                     }} >
@@ -592,7 +592,7 @@ const DataTable = (props) => {
             <MDBDataTable
               striped
               bordered
-              entriesOptions={[5, 10, 20, 25, 50, 100]}
+              entriesOptions={[ 5, 10, 20, 25, 50, 100, 1000 ]}
               entries={5}
               hover
               data={{ rows: categoryrows, columns }}
@@ -601,7 +601,7 @@ const DataTable = (props) => {
               disableRetreatAfterSorting={true} />
             <Modal className="modal-box" backdrop={"static"} toggle={onModalClose} isOpen={modal}>
               <ModalHeader className="modal-box-header bg-primary text-white">
-                {isEdit == false ? "Add Coupon" :
+                {isEdit === false ? "Add Coupon" :
                   "Edit Coupon"}
               </ModalHeader>
               <div className="modal-box-content">
@@ -689,7 +689,7 @@ const DataTable = (props) => {
                       margin="normal" />
                     <div><h6 style={{ color: 'red', paddingTop: '1%' }}>{errors['CartValueRange']}</h6></div>
                   </div>
-                  {cartValueRangeType == 'Less Than' &&
+                  {cartValueRangeType === 'Less Than' &&
                     <div className="col-lg-12 d-flex flex-column order-lg-1">
                       <TextField
                         required
@@ -702,7 +702,7 @@ const DataTable = (props) => {
                       <div><h6 style={{ color: 'red', paddingTop: '1%' }}>{errors['MinimumCartValue']}</h6></div>
                     </div>
                   }
-                  {cartValueRangeType == 'Greater Than' &&
+                  {cartValueRangeType === 'Greater Than' &&
                     <div className="col-lg-12 d-flex flex-column order-lg-1">
                       <TextField
                         required
@@ -776,7 +776,7 @@ const DataTable = (props) => {
                 </div>
               </div>
               <ModalFooter>
-                {isEdit == false ?
+                {isEdit === false ?
                   <div className="d-flex flex-row">
                     <Button style={{ marginRight: '5%' }} onClick={() => saveCoupon()} variant="contained" disabled={savedisabled} color="primary">Save</Button>
                     <Button variant="contained" color="secondary" onClick={onModalClose}>Cancel</Button>

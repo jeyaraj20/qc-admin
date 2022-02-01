@@ -69,9 +69,9 @@ const ChangePasswordForm = (props) => {
       if (oldPassword &&
         newPassword &&
         confirmPassword &&
-        errors['ConfirmPassword'] == null &&
-        errors['NewPassword'] == null &&
-        errors['OldPassword'] == null) {
+        errors['ConfirmPassword'] === null &&
+        errors['NewPassword'] === null &&
+        errors['OldPassword'] === null) {
         try {
           let obj = {};
           obj.oldpassword = oldPassword;

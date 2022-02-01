@@ -17,6 +17,7 @@ import FormControl from '@material-ui/core/FormControl';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import AddEditExam from './AddEditExam';
 import AddEditBankExam from './AddEditBankExam';
+import AddEditSectionalExam from './AddSectionalExam';
 import CommonExamView from './CommonExamView';
 import Badge from '@material-ui/core/Badge';
 import MapQuestionCommon from './MapQuestionCommon';
@@ -24,6 +25,9 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import auth from '../../../../../../services/authService';
 import * as adminService from '../../../../../../services/adminService';
+import { Modal, Spin } from 'antd';
+
+var fileDownload = require('js-file-download');
 
 const ExamsDatatable = (props) => {
     const [data, setData] = useState([])
@@ -40,6 +44,7 @@ const ExamsDatatable = (props) => {
     const [maincategoryId, setMainCategoryId] = useState('');
     const [showAddExam, setShowAddExam] = useState(false);
     const [showAddBankExam, setShowAddBankExam] = useState(false);
+    const [showSectionlExam, setShowAddSectionalExam] = useState(false);
     const [showCommonExamView, setCommonExamView] = useState(false);
     const [showExamsTable, setShowExamsTable] = useState(true);
     const [examData, setExamData] = useState({});
@@ -65,20 +70,22 @@ const ExamsDatatable = (props) => {
     const [paidexams, setPaidExams] = useState([]);
     const [usertype, setUserType] = useState('');
 
+    const [pdfExamId, setPdfExamId] = useState('');
+    const [showPdfOpt, setShowPdfOpt] = useState(false);
+    const [downloadLoader, setDownloadLoader] = useState(false);
+
     let selectedCatArr = [];
     const onSelectAll = e => {
         let selected = selectedCat;
         let rowcount = 0;
-        console.log(data);
         for (let row of data) {
             if (document.getElementById(row.exam_id)) {
                 document.getElementById(row.exam_id).checked = e.currentTarget.checked;
                 if (e.currentTarget.checked) {
-
                     if (e.currentTarget.checked)
-                        row.exam_status = 1
+                        row.isChecked = true;
                     else
-                        row.exam_status = 0;
+                        row.isChecked = false;
                     data[rowcount] = row
                     setData([...data])
 
@@ -86,23 +93,19 @@ const ExamsDatatable = (props) => {
                     selected[row.exam_id] = {
                         "isselected": e.currentTarget.checked
                     };
-                    console.log(selectedCatArr);
                     setSelectedCategory({ "exam_id": selectedCatArr });
                 } else {
-
                     if (e.currentTarget.checked)
-                        row.exam_status = 1
+                        row.isChecked = true;
                     else
-                        row.exam_status = 0;
+                        row.isChecked = false;
                     data[rowcount] = row
                     setData([...data])
-
                     for (var i = 0; i < selectedCatArr.length; i++) {
-                        if (selectedCatArr[i] == row.exam_id) {
+                        if (selectedCatArr[i] === row.exam_id) {
                             selectedCatArr.splice(i, 1);
                         }
                     }
-                    console.log(selectedCatArr);
                     setSelectedCategory({ "exam_id": selectedCatArr });
                 }
             }
@@ -165,6 +168,11 @@ const ExamsDatatable = (props) => {
             width: 50,
         },
         {
+            label: 'PDF',
+            field: 'pdf',
+            width: 50,
+        },
+        {
             label: (<MDBInput style={{ marginTop: '-7%', width: '20px' }} label=' ' type='checkbox' id='multi' checked={selectAll} onChange={onSelectAll} />),
             field: 'select',
             width: 10,
@@ -175,26 +183,27 @@ const ExamsDatatable = (props) => {
 
     const handleRefresh = async () => {
         setLoader(true);
-        console.log(examdata);
         let getdata = {};
         getdata.exa_cat_id = subId;
-        if (datatype == 'Active') {
+        if (datatype === 'Active') {
             getdata.status = 'Y';
         }
-        if (datatype == 'Inactive') {
+        if (datatype === 'Inactive') {
             getdata.status = 'N';
         }
-        if (datatype == 'Waiting') {
+        if (datatype === 'Waiting') {
             getdata.status = 'W';
         }
-        if (examtype == 'C') {
+        if (examtype === 'C') {
             getdata.type = 'C';
+        } else if (examtype === 'D') {
+            getdata.type = 'D';
         } else {
             getdata.type = 'B';
         }
         let user = auth.getCurrentUser();
         setUserType(user.user.logintype);
-        if (user.user.logintype == 'G') {
+        if (user.user.logintype === 'G') {
             const { data: attres } = await examService.getAllAttendedExam();
             const { rows: attexamres } = attres;
             setAttendedExams(attexamres);
@@ -219,7 +228,6 @@ const ExamsDatatable = (props) => {
         setInactiveCount(inactivecount);
         const { data: subcatres } = await examSubCategoryService.getSubCategoryCount('Y');
         const { count: subcategorycount } = subcatres;
-        console.log(subcategorycount);
         setSubCatCount(subcategorycount);
         const { data: facultyres } = await adminService.getAllOperators();
         const { Operator: facultyName } = facultyres;
@@ -251,15 +259,14 @@ const ExamsDatatable = (props) => {
 
     const handleSearch = async () => {
         setLoader(true);
-        console.log(datatype);
         let status = ''
-        if (datatype == 'Active') {
+        if (datatype === 'Active') {
             status = 'Y'
         }
-        if (datatype == 'Inactive') {
+        if (datatype === 'Inactive') {
             status = 'N'
         }
-        if (datatype == 'Waiting') {
+        if (datatype === 'Waiting') {
             status = 'W'
         }
         let searchdata = {};
@@ -274,8 +281,6 @@ const ExamsDatatable = (props) => {
         searchdata.examtype = examtype;
         const { data: searchresultres } = await examService.getSearchResult(searchdata);
         const { exams: searchresult } = searchresultres;
-        console.log(searchdata);
-        console.log(searchresult);
         setData(searchresult);
         setTimeout(() => {
             setLoader(false)
@@ -287,19 +292,19 @@ const ExamsDatatable = (props) => {
         setDifficulty('');
         setFacultyId('');
         setSearchString('');
-        if (datatype == "Active") {
+        if (datatype === "Active") {
             await getAllActive();
         }
-        if (datatype == "Waiting") {
+        if (datatype === "Waiting") {
             await getAllWaiting();
         }
-        if (datatype == "Inactive") {
+        if (datatype === "Inactive") {
             await getAllInactive();
         }
     }
 
     useEffect(() => {
-        if (data && data.length || data.length == 0)
+        if (data && data.length || data.length === 0)
             mapRows(data);
     }, [data])
 
@@ -313,52 +318,46 @@ const ExamsDatatable = (props) => {
     const mapRows = (rows) => {
         let rowFields = []// fields in required order
         columns.forEach(column => rowFields.push(column.field))
-
         let categoryrows = rows.map((obj, index) => {
-            console.log(obj);
             let questiontype;
             let freetotal = 0;
             let paidtotal = 0;
             for (let exam of attendedexams) {
-                if (obj.exam_id == exam.exam_id) {
+                if (obj.exam_id === exam.exam_id) {
                     freetotal = freetotal + 1;
                 }
             }
             for (let paid of paidexams) {
-                if (obj.exam_id == paid.exam_id) {
+                if (obj.exam_id === paid.exam_id) {
                     paidtotal = paidtotal + 1;
                 }
             }
 
-            if (obj.exam_type_cat == "P") {
+            if (obj.exam_type_cat === "P") {
                 questiontype = "Prev Questions"
-            } else if (obj.quest_type == 'MANU') {
+            } else if (obj.quest_type === 'MANU') {
                 questiontype = "MANU Questions"
             } else {
                 questiontype = "AUTO Questions"
             }
             let freetype;
-            if (obj.payment_flag == "Y") {
+            if (obj.payment_flag === "Y") {
                 freetype = 'PAID (' + paidtotal + ')';
             } else {
                 freetype = 'FREE (' + freetotal + ')';
             }
-            let checkedflg = false;
-            if (obj.exam_status == "1")
-                checkedflg = true;
-
             let row = {}
             for (let fieldName of rowFields)
                 row[fieldName] = obj[fieldName] // fetching required fields in req order
 
             row.select = <MDBInput style={{ marginTop: '0px', width: '20px' }}
                 label="." type="checkbox"
-                checked={checkedflg}
+                checked={obj.isChecked}
                 name={obj.exam_id} id={obj.exam_id}
                 onChange={(e) => { onCategorySelect(e, obj, index) }}
             />;
             row.exam_date = Moment(obj.exam_date).format('DD-MM-YYYY');
-            if (usertype == 'G') {
+            if (usertype === 'G') {
                 row.paid = freetype;
             } else {
                 row.paid = "----";
@@ -369,6 +368,7 @@ const ExamsDatatable = (props) => {
             row.tot_questions = <span>{obj.totalassigned} / {obj.tot_questions}</span>
             row.view = <IconButton onClick={() => toggleView(true, obj)} className="icon-btn"><i className="zmdi zmdi-file-text zmdi-hc-fw" /></IconButton>
             row.edit = <IconButton onClick={() => toggle(true, 'Edit', obj, examtype)} className="icon-btn"><i className="zmdi zmdi-edit zmdi-hc-fw" /></IconButton>
+            row.pdf = <IconButton onClick={() => downloadPDF(obj)} className="icon-btn"><i className="zmdi zmdi-collection-pdf zmdi-hc-fw" /></IconButton>
 
             return row;
         })
@@ -379,14 +379,15 @@ const ExamsDatatable = (props) => {
     const onCategorySelect = (e, obj, index) => {
         selectedCategoryArr = selectedCategory.exam_id;
         if (e.currentTarget.checked)
-            obj.exam_status = 1
+            obj.isChecked = true;
         else
-            obj.exam_status = 0;
+            obj.isChecked = false;
         data[index] = obj
         setData([...data])// to avoid shallow checking
         if (e.currentTarget.checked) {
             if (obj.exam_type_cat != 'P') {
-                if (obj.totalassigned == obj.tot_questions) {
+                //selectedCategoryArr.push(obj.exam_id)
+                if (obj.totalassigned === obj.tot_questions) {
                     selectedCategoryArr.push(obj.exam_id)
                 } else {
                     setAlertMessage('Questions need to assign');
@@ -400,7 +401,7 @@ const ExamsDatatable = (props) => {
             }
         } else {
             for (var i = 0; i < selectedCategoryArr.length; i++) {
-                if (selectedCategoryArr[i] == obj.exam_id) {
+                if (selectedCategoryArr[i] === obj.exam_id) {
                     selectedCategoryArr.splice(i, 1);
                 }
             }
@@ -422,7 +423,7 @@ const ExamsDatatable = (props) => {
 
     const onActionChange = async (event, value) => {
         setAction(event.target.value);
-        if (event.target.value == 'Move') {
+        if (event.target.value === 'Move') {
             setShowExamMainCategory(true);
             const { data: maincategoryres } = await exammainCategoryService.getExamMainCategory();
             const { category: categories } = maincategoryres;
@@ -438,16 +439,15 @@ const ExamsDatatable = (props) => {
 
     const handleAction = async () => {
         let selectedCategoryObj = selectedCategory;
-        if (action == '') {
+        if (action === '') {
             setAlertMessage('Please select an action');
             setShowMessage(true);
             setTimeout(() => {
                 setShowMessage(false)
             }, 1500);
         } else {
-            if (action == 'Inactive') {
+            if (action === 'Inactive') {
                 selectedCategoryObj.status = 'N';
-                console.log(selectedCategoryObj);
                 if (selectedCategory.exam_id.length != 0) {
                     await examService.updateExamStatus(selectedCategoryObj);
                     setAlertMessage('Exam successfully inactivated.');
@@ -465,9 +465,8 @@ const ExamsDatatable = (props) => {
                     }, 1500);
                 }
             }
-            if (action == 'Active') {
+            if (action === 'Active') {
                 selectedCategoryObj.status = 'Y';
-                console.log(selectedCategoryObj);
                 if (selectedCategory.exam_id.length != 0) {
                     await examService.updateExamStatus(selectedCategoryObj);
                     setAlertMessage('Exam successfully activated.');
@@ -485,9 +484,8 @@ const ExamsDatatable = (props) => {
                     }, 1500);
                 }
             }
-            if (action == 'Delete') {
+            if (action === 'Delete') {
                 selectedCategoryObj.status = 'D';
-                console.log(selectedCategory);
                 if (selectedCategory.exam_id.length != 0) {
                     await examService.updateExamStatus(selectedCategoryObj);
                     setAlertMessage('Data successfully deleted.');
@@ -505,9 +503,8 @@ const ExamsDatatable = (props) => {
                     }, 1500);
                 }
             }
-            if (action == 'Waiting') {
+            if (action === 'Waiting') {
                 selectedCategoryObj.status = 'W';
-                console.log(selectedCategoryObj);
                 if (selectedCategory.exam_id.length != 0) {
                     await examService.updateExamStatus(selectedCategoryObj);
                     setAlertMessage('Exam successfully inactivated.');
@@ -525,11 +522,10 @@ const ExamsDatatable = (props) => {
                     }, 1500);
                 }
             }
-            if (action == 'Move') {
+            if (action === 'Move') {
                 selectedCategoryObj.exa_cat = maincategoryId;
                 selectedCategoryObj.exam_sub = subcategoryId;
                 selectedCategoryObj.exam_sub_sub = subsubcategoryId;
-                console.log(selectedCategoryObj);
                 await examService.moveExam(selectedCategoryObj);
                 setAlertMessage('Exam moved successfully.');
                 setSelectedCategory({ "exam_id": [] });
@@ -543,7 +539,6 @@ const ExamsDatatable = (props) => {
     }
 
     const toggle = async (open, mode, data, examType) => {
-        console.log(data);
         setMode(mode);
         if (data) {
             setExamDetails(data);
@@ -573,9 +568,15 @@ const ExamsDatatable = (props) => {
             localStorage.setItem('paymentflag', data.payment_flag);
             localStorage.setItem('sellingprice', data.selling_price);
             localStorage.setItem('offerprice', data.offer_price);
+            localStorage.setItem('startDate', data.startDate)
+            localStorage.setItem('endDate', data.endDate)
             localStorage.setItem('status', datatype);
-            if (examType == 'C') {
+            if (examType === 'C') {
                 window.open(`/app/examsubcategory/commonedit`, "_blank")
+            } else if (examType === 'D') {
+                localStorage.setItem('sectcutoff', data.sect_cutoff);
+                localStorage.setItem('secttiming', data.sect_timing);
+                window.open(`/app/examsubcategory/sectionaledit`, "_blank")
             } else {
                 localStorage.setItem('sectcutoff', data.sect_cutoff);
                 localStorage.setItem('secttiming', data.sect_timing);
@@ -583,48 +584,32 @@ const ExamsDatatable = (props) => {
             }
         } else {
             if (open) {
-                if (examType == 'C') {
+                if (examType === 'C') {
                     setShowAddExam(open);
                     setShowAddBankExam(false);
-                } else {
-                    setShowAddBankExam(open);
+                    setShowAddSectionalExam(false);
+                } else if (examType === 'D') {
+                    setShowAddBankExam(false);
                     setShowAddExam(false);
+                    setShowAddSectionalExam(open);
+                }
+                else {
+                    setShowAddBankExam(true);
+                    setShowAddExam(false);
+                    setShowAddSectionalExam(false);
                 }
                 setShowExamsTable(false);
             } else {
                 setShowAddExam(false);
                 setShowAddBankExam(false);
+                setShowAddSectionalExam(false);
                 setShowExamsTable(true);
                 await handleRefresh();
             }
         }
     }
 
-    /*const toggle = async (open, mode, data, examType) => {
-        console.log(data);
-        if (data) {
-            setExamDetails(data);
-        }
-        if (open) {
-            if (examType == 'C') {
-                setShowAddExam(open);
-                setShowAddBankExam(false);
-            } else {
-                setShowAddBankExam(open);
-                setShowAddExam(false);
-            }
-            setShowExamsTable(false);
-        } else {
-            setShowAddExam(false);
-            setShowAddBankExam(false);
-            setShowExamsTable(true);
-            await handleRefresh();
-        }
-        setMode(mode);
-    }*/
-
     const toggleView = (open, data) => {
-        console.log(data);
         localStorage.setItem('exam_name', data.exam_name)
         localStorage.setItem('exam_slug', data.exam_slug)
         localStorage.setItem('exam_code', data.exam_code)
@@ -639,16 +624,31 @@ const ExamsDatatable = (props) => {
         localStorage.setItem('exam_date', data.exam_date)
         localStorage.setItem('exam_status', data.exam_status)
         window.open(`/app/examsubcategory/examsview`, "_blank")
-        /*if (data) {
-            setExamData(data);
-        }
-        if (open) {
-            setCommonExamView(true);
-            setShowExamsTable(false);
-        } else {
-            setCommonExamView(false);
-            setShowExamsTable(true);
-        }*/
+    }
+
+    const downloadPDF = (data) => {
+        setPdfExamId(data.exam_id);
+        setShowPdfOpt(true);
+    }
+
+    const withAnswer = async () => {
+        setShowPdfOpt(false);
+        setDownloadLoader(true);
+        let result = await examService.downloadPDF({ exam_id: pdfExamId, answerShow: true });
+        fileDownload(result.data, 'Exam Questions.pdf');
+        setDownloadLoader(false);
+    }
+
+    const withOutAnswer = async () => {
+        setShowPdfOpt(false);
+        setDownloadLoader(true);
+        let result = await examService.downloadPDF({ exam_id: pdfExamId, answerShow: false });
+        fileDownload(result.data, 'Exam Questions.pdf');
+        setDownloadLoader(false);
+    }
+
+    const closePdfModal = () => {
+        setShowPdfOpt(false);
     }
 
     const handleRequestClose = () => {
@@ -665,10 +665,14 @@ const ExamsDatatable = (props) => {
         setSearchString('');
         let getdata = {};
         getdata.exa_cat_id = subId;
-        if (examtype == 'C') {
+        if (examtype === 'C') {
             getdata.type = 'C';
             getdata.status = 'N';
-        } else {
+        } else if (examtype === 'D') {
+            getdata.type = 'D';
+            getdata.status = 'N';
+        }
+        else {
             getdata.type = 'B';
             getdata.status = 'N';
         }
@@ -692,10 +696,14 @@ const ExamsDatatable = (props) => {
         setSearchString('');
         let getdata = {};
         getdata.exa_cat_id = subId;
-        if (examtype == 'C') {
+        if (examtype === 'C') {
             getdata.type = 'C';
             getdata.status = 'Y';
-        } else {
+        } else if (examtype === 'D') {
+            getdata.type = 'D';
+            getdata.status = 'Y';
+        }
+        else {
             getdata.type = 'B';
             getdata.status = 'Y';
         }
@@ -719,10 +727,14 @@ const ExamsDatatable = (props) => {
         setSearchString('');
         let getdata = {};
         getdata.exa_cat_id = subId;
-        if (examtype == 'C') {
+        if (examtype === 'C') {
             getdata.type = 'C';
             getdata.status = 'W';
-        } else {
+        } else if (examtype === 'D') {
+            getdata.type = 'D';
+            getdata.status = 'W';
+        }
+        else {
             getdata.type = 'B';
             getdata.status = 'W';
         }
@@ -740,7 +752,6 @@ const ExamsDatatable = (props) => {
         setMainCategoryId(event.target.value);
         const { data: subcategoryres } = await exammainCategoryService.getExamSubCategoryById(event.target.value);
         const { category: categories } = subcategoryres;
-        console.log(categories);
         let itemArr = [];
         for (let subcategory of categories) {
             itemArr.push(<MenuItem value={subcategory.exa_cat_id}>{subcategory.exa_cat_name}</MenuItem>)
@@ -752,7 +763,6 @@ const ExamsDatatable = (props) => {
         setSubCategoryId(event.target.value);
         const { data: subsubres } = await exammainCategoryService.getExamSubCategoryByCatId(event.target.value);
         const { subcategory: subcategories } = subsubres;
-        console.log(subcategories);
         let itemArr = [];
         for (let subcategory of subcategories) {
             itemArr.push(<MenuItem value={subcategory.exa_cat_id}>{subcategory.exa_cat_name}</MenuItem>)
@@ -774,198 +784,200 @@ const ExamsDatatable = (props) => {
             }
             {showExamsTable && !loader &&
                 <>
-                    <div style={{ marginBottom: '0rem', padding: '10px 30px', borderRadius: '0rem', backgroundColor: '#eee' }} className="page-heading d-sm-flex justify-content-sm-between align-items-sm-center">
-                        <h2 className="title mb-3 mb-sm-0">Exams for {examdata.Mastercategory} - {examdata.category} - {examdata.exa_cat_name}</h2>
-                    </div>
-                    <div className="col-12">
-                        <form className="row" autoComplete="off">
-                            <div className="col-lg-2 col-sm-6 col-12">
-                                <FormControl className="w-100 mb-2">
-                                    <InputLabel htmlFor="age-simple">Actions</InputLabel>
-                                    {datatype == 'Waiting' &&
-                                        <Select onChange={(event, value) => {
-                                            onActionChange(event, value)
-                                        }} >
-                                            <MenuItem value={'Inactive'}>Inactive</MenuItem>
-                                            <MenuItem value={'Active'}>Active</MenuItem>
-                                            <MenuItem value={'Delete'}>Delete</MenuItem>
-                                            <MenuItem value={'Move'}>Move</MenuItem>
-                                        </Select>
-                                    }
-                                    {datatype == 'Active' &&
-                                        <Select onChange={(event, value) => {
-                                            onActionChange(event, value)
-                                        }} >
-                                            <MenuItem value={'Waiting'}>Waiting</MenuItem>
-                                            <MenuItem value={'Inactive'}>Inactive</MenuItem>
-                                            <MenuItem value={'Delete'}>Delete</MenuItem>
-                                            <MenuItem value={'Move'}>Move</MenuItem>
-                                        </Select>
-                                    }
-                                    {datatype == 'Inactive' &&
-                                        <Select onChange={(event, value) => {
-                                            onActionChange(event, value)
-                                        }} >
-                                            <MenuItem value={'Waiting'}>Waiting</MenuItem>
-                                            <MenuItem value={'Active'}>Active</MenuItem>
-                                            <MenuItem value={'Delete'}>Delete</MenuItem>
-                                            <MenuItem value={'Move'}>Move</MenuItem>
-                                        </Select>
-                                    }
-                                </FormControl>
-                            </div>
-                            {showexammaincategory &&
-                                <>
-                                    <div className="col-lg-2 col-sm-6 col-12">
-                                        <FormControl className="w-100 mb-12">
-                                            <InputLabel htmlFor="age-simple">Master Category</InputLabel>
-                                            <Select onChange={(event, value) => {
-                                                handleMainCategoryChange(event, value)
-                                            }} value={maincategoryId}
-                                            >
-                                                {categoryitems}
-                                            </Select>
-                                        </FormControl>
-                                    </div>
-                                    <div className="col-lg-2 col-sm-6 col-12">
-                                        <FormControl className="w-100 mb-2">
-                                            <InputLabel htmlFor="age-simple">Main Category</InputLabel>
-                                            <Select onChange={(event, value) => {
-                                                handleSubCategoryChange(event, value)
-                                            }} value={subcategoryId}
-                                            >
-                                                {subcategoryitems}
-                                            </Select>
-                                        </FormControl>
-                                    </div>
-                                    <div className="col-lg-2 col-sm-6 col-12">
-                                        <FormControl className="w-100 mb-2">
-                                            <InputLabel htmlFor="age-simple">Sub Category</InputLabel>
-                                            <Select onChange={(event, value) => {
-                                                handleSubSubCategoryChange(event, value)
-                                            }} value={subsubcategoryId}
-                                            >
-                                                {subsubitems}
-                                            </Select>
-                                        </FormControl>
-                                    </div>
-                                </>
-                            }
-                            <div style={{ paddingTop: '2%' }} className="col-lg-2 col-sm-6 col-12">
-                                <Button onClick={() => handleAction()} variant="contained" color="primary" className="jr-btn">
-                                    <i className="zmdi zmdi-flash zmdi-hc-fw" />
-                                    <span>Go</span>
-                                </Button>
-                            </div>
-                        </form>
-                        <div style={{ marginLeft: '0%', paddingTop: '2%' }} className="col-lg-8 col-sm-6 col-12">
-                            <div className="jr-btn-group">
-                                <Button onClick={() => toggle(true, 'Add', '', examtype)} variant="contained" color="default" className="jr-btn">
-                                    <i className="zmdi zmdi-plus zmdi-hc-fw" />
-                                    <span>Add</span>
-                                </Button>
-                                <Button onClick={() => getAllWaiting()} variant="contained" className="jr-btn bg-warning text-white">
-                                    <i className="zmdi zmdi-check zmdi-hc-fw" />
-                                    <span> Waiting <br /> ({waitingCount})</span>
-                                </Button>
-                                <Button onClick={() => getAllActive()} variant="contained" className="jr-btn bg-success text-white">
-                                    <i className="zmdi zmdi-check zmdi-hc-fw" />
-                                    <span> Active <br /> ({activeCount})</span>
-                                </Button>
-                                <Button onClick={() => getAllInactive()} variant="contained" className="jr-btn bg-danger text-white">
-                                    <i className="zmdi zmdi-block zmdi-hc-fw" />
-                                    <span> Inactive <br /> ({inactiveCount})</span>
-                                </Button>
-                                <Button onClick={() => openExams(false)} variant="contained" color="primary" className="jr-btn">
-                                    <i className="zmdi zmdi-arrows zmdi-hc-fw" />
-                                    <span>Exam Sub Category <br /> ({subcatCount})</span>
-                                </Button>
-                            </div>
+                    <Spin spinning={ downloadLoader } tip='Downloading...'>
+                        <div style={{ marginBottom: '0rem', padding: '10px 30px', borderRadius: '0rem', backgroundColor: '#eee' }} className="page-heading d-sm-flex justify-content-sm-between align-items-sm-center">
+                            <h2 className="title mb-3 mb-sm-0">Exams for {examdata.Mastercategory} - {examdata.category} - {examdata.exa_cat_name}</h2>
                         </div>
-                        <h4 style={{ padding: '0.5%' }} className={txtclass}>{datatype} Exams for {examdata.Mastercategory} - {examdata.category} - {examdata.exa_cat_name}</h4>
-                        <AppBar position="static" color="inherit" className="jr-border-radius">
-                            <Toolbar>
-                                <div className="col-lg-2 d-flex flex-column order-lg-1">
-                                    <FormControl className="w-100 mb-12">
-                                        <InputLabel htmlFor="age-simple">Exam Type</InputLabel>
-                                        <Select onChange={(event, value) => {
-                                            handleQtypeSearch(event, value)
-                                        }} value={qType}
-                                        >
-                                            <MenuItem value={'MANU'}>Manual</MenuItem>
-                                            <MenuItem value={'AUTO'}>Automatic</MenuItem>
-                                        </Select>
+                        <div className="col-12">
+                            <form className="row" autoComplete="off">
+                                <div className="col-lg-2 col-sm-6 col-12">
+                                    <FormControl className="w-100 mb-2">
+                                        <InputLabel htmlFor="age-simple">Actions</InputLabel>
+                                        {datatype === 'Waiting' &&
+                                            <Select onChange={(event, value) => {
+                                                onActionChange(event, value)
+                                            }} >
+                                                <MenuItem value={'Inactive'}>Inactive</MenuItem>
+                                                <MenuItem value={'Active'}>Active</MenuItem>
+                                                <MenuItem value={'Delete'}>Delete</MenuItem>
+                                                <MenuItem value={'Move'}>Move</MenuItem>
+                                            </Select>
+                                        }
+                                        {datatype === 'Active' &&
+                                            <Select onChange={(event, value) => {
+                                                onActionChange(event, value)
+                                            }} >
+                                                <MenuItem value={'Waiting'}>Waiting</MenuItem>
+                                                <MenuItem value={'Inactive'}>Inactive</MenuItem>
+                                                <MenuItem value={'Delete'}>Delete</MenuItem>
+                                                <MenuItem value={'Move'}>Move</MenuItem>
+                                            </Select>
+                                        }
+                                        {datatype === 'Inactive' &&
+                                            <Select onChange={(event, value) => {
+                                                onActionChange(event, value)
+                                            }} >
+                                                <MenuItem value={'Waiting'}>Waiting</MenuItem>
+                                                <MenuItem value={'Active'}>Active</MenuItem>
+                                                <MenuItem value={'Delete'}>Delete</MenuItem>
+                                                <MenuItem value={'Move'}>Move</MenuItem>
+                                            </Select>
+                                        }
                                     </FormControl>
                                 </div>
-                                <div className="col-lg-2 d-flex flex-column order-lg-1">
-                                    <FormControl className="w-100 mb-12">
-                                        <InputLabel htmlFor="age-simple">Difficulty Level</InputLabel>
-                                        <Select onChange={(event, value) => {
-                                            handleDifficultyLevelSearch(event, value)
-                                        }} value={difficultyLevel}
-                                        >
-                                            <MenuItem value={'1'}>Level 1</MenuItem>
-                                            <MenuItem value={'2'}>Level 2</MenuItem>
-                                            <MenuItem value={'3'}>Level 3</MenuItem>
-                                            <MenuItem value={'4'}>Level 4</MenuItem>
-                                        </Select>
-                                    </FormControl>
-                                </div>
-                                <div className="col-lg-3 d-flex flex-column order-lg-1">
-                                    <FormControl className="w-100 mb-12">
-                                        <InputLabel htmlFor="age-simple">Select Faculty</InputLabel>
-                                        <Select onChange={(event, value) => {
-                                            handleFacultySearch(event, value)
-                                        }} value={facultyId}
-                                        >
-                                            {facultyItems}
-                                        </Select>
-                                    </FormControl>
-                                </div>
-                                <div className="col-lg-3 d-flex flex-column order-lg-1">
-                                    <TextField
-                                        id="searchstring"
-                                        label={'Search'}
-                                        name={'searchstring'}
-                                        onChange={(event) => onSearchStringChange(event.target.value)}
-                                        defaultValue={searchString}
-                                        margin="normal" />
-                                </div>
-                                <div className="col-lg-1 d-flex flex-column order-lg-1">
-                                    <Button onClick={() => handleSearch()} variant="contained" color="primary" className="jr-btn">
-                                        <i className="zmdi zmdi-search zmdi-hc-fw" />
+                                {showexammaincategory &&
+                                    <>
+                                        <div className="col-lg-2 col-sm-6 col-12">
+                                            <FormControl className="w-100 mb-12">
+                                                <InputLabel htmlFor="age-simple">Master Category</InputLabel>
+                                                <Select onChange={(event, value) => {
+                                                    handleMainCategoryChange(event, value)
+                                                }} value={maincategoryId}
+                                                >
+                                                    {categoryitems}
+                                                </Select>
+                                            </FormControl>
+                                        </div>
+                                        <div className="col-lg-2 col-sm-6 col-12">
+                                            <FormControl className="w-100 mb-2">
+                                                <InputLabel htmlFor="age-simple">Main Category</InputLabel>
+                                                <Select onChange={(event, value) => {
+                                                    handleSubCategoryChange(event, value)
+                                                }} value={subcategoryId}
+                                                >
+                                                    {subcategoryitems}
+                                                </Select>
+                                            </FormControl>
+                                        </div>
+                                        <div className="col-lg-2 col-sm-6 col-12">
+                                            <FormControl className="w-100 mb-2">
+                                                <InputLabel htmlFor="age-simple">Sub Category</InputLabel>
+                                                <Select onChange={(event, value) => {
+                                                    handleSubSubCategoryChange(event, value)
+                                                }} value={subsubcategoryId}
+                                                >
+                                                    {subsubitems}
+                                                </Select>
+                                            </FormControl>
+                                        </div>
+                                    </>
+                                }
+                                <div style={{ paddingTop: '2%' }} className="col-lg-2 col-sm-6 col-12">
+                                    <Button onClick={() => handleAction()} variant="contained" color="primary" className="jr-btn">
+                                        <i className="zmdi zmdi-flash zmdi-hc-fw" />
+                                        <span>Go</span>
                                     </Button>
                                 </div>
-                                <div className="col-lg-1 d-flex flex-column order-lg-1">
-                                    <Button onClick={() => handleReset()} variant="contained" color="primary" className="jr-btn">
-                                        <i className="zmdi zmdi-format-clear-all zmdi-hc-fw" />
+                            </form>
+                            <div style={{ marginLeft: '0%', paddingTop: '2%' }} className="col-lg-8 col-sm-6 col-12">
+                                <div className="jr-btn-group">
+                                    <Button onClick={() => toggle(true, 'Add', '', examtype)} variant="contained" color="default" className="jr-btn">
+                                        <i className="zmdi zmdi-plus zmdi-hc-fw" />
+                                        <span>Add</span>
+                                    </Button>
+                                    <Button onClick={() => getAllWaiting()} variant="contained" className="jr-btn bg-warning text-white">
+                                        <i className="zmdi zmdi-check zmdi-hc-fw" />
+                                        <span> Waiting <br /> ({waitingCount})</span>
+                                    </Button>
+                                    <Button onClick={() => getAllActive()} variant="contained" className="jr-btn bg-success text-white">
+                                        <i className="zmdi zmdi-check zmdi-hc-fw" />
+                                        <span> Active <br /> ({activeCount})</span>
+                                    </Button>
+                                    <Button onClick={() => getAllInactive()} variant="contained" className="jr-btn bg-danger text-white">
+                                        <i className="zmdi zmdi-block zmdi-hc-fw" />
+                                        <span> Inactive <br /> ({inactiveCount})</span>
+                                    </Button>
+                                    <Button onClick={() => openExams(false)} variant="contained" color="primary" className="jr-btn">
+                                        <i className="zmdi zmdi-arrows zmdi-hc-fw" />
+                                        <span>Exam Sub Category <br /> ({subcatCount})</span>
                                     </Button>
                                 </div>
-                            </Toolbar>
-                        </AppBar>
-                        <MDBDataTable
-                            striped
-                            bordered
-                            entriesOptions={[5, 10, 20, 25, 50, 100]}
-                            entries={100}
-                            hover
-                            data={{ rows: categoryrows, columns }}
-                            small
-                            responsive
-                            noBottomColumns
-                            disableRetreatAfterSorting={true} />
-                        <Snackbar
-                            className="mb-3 bg-info"
-                            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-                            open={showMessage}
-                            autoHideDuration={3000}
-                            onClose={() => handleRequestClose}
-                            ContentProps={{
-                                'aria-describedby': 'message-id',
-                            }}
-                            message={alertMessage}
-                        />
-                    </div>
+                            </div>
+                            <h4 style={{ padding: '0.5%' }} className={txtclass}>{datatype} Exams for {examdata.Mastercategory} - {examdata.category} - {examdata.exa_cat_name}</h4>
+                            <AppBar position="static" color="inherit" className="jr-border-radius">
+                                <Toolbar>
+                                    <div className="col-lg-2 d-flex flex-column order-lg-1">
+                                        <FormControl className="w-100 mb-12">
+                                            <InputLabel htmlFor="age-simple">Exam Type</InputLabel>
+                                            <Select onChange={(event, value) => {
+                                                handleQtypeSearch(event, value)
+                                            }} value={qType}
+                                            >
+                                                <MenuItem value={'MANU'}>Manual</MenuItem>
+                                                <MenuItem value={'AUTO'}>Automatic</MenuItem>
+                                            </Select>
+                                        </FormControl>
+                                    </div>
+                                    <div className="col-lg-2 d-flex flex-column order-lg-1">
+                                        <FormControl className="w-100 mb-12">
+                                            <InputLabel htmlFor="age-simple">Difficulty Level</InputLabel>
+                                            <Select onChange={(event, value) => {
+                                                handleDifficultyLevelSearch(event, value)
+                                            }} value={difficultyLevel}
+                                            >
+                                                <MenuItem value={'1'}>Level 1</MenuItem>
+                                                <MenuItem value={'2'}>Level 2</MenuItem>
+                                                <MenuItem value={'3'}>Level 3</MenuItem>
+                                                <MenuItem value={'4'}>Level 4</MenuItem>
+                                            </Select>
+                                        </FormControl>
+                                    </div>
+                                    <div className="col-lg-3 d-flex flex-column order-lg-1">
+                                        <FormControl className="w-100 mb-12">
+                                            <InputLabel htmlFor="age-simple">Select Faculty</InputLabel>
+                                            <Select onChange={(event, value) => {
+                                                handleFacultySearch(event, value)
+                                            }} value={facultyId}
+                                            >
+                                                {facultyItems}
+                                            </Select>
+                                        </FormControl>
+                                    </div>
+                                    <div className="col-lg-3 d-flex flex-column order-lg-1">
+                                        <TextField
+                                            id="searchstring"
+                                            label={'Search'}
+                                            name={'searchstring'}
+                                            onChange={(event) => onSearchStringChange(event.target.value)}
+                                            defaultValue={searchString}
+                                            margin="normal" />
+                                    </div>
+                                    <div className="col-lg-1 d-flex flex-column order-lg-1">
+                                        <Button onClick={() => handleSearch()} variant="contained" color="primary" className="jr-btn">
+                                            <i className="zmdi zmdi-search zmdi-hc-fw" />
+                                        </Button>
+                                    </div>
+                                    <div className="col-lg-1 d-flex flex-column order-lg-1">
+                                        <Button onClick={() => handleReset()} variant="contained" color="primary" className="jr-btn">
+                                            <i className="zmdi zmdi-format-clear-all zmdi-hc-fw" />
+                                        </Button>
+                                    </div>
+                                </Toolbar>
+                            </AppBar>
+                            <MDBDataTable
+                                striped
+                                bordered
+                                entriesOptions={[5, 10, 20, 25, 50, 100, 1000]}
+                                entries={100}
+                                hover
+                                data={{ rows: categoryrows, columns }}
+                                small
+                                responsive
+                                noBottomColumns
+                                disableRetreatAfterSorting={true} />
+                            <Snackbar
+                                className="mb-3 bg-info"
+                                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                                open={showMessage}
+                                autoHideDuration={3000}
+                                onClose={() => handleRequestClose}
+                                ContentProps={{
+                                    'aria-describedby': 'message-id',
+                                }}
+                                message={alertMessage}
+                            />
+                        </div>
+                    </Spin>
                 </>
             }
             {
@@ -975,12 +987,31 @@ const ExamsDatatable = (props) => {
             {showAddBankExam &&
                 <AddEditBankExam mode={mode} subcatdetails={examdata} examdetails={examDetails} examtype={examtype} toggle={toggle} />
             }
+            {showSectionlExam &&
+                <AddEditSectionalExam mode={mode} subcatdetails={examdata} examdetails={examDetails} examtype={examtype} toggle={toggle} />
+            }
             {showCommonExamView &&
                 <CommonExamView examdetails={examData} toggleview={toggleView} />
             }
             {showMapQuestionCommon &&
                 <MapQuestionCommon openMapQuestions={openMapQuestions} count={activeCount} mode={mode} subcatdetails={examdata} examdetails={examDetails} examtype={examtype} />
             }
+            <Modal
+                centered
+                footer={null}
+                width={400}
+                onCancel={closePdfModal}
+                visible={showPdfOpt}
+            >
+                <div style={{ textAlign: 'center' }}>
+                    <Button onClick={withAnswer} variant="contained" color="primary">
+                        With Answer
+                    </Button>
+                    <Button onClick={withOutAnswer} variant="contained" color="primary" style={{ marginLeft: 10 }}>
+                        WithOut Answer
+                    </Button>
+                </div>
+            </Modal>
         </>
     );
 };

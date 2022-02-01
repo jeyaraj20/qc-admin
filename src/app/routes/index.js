@@ -45,6 +45,7 @@ import AdminReports from "./adminreport";
 import ExamPackage from "./exampackage";
 import Coupon from "./coupon";
 import Examreport from "./examreport";
+import StudyMaterials from "./studyMaterials";
 
 const Routes = ({ match }) =>
     <Switch>
@@ -91,6 +92,7 @@ const Routes = ({ match }) =>
         <Route path={`${match.url}/exampackage`} component={ExamPackage} />
         <Route path={`${match.url}/coupon`} component={Coupon} />
         <Route path={`${match.url}/examreport`} component={Examreport} />
+        <Route path={`${match.url}/studyMaterials`} component={StudyMaterials} />
 
         <Route path={`${match.url}/to-do`}
             component={asyncComponent(() => import("./todo/basic"))} />

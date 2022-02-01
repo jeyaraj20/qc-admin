@@ -256,7 +256,7 @@ const DataTable = (props) => {
             <MDBDataTable
               striped
               bordered
-              entriesOptions={[10, 20, 25, 50, 100]}
+              entriesOptions={[10, 20, 25, 50, 100, 1000 ]}
               entries={10}
               hover
               data={{ rows: studrows, columns }}

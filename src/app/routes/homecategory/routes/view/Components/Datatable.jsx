@@ -62,7 +62,6 @@ const DataTable = (props) => {
   const changeMap = useCallback((k, v) => {
     setMyMap(myMap.set(k, v));
     setMyMap(state => { return state })
-    console.log(categoryrows);
   }, [])
 
   let selectedCatArr = [];
@@ -75,11 +74,10 @@ const DataTable = (props) => {
       if (document.getElementById(row.exa_cat_id)) {
         document.getElementById(row.exa_cat_id).checked = e.currentTarget.checked;
         if (e.currentTarget.checked) {
-
           if (e.currentTarget.checked)
-            row.exa_cat_status = 1
+            row.isSelected = true;
           else
-            row.exa_cat_status = 0;
+            row.isSelected = false;
           data[rowcount] = row
           setData([...data])
 
@@ -92,35 +90,30 @@ const DataTable = (props) => {
           postionObj.catId = row.exa_cat_id;
           postionObj.position = row.exa_cat_pos;
           posArr.push(postionObj);
-          console.log(posArr);
-          console.log(selectedCatArr);
           setChangePositionData({ "values": posArr });
         } else {
 
           if (e.currentTarget.checked)
-            row.exa_cat_status = 1
+            row.isSelected = 1
           else
-            row.exa_cat_status = 0;
+            row.isSelected = 0;
           data[rowcount] = row
           setData([...data])
 
           for (var i = 0; i < selectedCatArr.length; i++) {
-            if (selectedCatArr[i] == row.exa_cat_id) {
+            if (selectedCatArr[i] === row.exa_cat_id) {
               selectedCatArr.splice(i, 1);
             }
           }
           if (posArr.length != 0) {
             for (var s = 0; s < posArr.length; s++) {
-              if (posArr[s].catId == row.exa_cat_id) {
+              if (posArr[s].catId === row.exa_cat_id) {
                 posArr.splice(s, 1);
               }
             }
           }
-          console.log(posArr);
-          console.log(selectedCatArr);
           setSelectedCategory({ "catId": selectedCatArr });
           setChangePositionData({ "values": posArr });
-          //console.log(selectedCategoryArr);
         }
       }
       setSelectAll(e.currentTarget.checked);
@@ -228,7 +221,6 @@ const DataTable = (props) => {
 
   let selectedFeatureArr = [];
   const onMenuSelect = (event, obj, index) => {
-    console.log(selectedmaster);
     selectedFeatureArr = JSON.parse("[" + selectedmaster + "]");
     if (event.currentTarget.checked)
       obj.checked = true
@@ -242,7 +234,7 @@ const DataTable = (props) => {
       str = selectedFeatureArr.toString();
     } else {
       for (var i = 0; i < selectedFeatureArr.length; i++) {
-        if (selectedFeatureArr[i] == obj.exa_cat_id) {
+        if (selectedFeatureArr[i] === obj.exa_cat_id) {
           selectedFeatureArr.splice(i, 1);
           str = selectedFeatureArr.toString();
         }
@@ -287,54 +279,34 @@ const DataTable = (props) => {
   }, [data])
 
   useEffect(() => () => {
-    //handleRefresh();
-    console.log("use effect");
-
     files.forEach(file => window.webkitURL.revokeObjectURL(file.preview));
   }, [files]);
 
   useEffect(() => () => {
-    //handleRefresh();
-    console.log(checked);
-
   }, [checked]);
 
 
   useEffect(() => {
-    console.log("use effect");
     async function fetchData() {
       await handleRefresh()
     }
     fetchData();
   }, [])
-
-
   let rowcount = 0;
   const mapRows = (rows) => {
-    console.log(rows);
     let rowFields = []// fields in required order
     columns.forEach(column => rowFields.push(column.field))
-
     let categoryrowsdata = rows.map((obj, index) => {
-
-      let checkedflg = false;
-      if (obj.exa_cat_status == "1")
-        checkedflg = true;
-
       let row = {};
       rowcount = rowcount + 1;
       for (let fieldName of rowFields)
         row[fieldName] = obj[fieldName] // fetching required fields in req order
-
       row.select = <MDBInput style={{ marginTop: '0px', width: '20px', marginLeft: '0px' }}
         label="." type="checkbox"
-        checked={checkedflg}
+        checked={obj.isSelected}
         name={obj.exa_cat_id} id={obj.exa_cat_id}
         onChange={(e) => { onCategorySelect(e, obj, index) }}
       />;
-
-
-
       row.sno = <span>{rowcount}</span>
       row.exa_cat_pos = <input type="text" name={'pos' + obj.exa_cat_id}
         onChange={event => onPositionChange(event, obj, index)}
@@ -355,43 +327,37 @@ const DataTable = (props) => {
     selectedCategoryArr = selectedCategory.catId;
     changePosArr = changePositionData.values;
     if (e.currentTarget.checked)
-      obj.exa_cat_status = 1
+      obj.isSelected = true;
     else
-      obj.exa_cat_status = 0;
+      obj.isSelected = false;
     data[index] = obj
     setData([...data])// to avoid shallow checking
-
-    console.log(e.currentTarget.checked);
-    console.log(selectedCategoryArr);
     if (e.currentTarget.checked) {
       selectedCategoryArr.push(obj.exa_cat_id)
       let postionObj = {};
       for (var i = 0; i < changePosArr.length; i++) {
-        if (changePosArr[i].catId == obj.exa_cat_id) {
+        if (changePosArr[i].catId === obj.exa_cat_id) {
           changePosArr.splice(i, 1);
         }
       }
       postionObj.catId = obj.exa_cat_id;
       postionObj.position = obj.exa_cat_pos;
       changePosArr.push(postionObj);
-      //console.log(changePositionArr);
       setChangePositionData({ "values": changePosArr });
     } else {
       for (var i = 0; i < selectedCategoryArr.length; i++) {
-        if (selectedCategoryArr[i] == obj.exa_cat_id) {
+        if (selectedCategoryArr[i] === obj.exa_cat_id) {
           selectedCategoryArr.splice(i, 1);
         }
       }
       if (changePosArr.length != 0) {
         for (var s = 0; s < changePosArr.length; s++) {
-          if (changePosArr[s].catId == obj.exa_cat_id) {
+          if (changePosArr[s].catId === obj.exa_cat_id) {
             changePosArr.splice(s, 1);
           }
         }
       }
-      console.log(changePositionData);
       setChangePositionData({ "values": changePosArr });
-      //console.log(selectedCategoryArr);
     }
     setSelectedCategory({ "catId": selectedCategoryArr });
   }
@@ -413,16 +379,15 @@ const DataTable = (props) => {
 
   const handleAction = async () => {
     let selectedCategoryObj = selectedCategory;
-    if (action == '') {
+    if (action === '') {
       setAlertMessage('Please select an action');
       setShowMessage(true);
       setTimeout(() => {
         setShowMessage(false)
       }, 1500);
     } else {
-      if (action == 'Inactive') {
+      if (action === 'Inactive') {
         selectedCategoryObj.status = 'N';
-        console.log(selectedCategoryObj);
         if (selectedCategory.catId.length != 0) {
           await homeCategoryService.inactiveCategory(selectedCategoryObj);
           setAlertMessage('Data successfully inactivated.');
@@ -439,9 +404,8 @@ const DataTable = (props) => {
           }, 1500);
         }
       }
-      if (action == 'Active') {
+      if (action === 'Active') {
         selectedCategoryObj.status = 'Y';
-        console.log(selectedCategoryObj);
         if (selectedCategory.catId.length != 0) {
           await homeCategoryService.inactiveCategory(selectedCategoryObj);
           setAlertMessage('Data successfully activated.');
@@ -458,8 +422,7 @@ const DataTable = (props) => {
           }, 1500);
         }
       }
-      if (action == 'Delete') {
-        console.log(selectedCategory);
+      if (action === 'Delete') {
         if (selectedCategory.catId.length != 0) {
           await homeCategoryService.deleteCategory(selectedCategory);
           setAlertMessage('Data successfully deleted.');
@@ -477,8 +440,7 @@ const DataTable = (props) => {
         }
       }
     }
-    if (action == 'Position') {
-      console.log(changePositionData);
+    if (action === 'Position') {
       if (changePositionData.values.length != 0) {
         await homeCategoryService.changePosition(changePositionData);
         setAlertMessage('Position successfully updated.');
@@ -503,7 +465,6 @@ const DataTable = (props) => {
     setErrors({});
     setModal(open);
     if (data) {
-      console.log(data);
       setIsEdit(true);
       setviewEditImg(true);
       let slug = (data.exa_cat_name).replace(/ /g, "-").toLowerCase();
@@ -516,7 +477,6 @@ const DataTable = (props) => {
       var catArr = '';
       if (mastercategoryres.count > 0) {
         catArr = JSON.parse("[" + mastercategories[0].exa_cat_id + "]");
-        console.log(catArr);
         setSelectedMaster(catArr);
       }
       const { data: maincategoryres } = await exammainCategoryService.getExamMainCategory();
@@ -524,7 +484,7 @@ const DataTable = (props) => {
       if (catArr != '') {
         for (let i = 0; i < catArr.length; i++) {
           for (let s = 0; s < categories.length; s++) {
-            if (catArr[i] == categories[s].exa_cat_id) {
+            if (catArr[i] === categories[s].exa_cat_id) {
               categories[s].checked = true
             }
           }
@@ -563,7 +523,6 @@ const DataTable = (props) => {
   const saveHomeCategory = async () => {
     if (categoryName && slug && position && files[0]) {
       const formData = new FormData();
-      console.log(files[0]);
       formData.append("exa_cat_image_url", files[0]);
       formData.append("exa_cat_name", categoryName);
       formData.append("exa_cat_slug", slug);
@@ -605,7 +564,6 @@ const DataTable = (props) => {
       }
       else {
         const formData = new FormData();
-        console.log(files[0]);
         formData.append("exa_cat_image_url", files[0]);
         formData.append("exa_cat_name", categoryName);
         formData.append("exa_cat_slug", slug);
@@ -634,7 +592,6 @@ const DataTable = (props) => {
   }
 
   const valiadateProperty = (e) => {
-    console.log(e);
     let { name, value, className } = e.currentTarget;
     const obj = { [name]: value };
     const filedSchema = { [name]: schema[name] };
@@ -647,15 +604,14 @@ const DataTable = (props) => {
     // setSavedisabled(true);
     // else
     // setSavedisabled(false);
-    if (name == 'Title')
+    if (name === 'Title')
       onCheckCategoryExists(e.target.value);
-    if (name == 'Slug')
+    if (name === 'Slug')
       onCheckSlugExists(e.target.value);
   }
 
   const handleSaveButton = () => {
-    console.log(errors['Title'], errors['Position'])
-    if (errors['Title'] != null || errors['Title'] == undefined || errors['Position'] != null || errors['Position'] == undefined) {
+    if (errors['Title'] != null || errors['Title'] === undefined || errors['Position'] != null || errors['Position'] === undefined) {
       setSavedisabled(true);
     } else {
       setSavedisabled(false);
@@ -716,7 +672,6 @@ const DataTable = (props) => {
         }
         data.statusField = 'exa_cat_status';
         const { data: response } = await utilService.checkAlreadyExists(data);
-        console.log(response.count);
         if (response.count > 0) {
           setSavedisabled(true);
           setErrortext(true);
@@ -749,7 +704,6 @@ const DataTable = (props) => {
         }
         data.statusField = 'exa_cat_status';
         const { data: response } = await utilService.checkAlreadyExists(data);
-        console.log(response.count);
         if (response.count > 0) {
           setSavedisabled(true);
           setErrors({ ...errors, ['Slug']: 'Slug already exists', "errordetails": null })
@@ -786,7 +740,7 @@ const DataTable = (props) => {
               <div className="col-lg-3 col-sm-6 col-12">
                 <FormControl className="w-100 mb-2">
                   <InputLabel htmlFor="age-simple">Actions</InputLabel>
-                  {datatype == 'Active' &&
+                  {datatype === 'Active' &&
                     <Select onChange={(event, value) => {
                       onActionChange(event, value)
                     }} >
@@ -795,7 +749,7 @@ const DataTable = (props) => {
                       <MenuItem value={'Delete'}>Delete</MenuItem>
                     </Select>
                   }
-                  {datatype == 'Inactive' &&
+                  {datatype === 'Inactive' &&
                     <Select onChange={(event, value) => {
                       onActionChange(event, value)
                     }} >
@@ -833,7 +787,7 @@ const DataTable = (props) => {
             <MDBDataTable
               striped
               bordered
-              entriesOptions={[5, 10, 20, 25, 50, 100]}
+              entriesOptions={[5, 10, 20, 25, 50, 100, 1000]}
               entries={5}
               hover
               data={{ rows: categoryrows, columns }}
@@ -844,7 +798,7 @@ const DataTable = (props) => {
             />
             <Modal className="modal-box" backdrop={"static"} toggle={onModalClose} isOpen={modal}>
               <ModalHeader className="modal-box-header bg-primary text-white">
-                {isEdit == false ? "Add Home Category" :
+                {isEdit === false ? "Add Home Category" :
                   "Edit Home Category"}
               </ModalHeader>
 
@@ -899,7 +853,7 @@ const DataTable = (props) => {
                           </div>
                         </div>
                       }
-                      {viewEditImg == false ? <div className="dropzone-content" style={thumbsContainer}>
+                      {viewEditImg === false ? <div className="dropzone-content" style={thumbsContainer}>
                         {thumbs}
                       </div> :
                         <div className="dropzone-content" style={thumbsContainer}>
@@ -919,7 +873,7 @@ const DataTable = (props) => {
                 </div>
               </div>
               <ModalFooter>
-                {isEdit == false ?
+                {isEdit === false ?
                   <div className="d-flex flex-row">
                     <Button style={{ marginRight: '5%' }} onClick={() => saveHomeCategory()} disabled={savedisabled} variant="contained" color="primary">Save</Button>
                     <Button variant="contained" color="secondary" onClick={onModalClose}>Cancel</Button>

@@ -130,7 +130,7 @@ const BulkUpload = (props) => {
         let studrows = rows.map((obj, index) => {
 
             let checkedflg = false;
-            if (obj.stud_status == "1")
+            if (obj.stud_status === "1")
                 checkedflg = true;
 
             let row = {};
@@ -228,7 +228,7 @@ const BulkUpload = (props) => {
                             <MDBDataTable
                                 striped
                                 bordered
-                                entriesOptions={[5, 10, 20, 25, 50, 100]}
+                                entriesOptions={[5, 10, 20, 25, 50, 100, 1000]}
                                 entries={5}
                                 hover
                                 data={{ rows: studentsrows, columns }}

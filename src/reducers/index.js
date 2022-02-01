@@ -6,7 +6,7 @@ import Contact from './Contact';
 import Mail from './Mail';
 import ToDo from './ToDo';
 import Auth from './Auth';
-
+import Notes from './Notes';
 
 export default (history) => combineReducers({
   router: connectRouter(history),
@@ -16,4 +16,5 @@ export default (history) => combineReducers({
   mail: Mail,
   toDo: ToDo,
   auth: Auth,
+  notes : Notes
 });

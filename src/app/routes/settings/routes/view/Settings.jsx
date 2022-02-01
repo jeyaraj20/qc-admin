@@ -403,13 +403,13 @@ const Settingsview = props => {
         <input type="text" name="sitefpsize" value={sitefpsize} onChange={(event) => setSitefpsize(event.target.value)} />
         <p style={{ fontWeight: "800" }}>Operator Login:</p>
         <div>
-          {/* <input type="radio" id="1" value="Y" checked={adminstatus == "Y"} defaultChecked  name="Enable" />Enable
-     <input type="radio" id="2" value="N" checked={adminstatus == "N"}  name="Disable" />Disable */}
+          {/* <input type="radio" id="1" value="Y" checked={adminstatus === "Y"} defaultChecked  name="Enable" />Enable
+     <input type="radio" id="2" value="N" checked={adminstatus === "N"}  name="Disable" />Disable */}
           <RadioGroup row aria-label="position" name="sms" value={adminstatus} >
-            <FormControlLabel value="Y" value={adminstatus} checked={adminstatus == "Y"}
+            <FormControlLabel value="Y" value={adminstatus} checked={adminstatus === "Y"}
               onChange={(event, value) => { handleStatusChange(event, value) }} control={<Radio color="primary" />}
               label="Enable" />
-            <FormControlLabel value="N" checked={adminstatus == "N"} value={adminstatus} onChange={(event, value) => {
+            <FormControlLabel value="N" checked={adminstatus === "N"} value={adminstatus} onChange={(event, value) => {
               handleStatusChange(event, value)
             }} control={<Radio color="primary" />}
               label="Disable" />
@@ -436,7 +436,7 @@ const Settingsview = props => {
               </div>
             </div>
           }
-          {viewEditImg == false ? <div className="dropzone-content" style={thumbsContainer}>
+          {viewEditImg === false ? <div className="dropzone-content" style={thumbsContainer}>
             {thumbs}
           </div> :
             <div className="dropzone-content" style={thumbsContainer}>
@@ -457,13 +457,13 @@ const Settingsview = props => {
         </div>
         <p style={{ fontWeight: "800" }}>SMS:</p>
         <div >
-          {/* <input type="radio" id="3" value="Y" checked={smsenable == "Y"}   name="Enable" />Enable
-     <input type="radio" id="4" value="N" checked={smsenable == "N"}  name="Disable" />Disable */}
+          {/* <input type="radio" id="3" value="Y" checked={smsenable === "Y"}   name="Enable" />Enable
+     <input type="radio" id="4" value="N" checked={smsenable === "N"}  name="Disable" />Disable */}
           <RadioGroup row aria-label="position" name="sms" defaultValue={smsenable} >
-            <FormControlLabel value="N" checked={smsenable == "N"} defaultValue={smsenable}
+            <FormControlLabel value="N" checked={smsenable === "N"} defaultValue={smsenable}
               onChange={(event, value) => { handleCountryChange(event, value) }} control={<Radio color="primary" />}
               label="Disable" />
-            <FormControlLabel value="Y" checked={smsenable == "Y"} defaultValue={smsenable} onChange={(event, value) => {
+            <FormControlLabel value="Y" checked={smsenable === "Y"} defaultValue={smsenable} onChange={(event, value) => {
               handleCountryChange(event, value)
             }} control={<Radio color="primary" />}
               label="Enable" />
@@ -484,13 +484,13 @@ const Settingsview = props => {
         <input style={{ height: "45px" }} rows="3" value={facebook} onChange={(event) => setSiteFacebook(event.target.value)}></input>
         <p style={{ fontWeight: "800" }}>Facebook frontend display:</p>
         <div>
-          {/* <input type="radio" value="Y" checked={facebooksettings == "Y"} defaultChecked   name="Enable" />Enable
-     <input type="radio" value="N" checked={facebooksettings == "N"}  name="Disable" />Disable */}
+          {/* <input type="radio" value="Y" checked={facebooksettings === "Y"} defaultChecked   name="Enable" />Enable
+     <input type="radio" value="N" checked={facebooksettings === "N"}  name="Disable" />Disable */}
           <RadioGroup row aria-label="position" name="facebook" defaultValue={facebooksettings} >
-            <FormControlLabel value="Y" defaultValue={facebooksettings} checked={facebooksettings == "Y"}
+            <FormControlLabel value="Y" defaultValue={facebooksettings} checked={facebooksettings === "Y"}
               onChange={(event, value) => { handleFacebookChange(event, value) }} control={<Radio color="primary" />}
               label="Enable" />
-            <FormControlLabel value="N" defaultValue={facebooksettings} checked={facebooksettings == "N"} onChange={(event, value) => {
+            <FormControlLabel value="N" defaultValue={facebooksettings} checked={facebooksettings === "N"} onChange={(event, value) => {
               handleFacebookChange(event, value)
             }} control={<Radio color="primary" />}
               label="Disable" />
@@ -500,13 +500,13 @@ const Settingsview = props => {
         <input style={{ height: "45px" }} rows="3" value={twitter} onChange={(event) => setSiteTwitter(event.target.value)}></input>
         <p style={{ fontWeight: "800" }}>Twitter frontend display</p>
         <div>
-          {/* <input type="radio" value="Y" checked={twittersettings == "Y"} defaultChecked  name="Enable" />Enable
-     <input type="radio" value="N" checked={twittersettings == "N"}  name="Disable" />Disable */}
+          {/* <input type="radio" value="Y" checked={twittersettings === "Y"} defaultChecked  name="Enable" />Enable
+     <input type="radio" value="N" checked={twittersettings === "N"}  name="Disable" />Disable */}
           <RadioGroup row aria-label="position" name="Twitter" defaultValue={twittersettings} >
-            <FormControlLabel value="Y" defaultValue={twittersettings} checked={twittersettings == "Y"}
+            <FormControlLabel value="Y" defaultValue={twittersettings} checked={twittersettings === "Y"}
               onChange={(event, value) => { handleTwitterChange(event, value) }} control={<Radio color="primary" />}
               label="Enable" />
-            <FormControlLabel value="N" defaultValue={twittersettings} checked={twittersettings == "N"} onChange={(event, value) => {
+            <FormControlLabel value="N" defaultValue={twittersettings} checked={twittersettings === "N"} onChange={(event, value) => {
               handleTwitterChange(event, value)
             }} control={<Radio color="primary" />}
               label="Disable" />
@@ -516,13 +516,13 @@ const Settingsview = props => {
         <input style={{ height: "45px" }} rows="3" value={linkedin} onChange={(event) => setSiteLinkedin(event.target.value)}></input>
         <p style={{ fontWeight: "800" }}>Linked In+ frontend display</p>
         <div>
-          {/* <input type="radio" value="Y" checked={LinkedInsettings == "Y"} defaultChecked  name="Enable" />Enable
-     <input type="radio" value="N" checked={LinkedInsettings == "N"}  name="Disable" />Disable */}
+          {/* <input type="radio" value="Y" checked={LinkedInsettings === "Y"} defaultChecked  name="Enable" />Enable
+     <input type="radio" value="N" checked={LinkedInsettings === "N"}  name="Disable" />Disable */}
           <RadioGroup row aria-label="position" name="Linked In" defaultValue={LinkedInsettings} >
-            <FormControlLabel value="Y" defaultValue={LinkedInsettings} checked={LinkedInsettings == "Y"}
+            <FormControlLabel value="Y" defaultValue={LinkedInsettings} checked={LinkedInsettings === "Y"}
               onChange={(event, value) => { handleLinkedInChange(event, value) }} control={<Radio color="primary" />}
               label="Enable" />
-            <FormControlLabel value="N" defaultValue={LinkedInsettings} checked={LinkedInsettings == "N"} onChange={(event, value) => {
+            <FormControlLabel value="N" defaultValue={LinkedInsettings} checked={LinkedInsettings === "N"} onChange={(event, value) => {
               handleLinkedInChange(event, value)
             }} control={<Radio color="primary" />}
               label="Disable" />
@@ -533,13 +533,13 @@ const Settingsview = props => {
         <input style={{ height: "45px" }} rows="3" value={instagram} onChange={(event) => setSiteInstagram(event.target.value)}></input>
         <p style={{ fontWeight: "800" }}>Instagram+ frontend display</p>
         <div>
-          {/* <input type="radio" value="Y" checked={instagramsettings == "Y"} defaultChecked  name="Enable" />Enable
-     <input type="radio" value="N" checked={instagramsettings == "N"}  name="Disable" />Disable */}
+          {/* <input type="radio" value="Y" checked={instagramsettings === "Y"} defaultChecked  name="Enable" />Enable
+     <input type="radio" value="N" checked={instagramsettings === "N"}  name="Disable" />Disable */}
           <RadioGroup row aria-label="position" name="Instagram" defaultValue={instagramsettings} >
-            <FormControlLabel value="Y" defaultValue={instagramsettings} checked={instagramsettings == "Y"}
+            <FormControlLabel value="Y" defaultValue={instagramsettings} checked={instagramsettings === "Y"}
               onChange={(event, value) => { handleInstagramChange(event, value) }} control={<Radio color="primary" />}
               label="Enable" />
-            <FormControlLabel value="N" defaultValue={instagramsettings} checked={instagramsettings == "N"} onChange={(event, value) => {
+            <FormControlLabel value="N" defaultValue={instagramsettings} checked={instagramsettings === "N"} onChange={(event, value) => {
               handleInstagramChange(event, value)
             }} control={<Radio color="primary" />}
               label="Disable" />

@@ -54,7 +54,7 @@ const ExamView = (props) => {
             questionImageDirfinal = schoolquestionImageDir;
         }
 
-        if (mode == 'Examview') {
+        if (mode === 'Examview') {
             setExamview(true);
             setview(false);
         } else {
@@ -67,7 +67,7 @@ const ExamView = (props) => {
         let opt3;
         let opt4;
         let opt5;
-        if (questiondatadetail.q_type == 'I') {
+        if (questiondatadetail.q_type === 'I') {
             mainquestion = <img alt={questiondatadetail.question}
                 src={questionImageDirfinal + '/' + questiondatadetail.question}
             />
@@ -76,7 +76,7 @@ const ExamView = (props) => {
             mainquestion = <div dangerouslySetInnerHTML={{ __html: questionvalue }}></div>
         }
         if (questiondatadetail.opt_1) {
-            if (questiondatadetail.opt_type1 == 'I') {
+            if (questiondatadetail.opt_type1 === 'I') {
                 opt1 = <img alt={questiondatadetail.opt_1}
                     src={questionImageDirfinal + '/' + questiondatadetail.opt_1}
                     style={{ width: '100px', height: '100px' }}
@@ -88,7 +88,7 @@ const ExamView = (props) => {
             }
         }
         if (questiondatadetail.opt_2) {
-            if (questiondatadetail.opt_type2 == 'I') {
+            if (questiondatadetail.opt_type2 === 'I') {
                 opt2 = <img alt={questiondatadetail.opt_2}
                     src={questionImageDirfinal + '/' + questiondatadetail.opt_2}
                     style={{ width: '100px', height: '100px' }}
@@ -100,7 +100,7 @@ const ExamView = (props) => {
             }
         }
         if (questiondatadetail.opt_3) {
-            if (questiondatadetail.opt_type3 == 'I') {
+            if (questiondatadetail.opt_type3 === 'I') {
                 opt3 = <img alt={questiondatadetail.opt_3}
                     src={questionImageDirfinal + '/' + questiondatadetail.opt_3}
                     style={{ width: '100px', height: '100px' }}
@@ -112,7 +112,7 @@ const ExamView = (props) => {
             }
         }
         if (questiondatadetail.opt_4) {
-            if (questiondatadetail.opt_type4 == 'I') {
+            if (questiondatadetail.opt_type4 === 'I') {
                 opt4 = <img alt={questiondatadetail.opt_4}
                     src={questionImageDirfinal + '/' + questiondatadetail.opt_4}
                     style={{ width: '100px', height: '100px' }}
@@ -125,7 +125,7 @@ const ExamView = (props) => {
             }
         }
         if (questiondatadetail.opt_5) {
-            if (questiondatadetail.opt_type5 == 'I') {
+            if (questiondatadetail.opt_type5 === 'I') {
                 opt5 = <img alt={questiondatadetail.opt_5}
                     src={questionImageDirfinal + '/' + questiondatadetail.opt_5}
                     style={{ width: '100px', height: '100px' }}
@@ -226,7 +226,7 @@ const ExamView = (props) => {
                                     <h4>Question Type :</h4>
                                 </div>
                                 <div style={{ padding: '1%', textAlign: 'left' }} className="col-lg-4 d-flex flex-column order-lg-1">
-                                    {questiondata.q_type == 'T' ? 'Text' : 'Image'}
+                                    {questiondata.q_type === 'T' ? 'Text' : 'Image'}
                                 </div>
                             </div>
                             <div className="row no-gutters">
@@ -252,7 +252,7 @@ const ExamView = (props) => {
                                             <h4>Option Type 1 :</h4>
                                         </div>
                                         <div style={{ padding: '1%', textAlign: 'left' }} className="col-lg-4 d-flex flex-column order-lg-1">
-                                            {questiondata.opt_type1 == 'T' ? 'Text' : 'Image'}
+                                            {questiondata.opt_type1 === 'T' ? 'Text' : 'Image'}
                                         </div>
                                     </div>
                                     <div className="row no-gutters">
@@ -272,7 +272,7 @@ const ExamView = (props) => {
                                             <h4>Option Type 2 :</h4>
                                         </div>
                                         <div style={{ padding: '1%', textAlign: 'left' }} className="col-lg-4 d-flex flex-column order-lg-1">
-                                            {questiondata.opt_type2 == 'T' ? 'Text' : 'Image'}
+                                            {questiondata.opt_type2 === 'T' ? 'Text' : 'Image'}
                                         </div>
                                     </div>
                                     <div className="row no-gutters">
@@ -292,7 +292,7 @@ const ExamView = (props) => {
                                             <h4>Option Type 3 :</h4>
                                         </div>
                                         <div style={{ padding: '1%', textAlign: 'left' }} className="col-lg-4 d-flex flex-column order-lg-1">
-                                            {questiondata.opt_type3 == 'T' ? 'Text' : 'Image'}
+                                            {questiondata.opt_type3 === 'T' ? 'Text' : 'Image'}
                                         </div>
                                     </div>
                                     <div className="row no-gutters">
@@ -312,7 +312,7 @@ const ExamView = (props) => {
                                             <h4>Option Type 4 :</h4>
                                         </div>
                                         <div style={{ padding: '1%', textAlign: 'left' }} className="col-lg-4 d-flex flex-column order-lg-1">
-                                            {questiondata.opt_type4 == 'T' ? 'Text' : 'Image'}
+                                            {questiondata.opt_type4 === 'T' ? 'Text' : 'Image'}
                                         </div>
                                     </div>
                                     <div className="row no-gutters">
@@ -332,7 +332,7 @@ const ExamView = (props) => {
                                             <h4>Option Type 5 :</h4>
                                         </div>
                                         <div style={{ padding: '1%', textAlign: 'left' }} className="col-lg-4 d-flex flex-column order-lg-1">
-                                            {questiondata.opt_type5 == 'T' ? 'Text' : 'Image'}
+                                            {questiondata.opt_type5 === 'T' ? 'Text' : 'Image'}
                                         </div>
                                     </div>
                                     <div className="row no-gutters">
@@ -374,7 +374,7 @@ const ExamView = (props) => {
                                     <h4>Status :</h4>
                                 </div>
                                 <div style={{ padding: '1%', textAlign: 'left' }} className="col-lg-4 d-flex flex-column order-lg-1">
-                                    {questiondata.quest_status == 'Y' ? 'Active' : 'Inactive'}
+                                    {questiondata.quest_status === 'Y' ? 'Active' : 'Inactive'}
                                 </div>
                             </div>
                         </div>

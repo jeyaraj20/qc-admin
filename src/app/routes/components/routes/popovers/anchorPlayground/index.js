@@ -11,7 +11,6 @@ import Button from '@material-ui/core/Button';
 import Popover from '@material-ui/core/Popover';
 import Input from '@material-ui/core/Input';
 import InputLabel from '@material-ui/core/InputLabel';
-import GridList from "@material-ui/core/GridList";
 
 class AnchorPlayground extends React.Component {
   state = {

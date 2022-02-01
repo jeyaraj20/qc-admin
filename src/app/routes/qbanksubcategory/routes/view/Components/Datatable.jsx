@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Modal, ModalHeader, ModalFooter } from 'reactstrap';
 import Button from '@material-ui/core/Button';
 import CardBox from "components/CardBox/index";
+import { Spin } from 'antd';
 
 import {
   MDBDataTable, MDBIcon, MDBBtn, MDBInput,
@@ -15,6 +16,8 @@ import TextField from '@material-ui/core/TextField';
 import * as qbankSubCategoryService from '../../../../../../services/qbankSubCategoryService';
 import * as qbankCategoryService from '../../../../../../services/qbankCategoryService';
 import * as utilService from '../../../../../../services/utilService';
+import auth from '../../../../../../services/authService';
+
 import Snackbar from '@material-ui/core/Snackbar';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -51,6 +54,7 @@ const DataTable = (props) => {
   const [inactiveCount, setInactiveCount] = useState('');
   const [activeCount, setActiveCount] = useState('');
   const [loader, setLoader] = useState(false);
+  const [saveLoader, setSaveLoader] = useState(false);
   const [categoryitems, setCategoryItems] = useState([]);
   const [subcategoryitems, setSubCategoryItems] = useState([]);
   const [maincategoryId, setMainCategoryId] = useState('');
@@ -78,11 +82,10 @@ const DataTable = (props) => {
       if (document.getElementById(row.cat_id)) {
         document.getElementById(row.cat_id).checked = e.currentTarget.checked;
         if (e.currentTarget.checked) {
-
           if (e.currentTarget.checked)
-            row.cat_status = 1
+            row.isSelected = true;
           else
-            row.cat_status = 0;
+            row.isSelected = false;
           data[rowcount] = row
           setData([...data])
 
@@ -95,26 +98,23 @@ const DataTable = (props) => {
           postionObj.catId = row.cat_id;
           postionObj.position = row.cat_pos;
           posArr.push(postionObj);
-          console.log(posArr);
-          console.log(selectedCatArr);
           setChangePositionData({ "values": posArr });
         } else {
-
           if (e.currentTarget.checked)
-            row.cat_status = 1
+            row.isSelected = true;
           else
-            row.cat_status = 0;
+            row.isSelected = false;
           data[rowcount] = row
           setData([...data])
 
           for (var i = 0; i < selectedCatArr.length; i++) {
-            if (selectedCatArr[i] == row.cat_id) {
+            if (selectedCatArr[i] === row.cat_id) {
               selectedCatArr.splice(i, 1);
             }
           }
           if (posArr.length != 0) {
             for (var s = 0; s < posArr.length; s++) {
-              if (posArr[s].catId == row.cat_id) {
+              if (posArr[s].catId === row.cat_id) {
                 posArr.splice(s, 1);
               }
             }
@@ -135,41 +135,39 @@ const DataTable = (props) => {
     selectedCategoryArr = selectedCategory.catId;
     changePosArr = changePositionData.values;
     if (e.currentTarget.checked) {
-      obj.cat_status = 1;
+      obj.isSelected = true;
       setMainCategoryId(obj.pid);
       setSubCategoryId(obj.cat_id);
+    } else {
+      obj.isSelected = false;
     }
-    else
-      obj.cat_status = 0;
     data[index] = obj
     setData([...data])// to avoid shallow checking
     if (e.currentTarget.checked) {
       selectedCategoryArr.push(obj.cat_id)
       let postionObj = {};
       for (var i = 0; i < changePosArr.length; i++) {
-        if (changePosArr[i].catId == obj.cat_id) {
+        if (changePosArr[i].catId === obj.cat_id) {
           changePosArr.splice(i, 1);
         }
       }
       postionObj.catId = obj.cat_id;
       postionObj.position = obj.cat_pos;
       changePosArr.push(postionObj);
-      //console.log(changePositionArr);
       setChangePositionData({ "values": changePosArr });
     } else {
       for (var i = 0; i < selectedCategoryArr.length; i++) {
-        if (selectedCategoryArr[i] == obj.cat_id) {
+        if (selectedCategoryArr[i] === obj.cat_id) {
           selectedCategoryArr.splice(i, 1);
         }
       }
       if (changePosArr.length != 0) {
         for (var s = 0; s < changePosArr.length; s++) {
-          if (changePosArr[s].catId == obj.cat_id) {
+          if (changePosArr[s].catId === obj.cat_id) {
             changePosArr.splice(s, 1);
           }
         }
       }
-      console.log(changePositionData);
       setChangePositionData({ "values": changePosArr });
     }
     setSelectedCategory({ "catId": selectedCategoryArr });
@@ -278,7 +276,7 @@ const DataTable = (props) => {
     let message = error ? error.details[0].message : null;
     setErrors({ ...errors, [name]: message, "errordetails": null })
 
-    if (name == 'Unique')
+    if (name === 'Unique')
       onCheckCodeExists(e.target.value);
 
     if (error)
@@ -307,7 +305,6 @@ const DataTable = (props) => {
         }
         data.statusField = 'cat_status';
         const { data: response } = await utilService.checkAlreadyExists(data);
-        console.log(response.count);
         if (response.count > 0) {
           setSavedisabled(true);
           setErrors({ ...errors, ['Unique']: 'Code already exists', "errordetails": null })
@@ -324,7 +321,7 @@ const DataTable = (props) => {
   }
 
   useEffect(() => {
-    if (data && data.length || data.length == 0)
+    if (data && data.length || data.length === 0)
       mapRows(data);
   }, [data])
 
@@ -340,10 +337,9 @@ const DataTable = (props) => {
   const mapRows = (rows) => {
     let rowFields = []// fields in required order
     columns.forEach(column => rowFields.push(column.field))
-
     let categoryrows = rows.map((obj, index) => {
       let checkedflg = false;
-      if (obj.cat_status == "1")
+      if (obj.cat_status === "1")
         checkedflg = true;
 
       let row = {}
@@ -352,10 +348,9 @@ const DataTable = (props) => {
         row[fieldName] = obj[fieldName] // fetching required fields in req order
       row.sno = <span>{rowcount}</span>
 
-      let categoryfiltered = category.filter(maincat => maincat.cat_id == obj.pid);
-      let activefiltered = qactiveCount.filter(active => active.sub_id == obj.cat_id);
-      let waitingfiltered = qwaitingCount.filter(waiting => waiting.sub_id == obj.cat_id);
-      console.log(activefiltered);
+      let categoryfiltered = category.filter(maincat => maincat.cat_id === obj.pid);
+      let activefiltered = qactiveCount.filter(active => active.sub_id === obj.cat_id);
+      let waitingfiltered = qwaitingCount.filter(waiting => waiting.sub_id === obj.cat_id);
       if (categoryfiltered.length > 0) {
         row.MainCategory = categoryfiltered[0].cat_name;
       } else {
@@ -371,7 +366,7 @@ const DataTable = (props) => {
       }
       row.select = <MDBInput style={{ marginTop: '0px', width: '20px' }}
         label="." type="checkbox"
-        checked={checkedflg}
+        checked={obj.isSelected}
         name={obj.cat_id} id={obj.cat_id}
         onChange={(e) => { onCategorySelect(e, obj, index) }}
       />;
@@ -419,14 +414,14 @@ const DataTable = (props) => {
 
   const handleAction = async () => {
     let selectedCategoryObj = selectedCategory;
-    if (action == '') {
+    if (action === '') {
       setAlertMessage('Please select an action');
       setShowMessage(true);
       setTimeout(() => {
         setShowMessage(false)
       }, 1500);
     } else {
-      if (action == 'Inactive') {
+      if (action === 'Inactive') {
         selectedCategoryObj.status = 'N';
         if (selectedCategory.catId.length != 0) {
           await qbankSubCategoryService.inactiveCategory(selectedCategoryObj);
@@ -445,7 +440,7 @@ const DataTable = (props) => {
           }, 1500);
         }
       }
-      if (action == 'Active') {
+      if (action === 'Active') {
         selectedCategoryObj.status = 'Y';
         if (selectedCategory.catId.length != 0) {
           await qbankSubCategoryService.inactiveCategory(selectedCategoryObj);
@@ -464,7 +459,7 @@ const DataTable = (props) => {
           }, 1500);
         }
       }
-      if (action == 'Delete') {
+      if (action === 'Delete') {
         if (selectedCategory.catId.length != 0) {
           await qbankSubCategoryService.deleteCategory(selectedCategory);
           setAlertMessage('Data successfully deleted.');
@@ -483,8 +478,7 @@ const DataTable = (props) => {
         }
       }
     }
-    if (action == 'Position') {
-      console.log(changePositionData);
+    if (action === 'Position') {
       if (changePositionData.values.length != 0) {
         await qbankSubCategoryService.changePosition(changePositionData);
         setAlertMessage('Position successfully updated.');
@@ -504,14 +498,13 @@ const DataTable = (props) => {
   }
 
   const toggle = (open, data) => {
-    console.log(data);
     setModal(open);
     setErrors({});
+    console.log(open, data, "open, data")
     if (data) {
       setIsEdit(true);
       setMainCategoryId(data.pid);
       setSubCategoryId(data.cat_id);
-      console.log(data.pid, data.cat_id);
       setCategoryName(data.cat_name);
       setUniqueCode(data.cat_code);
       setDescription(data.cat_desc);
@@ -525,7 +518,7 @@ const DataTable = (props) => {
     }
   }
   const handleSaveButton = () => {
-    if (errors['categoryName'] != null || errors['categoryName'] == undefined || errors['uniquecode'] != null || errors['uniquecode'] == undefined) {
+    if (errors['categoryName'] != null || errors['categoryName'] === undefined || errors['uniquecode'] != null || errors['uniquecode'] === undefined) {
       setSavedisabled(true);
     } else {
       setSavedisabled(false);
@@ -533,6 +526,7 @@ const DataTable = (props) => {
   };
   const saveSubCategory = async () => {
     if (categoryName && uniquecode && maincategoryId != '0') {
+      setSaveLoader(true);
       const saveObj = {};
       saveObj.cat_name = categoryName;
       saveObj.cat_code = uniquecode;
@@ -541,6 +535,7 @@ const DataTable = (props) => {
       await qbankSubCategoryService.saveSubCategory(saveObj);
       setAlertMessage('Qbank Sub Category Added Successfully');
       await handleRefresh();
+      setSaveLoader(false);
       setShowMessage(true);
       setModal(false);
       setTimeout(() => {
@@ -557,6 +552,7 @@ const DataTable = (props) => {
 
   const editSubCategory = async () => {
     if (categoryName && uniquecode && maincategoryId != '0') {
+      setSaveLoader(true);
       const editObj = {};
       editObj.cat_name = categoryName;
       editObj.cat_code = uniquecode;
@@ -565,6 +561,7 @@ const DataTable = (props) => {
       await qbankSubCategoryService.editQbankCategory(subcategoryId, editObj);
       setAlertMessage('Qbank Sub Category Updated Successfully');
       await handleRefresh();
+      setSaveLoader(false);
       setShowMessage(true);
       setModal(false);
       setTimeout(() => {
@@ -628,7 +625,6 @@ const DataTable = (props) => {
   }
 
   const handleSubCategoryChange = async (event, value) => {
-    console.log(event.target.value);
     setSubCategoryId(event.target.value);
   }
 
@@ -638,7 +634,7 @@ const DataTable = (props) => {
     searchdata.cat_id = searchcategoryId;
     searchdata.subcat_id = subcategoryId;
     searchdata.searchString = searchString;
-    if (datatype == 'Active') {
+    if (datatype === 'Active') {
       searchdata.status = 'Y';
     } else {
       searchdata.status = 'N';
@@ -651,7 +647,6 @@ const DataTable = (props) => {
     setQActiveCount(activeres);
     setQWaitingCount(waitingres);
     setCategory(categoryres);
-    console.log(searchresult);
     setData(searchresult);
     setTimeout(() => {
       setLoader(false)
@@ -667,10 +662,7 @@ const DataTable = (props) => {
 
   const subpdf = async (state, obj) => {
     if (state) {
-      console.log("True");
       if (obj.pid && obj.cat_id) {
-        console.log("Both Id here");
-        // Set PDF content.
         const doc = new jsPDF({
           orientation: "landscape"
         });
@@ -679,120 +671,25 @@ const DataTable = (props) => {
         doc.setFont('arial');
         doc.setFontSize(25);
         doc.setLineWidth(0.5);
-        //doc.rect(5, 5, 200, 287);
-
         doc.text(121, 13, 'QuestionCloud');
         doc.setFont('times');
-
         doc.setFontSize(12);
         doc.text(129, 20, 'Subcategory Questions');
-
-        // Enter Here
         setLoader(true);
         const searchdata = {};
+        let user = auth.getCurrentUser();
+        if (user.user.logintype === 'G') {
+          searchdata.isQcAdmin = true;
+        } else {
+          searchdata.isSchoolAdmin = true;
+        }
         searchdata.maincat = obj.pid; // main category
         searchdata.subcat = obj.cat_id; //sub category
         let activeres = await qbankSubCategoryService.getSubCategoryQuestionForPDF(searchdata);
-        console.log(activeres.data);
         fileDownload(activeres.data, 'Bank Subcategory Questions.pdf');
-
         doc.output('blob');
         setLoader(false);
-
-        //window.open(doc.output('bloburl'), '_blank');
-        //doc.save("Bank Subcategory Questions.pdf");
-
         return;
-
-        const { qdata: questiondetail } = activeres;
-        console.log(questiondetail);
-
-        doc.text(10, 30, "Main Category Name : ");
-        doc.text(50, 30, "" + questiondetail[0].maincatname);
-        doc.text(10, 40, "Sub Category Name : ");
-        doc.text(50, 40, "" + questiondetail[0].subcatname);
-
-        let question_count = 1;
-        var question_height = 40;
-        var option_height = 50;
-
-        let overall_col = [
-          { dataKey: 'overall_count', header: 'S.no' },
-          { dataKey: 'c1', header: 'Question' },
-          { dataKey: 'c2', header: 'Option 1' },
-          { dataKey: 'c3', header: 'Option 2' },
-          { dataKey: 'c4', header: 'Option 3' },
-          { dataKey: 'c5', header: 'Option 4' },
-        ];
-        var overall_options = {
-          theme: 'grid',
-          columnStyles: {
-            overall_count: { columnWidth: 25, halign: 'center' },
-            c1: { columnWidth: 70 },
-            c2: { columnWidth: 45 },
-            c3: { columnWidth: 45 },
-            c4: { columnWidth: 45 },
-            c5: { columnWidth: 45 }, //275
-          },
-          headStyles: {
-            fillColor: '#FFFFFF', textColor: '#222222', lineWidth: 0.05,
-            lineColor: [200, 200, 200]
-          },
-          style: { cellWidth: 'auto' },
-          margin: { top: 50, horizontal: 10 },
-        };
-        let overall_count = 1;
-        let reqAmount, appAmount;
-        let overall_initialloannextRow = [];
-        if (questiondetail.length > 0) {
-          for (const [index, value] of questiondetail.entries()) {
-
-            // Entity Process
-            let questionvalue = entities.decode(value.question);
-            let mainquestion = <div dangerouslySetInnerHTML={{ __html: questionvalue }}></div>
-            console.log(mainquestion);
-
-            overall_initialloannextRow.push({
-              overall_count: overall_count,
-              c1: mainquestion,
-              c2: value.opt_1,
-              c3: value.opt_2,
-              c4: value.opt_3,
-              c5: value.opt_4,
-            });
-            overall_count++;
-          }
-        }
-        doc.autoTable(overall_col, overall_initialloannextRow, overall_options);
-
-        /*
-        for (const [index, value] of questiondetail.entries()) {
-          console.log("Question ", question_height);
-          if (option_height > 1300) {
-            console.log("Arrives next page");
-            doc.addPage();
-            question_height = 40;
-            option_height = 50;
-          }
-          doc.text(10, question_height += 10, "Question " + question_count + " : ");
-          console.log("Question ", question_height);
-          doc.text(40, question_height, "" + value.question);
-          console.log("Option ", option_height);
-          doc.text(10, option_height += 10, "Options: ");
-          console.log("Option ", option_height);
-          doc.text(40, option_height, "" + value.opt_1);
-          doc.text(40, option_height, "" + value.opt_2);
-          doc.text(40, option_height, "" + value.opt_3);
-          doc.text(40, option_height, "" + value.opt_4);
-
-          question_count++;
-          question_height = question_height + 10;
-          option_height = option_height + 10;
-        }
-        */
-
-        window.open(doc.output('bloburl'), '_blank');
-        //doc.save("Bank Subcategory Questions.pdf");
       }
     }
   }
@@ -813,200 +710,203 @@ const DataTable = (props) => {
           </div>
         }
         {showSubCategory && !loader &&
-          <div className="col-12">
-            <form className="row" autoComplete="off">
-              <div className="col-lg-3 col-sm-6 col-12">
-                <FormControl className="w-100 mb-2">
-                  <InputLabel htmlFor="age-simple">Actions</InputLabel>
-                  {datatype == 'Active' &&
-                    <Select onChange={(event, value) => {
-                      onActionChange(event, value)
-                    }} >
-                      <MenuItem value={'Inactive'}>Inactive</MenuItem>
-                      <MenuItem value={'Position'}>Position</MenuItem>
-                      <MenuItem value={'Delete'}>Delete</MenuItem>
-                    </Select>
-                  }
-                  {datatype == 'Inactive' &&
-                    <Select onChange={(event, value) => {
-                      onActionChange(event, value)
-                    }} >
-                      <MenuItem value={'Active'}>Active</MenuItem>
-                      <MenuItem value={'Position'}>Position</MenuItem>
-                      <MenuItem value={'Delete'}>Delete</MenuItem>
-                    </Select>
-                  }
-                </FormControl>
-              </div>
-              <div style={{ paddingTop: '2%' }} className="col-lg-2 col-sm-6 col-12">
-                <Button onClick={() => handleAction()} variant="contained" color="primary" className="jr-btn">
-                  <i className="zmdi zmdi-flash zmdi-hc-fw" />
-                  <span>Go</span>
-                </Button>
-              </div>
-              <div style={{ marginLeft: '0%', paddingTop: '2%' }} className="col-lg-7 col-sm-7 col-12">
-                <div className="jr-btn-group">
-                  <Button onClick={() => toggle(true, '')} variant="contained" color="primary" className="jr-btn">
-                    <i className="zmdi zmdi-plus zmdi-hc-fw" />
-                    <span>Add</span>
-                  </Button>
-                  <Button onClick={() => getAllActive()} variant="contained" className="jr-btn bg-success text-white">
-                    <i className="zmdi zmdi-check zmdi-hc-fw" />
-                    <span>Active ({activeCount})</span>
-                  </Button>
-                  <Button onClick={() => getAllInactive()} variant="contained" className="jr-btn bg-danger text-white">
-                    <i className="zmdi zmdi-block zmdi-hc-fw" />
-                    <span>Inactive ({inactiveCount})</span>
-                  </Button>
-                  <Button onClick={() => subpdf(true)} variant="contained" color="primary" className="jr-btn text-white" style={{ "float": "right" }}>
-                    <i className="zmdi zmdi-collection-pdf zmdi-hc-fw" />
-                    <span>View in PDF</span>
+          <Spin spinning={saveLoader} tip='Loading...'>
+            <div className="col-12">
+              <form className="row" autoComplete="off">
+                <div className="col-lg-3 col-sm-6 col-12">
+                  <FormControl className="w-100 mb-2">
+                    <InputLabel htmlFor="age-simple">Actions</InputLabel>
+                    {datatype === 'Active' &&
+                      <Select onChange={(event, value) => {
+                        onActionChange(event, value)
+                      }} >
+                        <MenuItem value={'Inactive'}>Inactive</MenuItem>
+                        <MenuItem value={'Position'}>Position</MenuItem>
+                        <MenuItem value={'Delete'}>Delete</MenuItem>
+                      </Select>
+                    }
+                    {datatype === 'Inactive' &&
+                      <Select onChange={(event, value) => {
+                        onActionChange(event, value)
+                      }} >
+                        <MenuItem value={'Active'}>Active</MenuItem>
+                        <MenuItem value={'Position'}>Position</MenuItem>
+                        <MenuItem value={'Delete'}>Delete</MenuItem>
+                      </Select>
+                    }
+                  </FormControl>
+                </div>
+                <div style={{ paddingTop: '2%' }} className="col-lg-2 col-sm-6 col-12">
+                  <Button onClick={() => handleAction()} variant="contained" color="primary" className="jr-btn">
+                    <i className="zmdi zmdi-flash zmdi-hc-fw" />
+                    <span>Go</span>
                   </Button>
                 </div>
-              </div>
-            </form>
-            <h4 style={{ padding: '0.5%' }} className={txtclass}>{datatype} Q Bank Sub Category</h4>
-            <CardBox styleName="col-12" cardStyle=" p-0">
-              <MDBCardBody  >
-                <MDBRow>
-
-                  <MDBCol md="3">
-                    <FormControl className="w-100 mb-2">
-                      <InputLabel htmlFor="age-simple">Select Category</InputLabel>
-                      <Select onChange={(event, value) => {
-                        handleMainCategorySearch(event, value)
-                      }} value={searchcategoryId}
-                      >
-                        {categoryitems}
-                      </Select>
-                    </FormControl>
-                  </MDBCol>
-                  <MDBCol md="3">
-                    <FormControl className="w-100 mb-2">
-                      <InputLabel htmlFor="age-simple">Sub Category</InputLabel>
-                      <Select onChange={(event, value) => {
-                        handleSubCategoryChange(event, value)
-                      }} value={subcategoryId}
-                      >
-                        <MenuItem value={'M'}>Select Sub Category</MenuItem>
-                        {subcategoryitems}
-                      </Select>
-                    </FormControl>
-                  </MDBCol>
-                  <MDBCol md="3">
-                    <TextField
-                      id="searchstring"
-                      fullWidth={true}
-                      label={'Search'}
-                      name={'searchstring'}
-                      onChange={(event) => onSearchStringChange(event.target.value)}
-                      defaultValue={searchString}
-                      margin="none" />
-                  </MDBCol>
-                  <MDBCol md="1">
-                    <Button onClick={() => handleSearch()} style={{ marginTop: '25%' }} variant="contained" color="primary" className="jr-btn">
-                      <i className="zmdi zmdi-search zmdi-hc-fw" />
+                <div style={{ marginLeft: '0%', paddingTop: '2%' }} className="col-lg-7 col-sm-7 col-12">
+                  <div className="jr-btn-group">
+                    <Button onClick={() => toggle(true, '')} variant="contained" color="primary" className="jr-btn">
+                      <i className="zmdi zmdi-plus zmdi-hc-fw" />
+                      <span>Add</span>
                     </Button>
-                  </MDBCol>
-                  <MDBCol md="1">
-                    <Button onClick={() => handleReset()} style={{ marginTop: '25%' }} variant="contained" color="primary" className="jr-btn">
-                      <i className="zmdi zmdi-format-clear-all zmdi-hc-fw" />
-                      <span>Reset</span>
+                    <Button onClick={() => getAllActive()} variant="contained" className="jr-btn bg-success text-white">
+                      <i className="zmdi zmdi-check zmdi-hc-fw" />
+                      <span>Active ({activeCount})</span>
                     </Button>
-                  </MDBCol>
-
-                </MDBRow>
-              </MDBCardBody>
-            </CardBox>
-            <MDBDataTable
-              striped
-              bordered
-              entriesOptions={[5, 10, 20, 25, 50, 100]}
-              entries={50}
-              hover
-              data={{ rows: categoryrows, columns }}
-              small
-              responsive
-              noBottomColumns
-              disableRetreatAfterSorting={true} />
-            <Modal className="modal-box" backdrop={"static"} toggle={onModalClose} isOpen={modal}>
-              <ModalHeader className="modal-box-header bg-primary text-white">
-                {isEdit == false ? "Add Sub Category" :
-                  "Edit Sub Category"}
-              </ModalHeader>
-
-              <div className="modal-box-content">
-                <div className="row no-gutters">
-                  <div className="col-lg-12 d-flex flex-column order-lg-1">
-                    <div className="col-lg-12 col-sm-12 col-12">
-                      <FormControl className="w-100 mb-2">
-                        <InputLabel htmlFor="age-simple">Main Category</InputLabel>
-                        <Select onChange={(event, value) => {
-                          handleMainCategoryChange(event, value)
-                        }} value={maincategoryId}
-                        >
-
-                          {categoryitems}
-
-                        </Select>
-                      </FormControl>
-                    </div>
-                    <TextField
-                      required
-                      id="required"
-                      label={'Sub Category Name'}
-                      name={'SubCategoryName'}
-                      onChange={(event) => setCategoryName(event.target.value)}
-                      defaultValue={categoryName}
-                      onBlur={valiadateProperty}
-                      margin="normal" />
-                    <div><h6 style={{ color: 'red', paddingTop: '1%' }}>{errors['SubCategoryName']}</h6></div>
-                    <TextField
-                      required
-                      id="required"
-                      label={'Unique Code (Ex: ENTGUS)'}
-                      name={'Unique'}
-                      onChange={(event) => setUniqueCode(event.target.value)}
-                      defaultValue={uniquecode}
-                      onBlur={valiadateProperty}
-                      margin="normal" />
-                    <div><h6 style={{ color: 'red', paddingTop: '1%' }}>{errors['Unique']}</h6></div>
-                    <TextField
-                      id="required"
-                      label={'Description'}
-
-                      onChange={(event) => setDescription(event.target.value)}
-                      defaultValue={description}
-
-                      margin="normal" />
-                    {/* <div><h6 style={{ color: 'red', paddingTop: '1%' }}>{errors['Description']}</h6></div> */}
+                    <Button onClick={() => getAllInactive()} variant="contained" className="jr-btn bg-danger text-white">
+                      <i className="zmdi zmdi-block zmdi-hc-fw" />
+                      <span>Inactive ({inactiveCount})</span>
+                    </Button>
+                    <Button onClick={() => subpdf(true)} variant="contained" color="primary" className="jr-btn text-white" style={{ "float": "right" }}>
+                      <i className="zmdi zmdi-collection-pdf zmdi-hc-fw" />
+                      <span>View in PDF</span>
+                    </Button>
                   </div>
                 </div>
-              </div>
-              <ModalFooter>
-                {isEdit == false ?
-                  <div className="d-flex flex-row">
-                    <Button style={{ marginRight: '5%' }} onClick={() => saveSubCategory()} variant="contained" disabled={savedisabled} color="primary">Save</Button>
-                    <Button variant="contained" color="secondary" onClick={onModalClose}>Cancel</Button>
-                  </div> :
-                  <div className="d-flex flex-row">
-                    <Button style={{ marginRight: '5%' }} onClick={() => editSubCategory()} variant="contained" disabled={savedisabled} color="primary">Update</Button>
-                    <Button variant="contained" color="secondary" onClick={onModalClose}>Cancel</Button>
-                  </div>}
-              </ModalFooter>
-            </Modal>
-            <Snackbar
-              className="mb-3 bg-info"
-              anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-              open={showMessage}
-              autoHideDuration={3000}
-              onClose={() => handleRequestClose}
-              ContentProps={{
-                'aria-describedby': 'message-id',
-              }}
-              message={alertMessage}
-            />
-          </div>
+              </form>
+              <h4 style={{ padding: '0.5%' }} className={txtclass}>{datatype} Q Bank Sub Category</h4>
+              <CardBox styleName="col-12" cardStyle=" p-0">
+                <MDBCardBody  >
+                  <MDBRow>
+
+                    <MDBCol md="3">
+                      <FormControl className="w-100 mb-2">
+                        <InputLabel htmlFor="age-simple">Select Category</InputLabel>
+                        <Select onChange={(event, value) => {
+                          handleMainCategorySearch(event, value)
+                        }} value={searchcategoryId}
+                        >
+                          {categoryitems}
+                        </Select>
+                      </FormControl>
+                    </MDBCol>
+                    <MDBCol md="3">
+                      <FormControl className="w-100 mb-2">
+                        <InputLabel htmlFor="age-simple">Sub Category</InputLabel>
+                        <Select onChange={(event, value) => {
+                          handleSubCategoryChange(event, value)
+                        }} value={subcategoryId}
+                        >
+                          <MenuItem value={'M'}>Select Sub Category</MenuItem>
+                          {subcategoryitems}
+                        </Select>
+                      </FormControl>
+                    </MDBCol>
+                    <MDBCol md="3">
+                      <TextField
+                        id="searchstring"
+                        fullWidth={true}
+                        label={'Search'}
+                        name={'searchstring'}
+                        onChange={(event) => onSearchStringChange(event.target.value)}
+                        defaultValue={searchString}
+                        margin="none" />
+                    </MDBCol>
+                    <MDBCol md="1">
+                      <Button onClick={() => handleSearch()} style={{ marginTop: '25%' }} variant="contained" color="primary" className="jr-btn">
+                        <i className="zmdi zmdi-search zmdi-hc-fw" />
+                      </Button>
+                    </MDBCol>
+                    <MDBCol md="1">
+                      <Button onClick={() => handleReset()} style={{ marginTop: '25%' }} variant="contained" color="primary" className="jr-btn">
+                        <i className="zmdi zmdi-format-clear-all zmdi-hc-fw" />
+                        <span>Reset</span>
+                      </Button>
+                    </MDBCol>
+
+                  </MDBRow>
+                </MDBCardBody>
+              </CardBox>
+              <MDBDataTable
+                striped
+                bordered
+                entriesOptions={[5, 10, 20, 25, 50, 100, 1000]}
+                entries={50}
+                hover
+                data={{ rows: categoryrows, columns }}
+                small
+                responsive
+                noBottomColumns
+                disableRetreatAfterSorting={true} />
+              <Modal className="modal-box" backdrop={"static"} toggle={onModalClose} isOpen={modal}>
+                <Spin spinning={saveLoader} tip='Loading...'>
+                  <ModalHeader className="modal-box-header bg-primary text-white">
+                    {isEdit === false ? "Add Sub Category" :
+                      "Edit Sub Category"}
+                  </ModalHeader>
+                  <div className="modal-box-content">
+                    <div className="row no-gutters">
+                      <div className="col-lg-12 d-flex flex-column order-lg-1">
+                        <div className="">
+                          <FormControl className="w-100 mb-2">
+                            <InputLabel htmlFor="age-simple">Main Category</InputLabel>
+                            <Select onChange={(event, value) => {
+                              handleMainCategoryChange(event, value)
+                            }} value={maincategoryId}
+                            >
+
+                              {categoryitems}
+
+                            </Select>
+                          </FormControl>
+                        </div>
+                        <TextField
+                          required
+                          id="required"
+                          label={'Sub Category Name'}
+                          name={'SubCategoryName'}
+                          onChange={(event) => setCategoryName(event.target.value)}
+                          defaultValue={categoryName}
+                          onBlur={valiadateProperty}
+                          margin="normal" />
+                        <div><h6 style={{ color: 'red', paddingTop: '1%' }}>{errors['SubCategoryName']}</h6></div>
+                        <TextField
+                          required
+                          id="required"
+                          label={'Unique Code (Ex: ENTGUS)'}
+                          name={'Unique'}
+                          onChange={(event) => setUniqueCode(event.target.value)}
+                          defaultValue={uniquecode}
+                          onBlur={valiadateProperty}
+                          margin="normal" />
+                        <div><h6 style={{ color: 'red', paddingTop: '1%' }}>{errors['Unique']}</h6></div>
+                        <TextField
+                          id="required"
+                          label={'Description'}
+
+                          onChange={(event) => setDescription(event.target.value)}
+                          defaultValue={description}
+
+                          margin="normal" />
+                        {/* <div><h6 style={{ color: 'red', paddingTop: '1%' }}>{errors['Description']}</h6></div> */}
+                      </div>
+                    </div>
+                  </div>
+                  <ModalFooter>
+                    {isEdit === false ?
+                      <div className="d-flex flex-row">
+                        <Button style={{ marginRight: '5%' }} onClick={() => saveSubCategory()} variant="contained" disabled={savedisabled} color="primary">Save</Button>
+                        <Button variant="contained" color="secondary" onClick={onModalClose}>Cancel</Button>
+                      </div> :
+                      <div className="d-flex flex-row">
+                        <Button style={{ marginRight: '5%' }} onClick={() => editSubCategory()} variant="contained" disabled={savedisabled} color="primary">Update</Button>
+                        <Button variant="contained" color="secondary" onClick={onModalClose}>Cancel</Button>
+                      </div>}
+                  </ModalFooter>
+                </Spin>
+              </Modal>
+              <Snackbar
+                className="mb-3 bg-info"
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                open={showMessage}
+                autoHideDuration={3000}
+                onClose={() => handleRequestClose}
+                ContentProps={{
+                  'aria-describedby': 'message-id',
+                }}
+                message={alertMessage}
+              />
+            </div>
+          </Spin>
         }
         {showQuestions && !loader &&
           <QuestionsView categoryId={categoryId} subcategoryId={subcategoryId} openQuestions={openQuestions} />

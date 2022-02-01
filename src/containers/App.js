@@ -8,6 +8,7 @@ import { Redirect, Route, Switch } from "react-router-dom";
 import {useDispatch, useSelector} from "react-redux";
 import { IntlProvider } from "react-intl";
 import "assets/vendors/style";
+import 'antd/dist/antd.min.css';
 import indigoTheme from "./themes/indigoTheme";
 import cyanTheme from "./themes/cyanTheme";
 import orangeTheme from "./themes/orangeTheme";
@@ -203,13 +204,17 @@ window.history.forward();
           <RTL>
             <div className="app-main">
               <Switch>
-                <RestrictedRoute path={`${match.url}app`} authUser={authUser}
-                                 component={AppLayout}/>
+                <RestrictedRoute 
+                  path={`${match.url}app`} 
+                  authUser={authUser}
+                  component={AppLayout}
+                />
                 <Route path='/signin' component={SignIn}/>
                 <Route path='/insignin' component={SignInSchool}/>
                 <Route path='/signup' component={SignUp}/>
                 <Route
-                  component={asyncComponent(() => import('app/routes/extraPages/routes/404'))}/>
+                  component={asyncComponent(() => import('app/routes/extraPages/routes/404'))}
+                />
               </Switch>
             </div>
           </RTL>

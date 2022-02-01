@@ -97,7 +97,7 @@ const DataTable = (props) => {
           setData([...data])
 
           for (var i = 0; i < selectedSchArr.length; i++) {
-            if (selectedSchArr[i] == row.id) {
+            if (selectedSchArr[i] === row.id) {
               selectedSchArr.splice(i, 1);
             }
           }
@@ -124,7 +124,7 @@ const DataTable = (props) => {
       console.log(selectedSchoolArr);
     } else {
       for (var i = 0; i < selectedSchoolArr.length; i++) {
-        if (selectedSchoolArr[i] == obj.id) {
+        if (selectedSchoolArr[i] === obj.id) {
           selectedSchoolArr.splice(i, 1);
         }
       }
@@ -301,7 +301,7 @@ const DataTable = (props) => {
     let schoolrows = rows.map((obj, index) => {
 
       let checkedflg = false;
-      if (obj.schoolStatus == "1")
+      if (obj.schoolStatus === "1")
         checkedflg = true;
 
       let row = {};
@@ -366,14 +366,14 @@ const DataTable = (props) => {
 
   const handleAction = async () => {
     let selectedSchoolObj = selectedSchool;
-    if (action == '') {
+    if (action === '') {
       setAlertMessage('Please select an action');
       setShowMessage(true);
       setTimeout(() => {
         setShowMessage(false)
       }, 1500);
     } else {
-      if (action == 'Inactive') {
+      if (action === 'Inactive') {
         selectedSchoolObj.status = 'N';
         console.log(selectedSchoolObj);
         if (selectedSchool.id.length != 0) {
@@ -393,7 +393,7 @@ const DataTable = (props) => {
           }, 1500);
         }
       }
-      if (action == 'Active') {
+      if (action === 'Active') {
         selectedSchoolObj.status = 'Y';
         console.log(selectedSchoolObj);
         if (selectedSchool.id.length != 0) {
@@ -414,7 +414,7 @@ const DataTable = (props) => {
           }, 1500);
         }
       }
-      if (action == 'Delete') {
+      if (action === 'Delete') {
         selectedSchoolObj.status = 'D';
         if (selectedSchool.id.length != 0) {
           await schoolService.changeStatus(selectedSchoolObj);
@@ -486,7 +486,19 @@ const DataTable = (props) => {
         examObj.subcategoryitems = subArr;
         var array = JSON.parse("[" + examdata.subCategory + "]");
         examObj.subcategoryid = array;
-        if (count == 1) {
+
+        let result = await exammainCategoryService.getExamChaptersBySubCatId(array);
+        if (result && result.data && result.data.chapters && result.data.chapters.length > 0) {
+          let itemArr = [];
+          for (let chapt of result.data.chapters) {
+            itemArr.push(<MenuItem value={chapt.chapt_id}>{`${chapt.chapter_name} - (${chapt.exa_cat_name})`}</MenuItem>)
+          }
+          examObj.chaptersItems = itemArr;
+        }
+
+        examObj.chaptersIds = examdata.chapterIds ? JSON.parse("[" + examdata.chapterIds + "]") : [];
+
+        if (count === 1) {
           examObj.addtype = true;
           examObj.deltype = false;
         } else {
@@ -517,7 +529,6 @@ const DataTable = (props) => {
 
     } else {
       setSchoolName('');
-
       setSchoolAddress1('');
       setSchoolAddress2('')
       setPhoneNumber('')
@@ -530,7 +541,18 @@ const DataTable = (props) => {
       setviewEditImg(false);
       setSavedisabled(false);
       setAssignExamRow([
-        { rowsNo: 1, mastercategoryId: '', categoryId: '', categoryitems: '', subcategoryitems: '', subcategoryid: [], addtype: true, deltype: false }
+        {
+          rowsNo: 1,
+          mastercategoryId: '',
+          categoryId: '',
+          categoryitems: '',
+          subcategoryitems: '',
+          subcategoryid: [],
+          chaptersItems: '',
+          chaptersIds: [],
+          addtype: true,
+          deltype: false
+        }
       ])
 
     }
@@ -554,50 +576,75 @@ const DataTable = (props) => {
     let rowNum = 1;
     return assignexamrow.map((row, index) => {
       rowNum = rowNum + 1;
-      const { rowsNo, mastercategoryId, categoryId, categoryitems, subcategoryid, subcategoryitems, addtype, deltype } = row //destructuring
+      const {
+        rowsNo, mastercategoryId, categoryId,
+        categoryitems, subcategoryid, subcategoryitems, addtype, deltype,
+        chaptersItems, chaptersIds
+      } = row //destructuring
       return (
-        <div className="row">
-          <FormControl margin='normal' style={{ marginLeft: '15px', marginRight: '15px' }} className="col-lg-3 col-sm-6 col-12">
-            <InputLabel htmlFor="age-simple">Master Category</InputLabel>
-            <Select onChange={(event, value) => {
-              handleMainCategoryChange(event, index)
-            }} value={mastercategoryId}
-            >
-              {mastercategoryitems}
-            </Select>
-          </FormControl>
-          <FormControl margin='normal' style={{ marginRight: '15px' }} className="col-lg-3 col-sm-6 col-12">
-            <InputLabel htmlFor="age-simple">Category</InputLabel>
-            <Select onChange={(event, value) => {
-              handleCategoryChange(event, index)
-            }} value={categoryId}
-            >
-              {categoryitems}
-            </Select>
-          </FormControl>
-          <FormControl margin='normal' className="col-lg-4 col-sm-6 col-12">
-            <InputLabel htmlFor="age-simple">Sub Category</InputLabel>
-            <Select multiple onChange={(event, value) => {
-              handleSubCategoryChange(event, index)
-            }} value={subcategoryid}
-            >
-              {subcategoryitems}
-            </Select>
-          </FormControl>
-          {addtype ?
-            <IconButton onClick={() => addRow(rowNum)} className="icon-btn">
-              <i className="zmdi zmdi-plus zmdi-hc-fw" />
-            </IconButton> :
-            <IconButton onClick={() => removeRow(rowsNo)} className="icon-btn">
-              <i className="zmdi zmdi-delete zmdi-hc-fw" />
-            </IconButton>}
-        </div>
+        <>
+          <div className="row">
+            <FormControl margin='normal' style={{ marginLeft: '15px', marginRight: '15px' }} className="col-lg-3 col-sm-6 col-12">
+              <InputLabel htmlFor="age-simple">Master Category</InputLabel>
+              <Select onChange={(event, value) => {
+                handleMainCategoryChange(event, index)
+              }} value={mastercategoryId}
+              >
+                {mastercategoryitems}
+              </Select>
+            </FormControl>
+            <FormControl margin='normal' style={{ marginRight: '15px' }} className="col-lg-3 col-sm-6 col-12">
+              <InputLabel htmlFor="age-simple">Category</InputLabel>
+              <Select onChange={(event, value) => {
+                handleCategoryChange(event, index)
+              }} value={categoryId}
+              >
+                {categoryitems}
+              </Select>
+            </FormControl>
+            <FormControl margin='normal' className="col-lg-3 col-sm-6 col-12">
+              <InputLabel htmlFor="age-simple">Sub Category</InputLabel>
+              <Select multiple onChange={(event, value) => {
+                handleSubCategoryChange(event, index)
+              }} value={subcategoryid}
+              >
+                {subcategoryitems}
+              </Select>
+            </FormControl>
+            <FormControl margin='normal' className="col-lg-3 col-sm-6 col-12" style={{ marginLeft: '15px', marginRight: '15px' }}>
+              <InputLabel htmlFor="age-simple">Chapters</InputLabel>
+              <Select multiple onChange={(event, value) => {
+                handleChapterChange(event, index)
+              }} value={chaptersIds}
+              >
+                {chaptersItems}
+              </Select>
+            </FormControl>
+            {addtype ?
+              <IconButton onClick={() => addRow(rowNum)} className="icon-btn" style={{ backgroundColor: 'green', borderRadius: 0, height: 40, marginTop: 25 }}>
+                <i className="zmdi zmdi-plus zmdi-hc-fw" style={{ color: '#fff', fontSize: 30, fontWeight: 'bold' }} />
+              </IconButton> :
+              <IconButton onClick={() => removeRow(rowsNo)} className="icon-btn" style={{ backgroundColor: 'red', borderRadius: 0, height: 40, marginTop: 25 }}>
+                <i className="zmdi zmdi-delete zmdi-hc-fw" style={{ color: '#fff' }} />
+              </IconButton>}
+          </div>
+          <hr />
+        </>
       )
     })
   }
 
   const addRow = (index) => {
-    let nextRow = { rowsNo: index, categoryId: '', subcategoryitems: '', subcategoryid: [], addtype: false, deltype: true };
+    let nextRow = {
+      rowsNo: index,
+      categoryId: '',
+      subcategoryitems: '',
+      subcategoryid: [],
+      addtype: false,
+      deltype: true,
+      chaptersItems: '',
+      chaptersIds: []
+    };
     setAssignExamRow(state => [...state, nextRow])
   }
 
@@ -621,17 +668,27 @@ const DataTable = (props) => {
   const handleSubCategoryChange = async (event, index) => {
     let newArr = [...assignexamrow]; // copying the old datas array
     newArr[index].subcategoryid = event.target.value;
+    let result = await exammainCategoryService.getExamChaptersBySubCatId(event.target.value);
+    if (result && result.data && result.data.chapters && result.data.chapters.length > 0) {
+      let itemArr = [];
+      for (let chapt of result.data.chapters) {
+        itemArr.push(<MenuItem value={chapt.chapt_id}>{`${chapt.chapter_name} - (${chapt.exa_cat_name})`}</MenuItem>)
+      }
+      newArr[index].chaptersItems = itemArr;
+    }
+    setAssignExamRow(newArr); // ??
+  }
+
+  const handleChapterChange = async (event, index) => {
+    let newArr = [...assignexamrow]; // copying the old datas array
+    newArr[index].chaptersIds = event.target.value;
     setAssignExamRow(newArr); // ??
   }
 
   const openview = (open, data) => {
-
-    console.log(data);
-
     setErrortext(false);
     setViewModal(open);
     setNewModal(false)
-
     if (data) {
       setIsView(true);
       setSchoolName(data.schoolName);
@@ -651,15 +708,6 @@ const DataTable = (props) => {
       setPassword(password2)
     }
   }
-  const handleSaveButton = () => {
-
-    console.log(errors['SchoolName'], errors['Address1'], errors['Address2'], errors['Email'], errors['PhoneNumber'], errors['schoolLogo'])
-    if (errors['SchoolName'] != null || errors['SchoolName'] == undefined || errors['Address1'] != null || errors['Address1'] == undefined || errors['Address2'] != null || errors['Address2'] == undefined || errors['Email'] != null || errors['Email'] == undefined || errors['PhoneNumber'] != null || errors['PhoneNumber'] == undefined || errors['schoolLogo'] != null || errors['schoolLogo'] == undefined) {
-      setSavedisabled(true);
-    } else {
-      setSavedisabled(false);
-    }
-  };
 
   const saveState = async () => {
     let examdata = [];
@@ -668,9 +716,9 @@ const DataTable = (props) => {
       rowdata.mastercategoryId = row.mastercategoryId;
       rowdata.categoryId = row.categoryId;
       rowdata.subcategoryid = row.subcategoryid;
+      rowdata.chaptersIds = row.chaptersIds;
       examdata.push(rowdata);
     }
-    console.log(examdata);
     if (schoolName && address1 && address2 && phoneNumber && files[0] && mobileNumber && emailId && password && totalStudents && contactPerson && files[0]) {
       const formData = new FormData();
       console.log(files[0]);
@@ -698,11 +746,7 @@ const DataTable = (props) => {
       setTimeout(() => {
         setShowMessage(false)
       }, 1500);
-    }
-
-
-
-    else {
+    } else {
       setAlertMessage('Please Give All Required Fields');
       setShowMessage(true);
       setTimeout(() => {
@@ -718,13 +762,13 @@ const DataTable = (props) => {
       rowdata.mastercategoryId = row.mastercategoryId;
       rowdata.categoryId = row.categoryId;
       rowdata.subcategoryid = row.subcategoryid;
+      rowdata.chaptersIds = row.chaptersIds;
       examdata.push(rowdata);
     }
-    console.log(examdata);
     if (schoolName && address1 && address2 && phoneNumber && mobileNumber && emailId && password && totalStudents && contactPerson) {
       const newData = new FormData();
       console.log(files[0]);
-      newData.append("schoolLogo", files[0] ? files[0] : schoolLogo );
+      newData.append("schoolLogo", files[0] ? files[0] : schoolLogo);
       newData.append("schoolName", schoolName);
       newData.append("address1", address1);
       newData.append("address2", address2);
@@ -756,10 +800,6 @@ const DataTable = (props) => {
       }, 1500);
     }
   }
-
-  const handleRequestClose = () => {
-    setShowMessage(false)
-  };
 
   const onModalClose = () => {
     setNewModal(false);
@@ -828,7 +868,7 @@ const DataTable = (props) => {
               <div className="col-lg-3 col-sm-6 col-12">
                 <FormControl className="w-100 mb-2">
                   <InputLabel htmlFor="age-simple">Actions</InputLabel>
-                  {datatype == 'Active' &&
+                  {datatype === 'Active' &&
                     <Select onChange={(event, value) => {
                       onActionChange(event, value)
                     }} >
@@ -836,7 +876,7 @@ const DataTable = (props) => {
                       <MenuItem value={'Delete'}>Delete</MenuItem>
                     </Select>
                   }
-                  {datatype == 'Inactive' &&
+                  {datatype === 'Inactive' &&
                     <Select onChange={(event, value) => {
                       onActionChange(event, value)
                     }} >
@@ -873,7 +913,7 @@ const DataTable = (props) => {
             <MDBDataTable
               striped
               bordered
-              entriesOptions={[5, 10, 20, 25, 50, 100]}
+              entriesOptions={[5, 10, 20, 25, 50, 100, 1000]}
               entries={5}
               hover
               data={{ rows: schoolrows, columns }}
@@ -885,7 +925,7 @@ const DataTable = (props) => {
             <Modal className="modal-box" backdrop={"static"} openview={onViewModalClose} isOpen={viewmodal}>
               {/* <ModalHeader style={{ padding: '1%' }}   className="col-lg-11 d-flex flex-column order-lg-1"> */}
               {/* <div style={{ padding: '1%' }} className="col-lg-11 d-flex flex-column order-lg-1"> */}
-              {/* {isView == false ? " Operator" :
+              {/* {isView === false ? " Operator" :
                 "View "} */}
               {/* </div> */}
               {/* </ModalHeader> */}
@@ -986,9 +1026,9 @@ const DataTable = (props) => {
 
             </Modal>
 
-            <Modal className="modal-box" backdrop={"static"} openview={onModalClose} isOpen={newmodal}>
+            <Modal className="modal-box" backdrop={"static"} openview={onModalClose} isOpen={newmodal} style={{ maxWidth: 900 }}>
               <ModalHeader className="modal-box-header bg-primary text-white">
-                {isEdit == false ? "Add School" :
+                {isEdit === false ? "Add School" :
                   "Edit School"}
               </ModalHeader>
 
@@ -1171,7 +1211,7 @@ const DataTable = (props) => {
               </div>
 
               {<ModalFooter>
-                {isEdit == false ?
+                {isEdit === false ?
                   <div className="d-flex flex-row">
                     <Button style={{ marginRight: '5%' }} onClick={() => saveState()} disabled={savedisabled} variant="contained" color="primary">Save</Button>
                     <Button variant="contained" color="secondary" onClick={onModalClose}>Cancel</Button>

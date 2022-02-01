@@ -39,6 +39,7 @@ const ExamsDatatable = (props) => {
     const [maincategoryId, setMainCategoryId] = useState('');
     const [showAddExam, setShowAddExam] = useState(false);
     const [showAddBankExam, setShowAddBankExam] = useState(false);
+    const [showAddSectionalExam, setShowAddSectionalExam] = useState(false);
     const [showCommonExamView, setCommonExamView] = useState(false);
     const [showExamsTable, setShowExamsTable] = useState(true);
     const [examData, setExamData] = useState({});
@@ -94,7 +95,7 @@ const ExamsDatatable = (props) => {
                     setData([...data])
 
                     for (var i = 0; i < selectedCatArr.length; i++) {
-                        if (selectedCatArr[i] == row.exam_id) {
+                        if (selectedCatArr[i] === row.exam_id) {
                             selectedCatArr.splice(i, 1);
                         }
                     }
@@ -173,24 +174,23 @@ const ExamsDatatable = (props) => {
         let getdata = {};
         console.log('test');
         let status = localStorage.getItem('status');
-        if (status == 'Active') {
+        if (status === 'Active') {
             getdata.status = 'Y';
             setTxtClass('bg-success text-white');
             setDataType('Active');
         }
-        if (status == 'Inactive') {
+        if (status === 'Inactive') {
             getdata.status = 'N';
             setTxtClass('bg-danger text-white');
             setDataType('Inactive');
         }
-        if (status == 'Waiting') {
+        if (status === 'Waiting') {
             getdata.status = 'W';
             setTxtClass('bg-warning text-white');
             setDataType('Waiting');
         }
         let subId = localStorage.getItem('subId');
         let examtype = localStorage.getItem('examtype');
-        console.log(examtype);
         let exaid = localStorage.getItem('exaid');
         setExam_cat(exaid);
         let exaidsub = localStorage.getItem('exaidsub');
@@ -200,10 +200,13 @@ const ExamsDatatable = (props) => {
         setExamType(examtype);
         setSubId(subId);
         getdata.exa_cat_id = subId;
-        if (examtype == 'C') {
+        if (examtype === 'C') {
             getdata.type = 'C';
 
-        } else {
+        }else if(examType === 'D') {
+            getdata.type = 'D';
+        }
+        else {
             getdata.type = 'B';
         }
         const { data: attres } = await examService.getAllAttendedExam();
@@ -265,13 +268,13 @@ const ExamsDatatable = (props) => {
         setLoader(true);
         console.log(datatype);
         let status = ''
-        if (datatype == 'Active') {
+        if (datatype === 'Active') {
             status = 'Y'
         }
-        if (datatype == 'Inactive') {
+        if (datatype === 'Inactive') {
             status = 'N'
         }
-        if (datatype == 'Waiting') {
+        if (datatype === 'Waiting') {
             status = 'W'
         }
         let searchdata = {};
@@ -299,19 +302,19 @@ const ExamsDatatable = (props) => {
         setDifficulty('');
         setFacultyId('');
         setSearchString('');
-        if (datatype == "Active") {
+        if (datatype === "Active") {
             await getAllActive();
         }
-        if (datatype == "Waiting") {
+        if (datatype === "Waiting") {
             await getAllWaiting();
         }
-        if (datatype == "Inactive") {
+        if (datatype === "Inactive") {
             await getAllInactive();
         }
     }
 
     useEffect(() => {
-        if (data && data.length || data.length == 0)
+        if (data && data.length || data.length === 0)
             mapRows(data);
     }, [data])
 
@@ -332,31 +335,31 @@ const ExamsDatatable = (props) => {
             let freetotal = 0;
             let paidtotal = 0;
             for (let exam of attendedexams) {
-                if (obj.exam_id == exam.exam_id) {
+                if (obj.exam_id === exam.exam_id) {
                     freetotal = freetotal + 1;
                 }
             }
             for (let paid of paidexams) {
-                if (obj.exam_id == paid.exam_id) {
+                if (obj.exam_id === paid.exam_id) {
                     paidtotal = paidtotal + 1;
                 }
             }
 
-            if (obj.exam_type_cat == "P") {
+            if (obj.exam_type_cat === "P") {
                 questiontype = "Prev Questions"
-            } else if (obj.quest_type == 'MANU') {
+            } else if (obj.quest_type === 'MANU') {
                 questiontype = "MANU Questions"
             } else {
                 questiontype = "AUTO Questions"
             }
             let freetype;
-            if (obj.payment_flag == "Y") {
+            if (obj.payment_flag === "Y") {
                 freetype = 'PAID (' + paidtotal + ')';
             } else {
                 freetype = 'FREE (' + freetotal + ')';
             }
             let checkedflg = false;
-            if (obj.exam_status == "1")
+            if (obj.exam_status === "1")
                 checkedflg = true;
 
             let row = {}
@@ -385,6 +388,7 @@ const ExamsDatatable = (props) => {
 
     let selectedCategoryArr = [];
     const onCategorySelect = (e, obj, index) => {
+        //alert(e, obj, index)
         selectedCategoryArr = selectedCategory.exam_id;
         if (e.currentTarget.checked)
             obj.exam_status = 1
@@ -396,7 +400,7 @@ const ExamsDatatable = (props) => {
         console.log(selectedCategoryArr);
         if (e.currentTarget.checked) {
             if (obj.exam_type_cat != 'P') {
-                if (obj.totalassigned == obj.tot_questions) {
+                if (obj.totalassigned === obj.tot_questions) {
                     selectedCategoryArr.push(obj.exam_id)
                 } else {
                     setAlertMessage('Questions need to assign');
@@ -410,7 +414,7 @@ const ExamsDatatable = (props) => {
             }
         } else {
             for (var i = 0; i < selectedCategoryArr.length; i++) {
-                if (selectedCategoryArr[i] == obj.exam_id) {
+                if (selectedCategoryArr[i] === obj.exam_id) {
                     selectedCategoryArr.splice(i, 1);
                 }
             }
@@ -461,14 +465,14 @@ const ExamsDatatable = (props) => {
 
     const handleAction = async () => {
         let selectedCategoryObj = selectedCategory;
-        if (action == '') {
+        if (action === '') {
             setAlertMessage('Please select an action');
             setShowMessage(true);
             setTimeout(() => {
                 setShowMessage(false)
             }, 1500);
         } else {
-            if (action == 'Inactive') {
+            if (action === 'Inactive') {
                 selectedCategoryObj.status = 'N';
                 console.log(selectedCategoryObj);
                 if (selectedCategory.exam_id.length != 0) {
@@ -488,7 +492,7 @@ const ExamsDatatable = (props) => {
                     }, 1500);
                 }
             }
-            if (action == 'Active') {
+            if (action === 'Active') {
                 selectedCategoryObj.status = 'Y';
                 console.log(selectedCategoryObj);
                 if (selectedCategory.exam_id.length != 0) {
@@ -508,7 +512,7 @@ const ExamsDatatable = (props) => {
                     }, 1500);
                 }
             }
-            if (action == 'Delete') {
+            if (action === 'Delete') {
                 selectedCategoryObj.status = 'D';
                 console.log(selectedCategory);
                 if (selectedCategory.exam_id.length != 0) {
@@ -528,7 +532,7 @@ const ExamsDatatable = (props) => {
                     }, 1500);
                 }
             }
-            if (action == 'Waiting') {
+            if (action === 'Waiting') {
                 selectedCategoryObj.status = 'W';
                 console.log(selectedCategoryObj);
                 if (selectedCategory.exam_id.length != 0) {
@@ -577,26 +581,41 @@ const ExamsDatatable = (props) => {
         localStorage.setItem('offerprice', data.offer_price);
         if (data) {
             setExamDetails(data);
-            if (data.exam_type == 'C') {
+            if (data.exam_type === 'C') {
                 history.push(`/app/examsubcategory/commonedit`);
                 setShowAddBankExam(false);
-            } else {
+                setShowAddSectionalExam(false);
+            } else  if (data.exam_type === 'D') {
+                history.push(`/app/examsubcategory/sectionaledit`);
+                setShowAddExam(false);
+                setShowAddBankExam(false);
+            }
+            else {
                 history.push(`/app/examsubcategory/bankedit`);
                 setShowAddExam(false);
+                setShowAddSectionalExam(false);
             }
         } else {
             if (open) {
-                if (data.exam_type == 'C') {
+                if (data.exam_type === 'C') {
                     history.push(`/app/examsubcategory/commonedit`);
                     setShowAddBankExam(false);
-                } else {
+                    setShowAddSectionalExam(false);
+                } else if (data.exam_type === 'D'){
+                    history.push(`/app/examsubcategory/sectionaledit`);
+                    setShowAddExam(false);
+                    setShowAddBankExam(false);
+                }
+                else {
                     history.push(`/app/examsubcategory/bankedit`);
                     setShowAddExam(false);
+                    setShowAddSectionalExam(false);
                 }
                 setShowExamsTable(false);
             } else {
                 setShowAddExam(false);
                 setShowAddBankExam(false);
+                setShowAddSectionalExam(false);
                 setShowExamsTable(true);
                 await handleRefresh();
             }
@@ -605,7 +624,7 @@ const ExamsDatatable = (props) => {
     }
 
     const toggleView = (open, data) => {
-        console.log(data);
+        console.log(data , 'scknscjscisi');
         localStorage.setItem('exam_name', data.exam_name)
         localStorage.setItem('exam_slug', data.exam_slug)
         localStorage.setItem('exam_code', data.exam_code)
@@ -619,6 +638,8 @@ const ExamsDatatable = (props) => {
         localStorage.setItem('exam_level', data.exam_level)
         localStorage.setItem('exam_date', data.exam_date)
         localStorage.setItem('exam_status', data.exam_status)
+        localStorage.setItem('startDate', data.startDate)
+        localStorage.setItem('endDate', data.endDate)
         window.open(`/app/examsubcategory/examsview`, "_blank")
     }
 
@@ -636,12 +657,16 @@ const ExamsDatatable = (props) => {
         setSearchString('');
         let getdata = {};
         getdata.exa_cat_id = subid;
-        if (examType == 'C') {
+        if (examType === 'C') {
             getdata.type = 'C';
             getdata.status = 'N';
-        } else {
+        }else if(examType === 'D') {
+            getdata.type = 'D';
+            getdata.status = 'W';
+        }
+        else {
             getdata.type = 'B';
-            getdata.status = 'N';
+            getdata.status = 'W';
         }
         const { data: res } = await examService.getAllExamsWithAssigned(getdata);
         const { Exam: examres } = res;
@@ -663,12 +688,16 @@ const ExamsDatatable = (props) => {
         setSearchString('');
         let getdata = {};
         getdata.exa_cat_id = subid;
-        if (examType == 'C') {
+        if (examType === 'C') {
             getdata.type = 'C';
             getdata.status = 'Y';
-        } else {
+        } else if(examType === 'D') {
+            getdata.type = 'D';
+            getdata.status = 'W';
+        }
+        else {
             getdata.type = 'B';
-            getdata.status = 'Y';
+            getdata.status = 'W';
         }
         const { data: activeres } = await examService.getAllExamsWithAssigned(getdata);
         const { Exam: activedata } = activeres;
@@ -690,10 +719,14 @@ const ExamsDatatable = (props) => {
         setSearchString('');
         let getdata = {};
         getdata.exa_cat_id = subid;
-        if (examType == 'C') {
+        if (examType === 'C') {
             getdata.type = 'C';
             getdata.status = 'W';
-        } else {
+        } else if(examType === 'D') {
+            getdata.type = 'D';
+            getdata.status = 'W';
+        }
+        else {
             getdata.type = 'B';
             getdata.status = 'W';
         }
@@ -726,7 +759,7 @@ const ExamsDatatable = (props) => {
                                 <div className="col-lg-2 col-sm-6 col-12">
                                     <FormControl className="w-100 mb-2">
                                         <InputLabel htmlFor="age-simple">Actions</InputLabel>
-                                        {datatype == 'Waiting' &&
+                                        {datatype === 'Waiting' &&
                                             <Select onChange={(event, value) => {
                                                 onActionChange(event, value)
                                             }} >
@@ -735,7 +768,7 @@ const ExamsDatatable = (props) => {
                                                 <MenuItem value={'Delete'}>Delete</MenuItem>
                                             </Select>
                                         }
-                                        {datatype == 'Active' &&
+                                        {datatype === 'Active' &&
                                             <Select onChange={(event, value) => {
                                                 onActionChange(event, value)
                                             }} >
@@ -744,7 +777,7 @@ const ExamsDatatable = (props) => {
                                                 <MenuItem value={'Delete'}>Delete</MenuItem>
                                             </Select>
                                         }
-                                        {datatype == 'Inactive' &&
+                                        {datatype === 'Inactive' &&
                                             <Select onChange={(event, value) => {
                                                 onActionChange(event, value)
                                             }} >
@@ -850,7 +883,7 @@ const ExamsDatatable = (props) => {
                             <MDBDataTable
                                 striped
                                 bordered
-                                entriesOptions={[5, 10, 20, 25, 50, 100]}
+                                entriesOptions={[5, 10, 20, 25, 50, 100, 1000 ]}
                                 entries={100}
                                 hover
                                 data={{ rows: categoryrows, columns }}

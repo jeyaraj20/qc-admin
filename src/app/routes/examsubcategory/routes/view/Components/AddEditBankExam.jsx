@@ -14,7 +14,6 @@ import FormHelperText from '@material-ui/core/FormHelperText';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
 import * as examSubCategoryService from '../../../../../../services/examSubCategoryService';
-import * as exammainCategoryService from '../../../../../../services/exammainCategoryService';
 import * as qbankSubCategoryService from '../../../../../../services/qbankSubCategoryService';
 import * as examServices from '../../../../../../services/examServices';
 import Snackbar from '@material-ui/core/Snackbar';
@@ -23,6 +22,9 @@ import SweetAlert from 'react-bootstrap-sweetalert'
 import * as examService from '../../../../../../services/examServices';
 import IconButton from "@material-ui/core/IconButton";
 import Joi from 'joi-browser';
+import { DateTimePicker } from '@material-ui/pickers';
+import Moment from "moment";
+const publicIp = require('public-ip');
 
 const AddEditBankExam = (props) => {
 
@@ -46,12 +48,8 @@ const AddEditBankExam = (props) => {
     const [showchapterwise, setShowChapterWise] = useState(false);
     const [showpreviousyear, setShowPreviousYear] = useState(false);
     const [showTypeOpt, setShowTypeOpt] = useState(false);
-    const [showChapterOpt, setShowChapterOpt] = useState(false);
-    const [showPrevOpt, setShowPrevOpt] = useState(false);
     const [questionType, setQuestionType] = useState("MANU");
     const [testtypes, setTestTypes] = useState([]);
-    const [chapterlist, setChapterList] = useState([]);
-    const [previousyearlist, setPreviousYearList] = useState([]);
     const [testtypeid, setTestTypeId] = useState("");
     const [examlevel, setExamLevel] = useState("");
     const [showMessage, setShowMessage] = useState(false);
@@ -82,8 +80,8 @@ const AddEditBankExam = (props) => {
     const [errors, setErrors] = useState({});
     const [sectionquestion, setSectionQuestion] = useState('');
     const [ipaddr, setIpAddr] = useState('');
-    const publicIp = require('public-ip');
-
+    const [selectedStartDate, setStartDateChange] = useState(null);
+    const [selectedEndDate, setEndDateChange] = useState(null);
 
     const schema = {
         exam_name: Joi.string().required().label('Exam Title'),
@@ -124,47 +122,47 @@ const AddEditBankExam = (props) => {
             e.currentTarget.className = className.replace(" is-valid", "").replace(" is-invalid", "") + " is-valid"
     }
 
-    const renderSectionRows = () => {
-        let rowNum = 1;
-        return sectionRow.map((row, index) => {
-            rowNum = rowNum + 1;
-            const { rowsNo, menu_title, no_ofquest, mark_perquest, neg_mark, cut_off, sect_time, tot_marks, addtype, deltype } = row //destructuring
-            return (
-                <div key={index} className="row no-gutters">
-                    <div style={{ padding: '0.5%', textAlign: 'right' }} className="col-lg-5 d-flex flex-column order-lg-1">
-                        <input value={menu_title} onChange={(e) => onMenuTitleChange(e, index)} />
-                    </div>
-                    <div style={{ padding: '0.5%', textAlign: 'right' }} className="col-lg-1 d-flex flex-column order-lg-1">
-                        <input value={no_ofquest} onChange={(e) => onNoofQuestChange(e, index)} />
-                    </div>
-                    <div style={{ padding: '0.5%', textAlign: 'right' }} className="col-lg-1 d-flex flex-column order-lg-1">
-                        <input value={mark_perquest} onChange={(e) => onMarkPerQuestChange(e, index)} />
-                    </div>
-                    <div style={{ padding: '0.5%', textAlign: 'right' }} className="col-lg-1 d-flex flex-column order-lg-1">
-                        <input value={neg_mark} onChange={(e) => onNegMarkChange(e, index)} />
-                    </div>
-                    <div style={{ padding: '0.5%', textAlign: 'right' }} className="col-lg-1 d-flex flex-column order-lg-1">
-                        <input value={cut_off} onChange={(e) => onCutoffChange(e, index)} />
-                    </div>
-                    <div style={{ padding: '0.5%', textAlign: 'right' }} className="col-lg-1 d-flex flex-column order-lg-1">
-                        <input value={sect_time} onChange={(e) => onSectionTimeChange(e, index)} />
-                    </div>
-                    <div style={{ padding: '0.5%', textAlign: 'right' }} className="col-lg-1 d-flex flex-column order-lg-1">
-                        <input disabled value={tot_marks} />
-                    </div>
-                    <div style={{ textAlign: 'center' }} className="col-lg-1 d-flex flex-column order-lg-1">
-                        {addtype ?
-                            <IconButton onClick={() => addSectionalRow(rowNum)} className="icon-btn">
-                                <i className="zmdi zmdi-plus zmdi-hc-fw" />
-                            </IconButton> :
-                            <IconButton onClick={() => removeSectionalRow(rowsNo)} className="icon-btn">
-                                <i className="zmdi zmdi-delete zmdi-hc-fw" />
-                            </IconButton>}
-                    </div>
-                </div>
-            )
-        })
-    }
+    // const renderSectionRows = () => {
+    //     let rowNum = 1;
+    //     return sectionRow.map((row, index) => {
+    //         rowNum = rowNum + 1;
+    //         const { rowsNo, menu_title, no_ofquest, mark_perquest, neg_mark, cut_off, sect_time, tot_marks, addtype, deltype } = row //destructuring
+    //         return (
+    //             <div key={index} className="row no-gutters">
+    //                 <div style={{ padding: '0.5%', textAlign: 'right' }} className="col-lg-5 d-flex flex-column order-lg-1">
+    //                     <input value={menu_title} onChange={(e) => onMenuTitleChange(e, index)} />
+    //                 </div>
+    //                 <div style={{ padding: '0.5%', textAlign: 'right' }} className="col-lg-1 d-flex flex-column order-lg-1">
+    //                     <input value={no_ofquest} onChange={(e) => onNoofQuestChange(e, index)} />
+    //                 </div>
+    //                 <div style={{ padding: '0.5%', textAlign: 'right' }} className="col-lg-1 d-flex flex-column order-lg-1">
+    //                     <input value={mark_perquest} onChange={(e) => onMarkPerQuestChange(e, index)} />
+    //                 </div>
+    //                 <div style={{ padding: '0.5%', textAlign: 'right' }} className="col-lg-1 d-flex flex-column order-lg-1">
+    //                     <input value={neg_mark} onChange={(e) => onNegMarkChange(e, index)} />
+    //                 </div>
+    //                 <div style={{ padding: '0.5%', textAlign: 'right' }} className="col-lg-1 d-flex flex-column order-lg-1">
+    //                     <input value={cut_off} onChange={(e) => onCutoffChange(e, index)} />
+    //                 </div>
+    //                 <div style={{ padding: '0.5%', textAlign: 'right' }} className="col-lg-1 d-flex flex-column order-lg-1">
+    //                     <input value={sect_time} onChange={(e) => onSectionTimeChange(e, index)} />
+    //                 </div>
+    //                 <div style={{ padding: '0.5%', textAlign: 'right' }} className="col-lg-1 d-flex flex-column order-lg-1">
+    //                     <input disabled value={tot_marks} />
+    //                 </div>
+    //                 <div style={{ textAlign: 'center' }} className="col-lg-1 d-flex flex-column order-lg-1">
+    //                     {addtype ?
+    //                         <IconButton onClick={() => addSectionalRow(rowNum)} className="icon-btn">
+    //                             <i className="zmdi zmdi-plus zmdi-hc-fw" />
+    //                         </IconButton> :
+    //                         <IconButton onClick={() => removeSectionalRow(rowsNo)} className="icon-btn">
+    //                             <i className="zmdi zmdi-delete zmdi-hc-fw" />
+    //                         </IconButton>}
+    //                 </div>
+    //             </div>
+    //         )
+    //     })
+    // }
 
     const validateSections = () => {
         let errs = {};
@@ -180,14 +178,14 @@ const AddEditBankExam = (props) => {
                 errs["section"] = "* Required All Fields in section";
                 break;
             }
-            if (sectionalCutoff == 'Y') {
+            if (sectionalCutoff === 'Y') {
                 if (!item.cut_off) {
                     isValid = false;
                     errs["section"] = "* Required All Fields in section";
                     break;
                 }
             }
-            if (sectionalTiming == 'Y') {
+            if (sectionalTiming === 'Y') {
                 if (!item.sect_time) {
                     isValid = false;
                     errs["section"] = "* Required All Fields in section";
@@ -216,7 +214,7 @@ const AddEditBankExam = (props) => {
             isValid = false;
             errs["section"] = `* Section Sum of Total Questions should be equal to ${totalquestions}`
         }
-        if (sectionalTiming == 'Y') {
+        if (sectionalTiming === 'Y') {
             if (timing < parseInt(totalminutes) || timing > parseInt(totalminutes)) {
                 isValid = false;
                 errs["section"] = `* Section Sum of Minutes should be equal to ${totalminutes}`
@@ -249,12 +247,12 @@ const AddEditBankExam = (props) => {
                         <div style={{ padding: '0.5%', textAlign: 'right' }} className="col-lg-1 d-flex flex-column order-lg-1">
                             <input value={neg_mark} onChange={(e) => onAutoNegMarkChange(e, index)} />
                         </div>
-                        {sectionalCutoff == 'Y' &&
+                        {sectionalCutoff === 'Y' &&
                             <div style={{ padding: '0.5%', textAlign: 'right' }} className="col-lg-1 d-flex flex-column order-lg-1">
                                 <input value={cut_off} onChange={(e) => onAutoCutoffChange(e, index)} />
                             </div>
                         }
-                        {sectionalTiming == 'Y' &&
+                        {sectionalTiming === 'Y' &&
                             <div style={{ padding: '0.5%', textAlign: 'right' }} className="col-lg-1 d-flex flex-column order-lg-1">
                                 <input value={sect_time} onChange={(e) => onAutoSectionTimeChange(e, index)} />
                             </div>
@@ -272,7 +270,7 @@ const AddEditBankExam = (props) => {
                                 </IconButton>}
                         </div>
                         <div style={{ textAlign: 'center' }} className="col-lg-1 d-flex flex-column order-lg-1">
-                            {questionType == 'AUTO' ?
+                            {questionType === 'AUTO' ?
                                 <Button onClick={() => openAssignModal(rowsNo, index, no_ofquest)} variant="contained" color="primary" className="jr-btn">
                                     <span>Assign</span>
                                 </Button> :
@@ -299,30 +297,30 @@ const AddEditBankExam = (props) => {
     }
 
 
-    const onNoofQuestChange = (e, index) => {
-        let newArr = [...sectionRow]; // copying the old datas array
-        let totalQuestions = totalquestions;
-        newArr[index].no_ofquest = e.target.value; // replace e.target.value with whatever you want to change it to
-        let totQuest = 0;
-        for (var i = 0; i < 4; i++) {
-            if (newArr[i].no_ofquest != '') {
-                totQuest = parseInt(totQuest) + parseInt(newArr[i].no_ofquest);
-            }
-        }
-        if (totQuest > totalQuestions) {
-            setBasic(true);
-            SetSubmitDisabled(true);
-            SetAlertText('No. of Questions greater than Total questions');
-        } else {
-            SetSubmitDisabled(false);
-        }
-        if (newArr[index].mark_perquest != '') {
-            newArr[index].tot_marks = e.target.value * newArr[index].mark_perquest
-        } else {
-            newArr[index].tot_marks = e.target.value * 0
-        }
-        setSectionRow(newArr); // ??
-    }
+    // const onNoofQuestChange = (e, index) => {
+    //     let newArr = [...sectionRow]; // copying the old datas array
+    //     let totalQuestions = totalquestions;
+    //     newArr[index].no_ofquest = e.target.value; // replace e.target.value with whatever you want to change it to
+    //     let totQuest = 0;
+    //     for (var i = 0; i < 4; i++) {
+    //         if (newArr[i].no_ofquest !== '') {
+    //             totQuest = parseInt(totQuest) + parseInt(newArr[i].no_ofquest);
+    //         }
+    //     }
+    //     if (totQuest > totalQuestions) {
+    //         setBasic(true);
+    //         SetSubmitDisabled(true);
+    //         SetAlertText('No. of Questions greater than Total questions');
+    //     } else {
+    //         SetSubmitDisabled(false);
+    //     }
+    //     if (newArr[index].mark_perquest !== '') {
+    //         newArr[index].tot_marks = e.target.value * newArr[index].mark_perquest
+    //     } else {
+    //         newArr[index].tot_marks = e.target.value * 0
+    //     }
+    //     setSectionRow(newArr); // ??
+    // }
 
     const onAutoNoofQuestChange = (e, index) => {
         let newArr = [...autosectionrow]; // copying the old datas array
@@ -415,7 +413,7 @@ const AddEditBankExam = (props) => {
             if (newArr[i].sect_time != '0') {
                 SetSubmitDisabled(false);
                 totTime = parseInt(totTime) + parseInt(newArr[i].sect_time);
-            } else if (newArr[i].sect_time == '0' || newArr[i].sect_time == '') {
+            } else if (newArr[i].sect_time === '0' || newArr[i].sect_time === '') {
                 SetSubmitDisabled(true);
             } else {
                 SetSubmitDisabled(false);
@@ -448,7 +446,7 @@ const AddEditBankExam = (props) => {
         console.log(res);*/
         const { subcategory: subcategoryres } = maincategoryres;
         setSubCategoryItems(subcategoryres);
-        if (mode == 'Edit') {
+        if (mode === 'Edit') {
             console.log(examdetails);
             setExam_title(examdetails.exam_name);
             setSlug(examdetails.exam_slug);
@@ -465,16 +463,16 @@ const AddEditBankExam = (props) => {
             setSectionalCutoff(examdetails.sect_cutoff);
             var array = JSON.parse("[" + examdetails.exam_level + "]");
             for (let s = 0; s < array.length; s++) {
-                if (array[s] == 1) {
+                if (array[s] === 1) {
                     setLevel1(true)
                 }
-                if (array[s] == 2) {
+                if (array[s] === 2) {
                     setLevel2(true)
                 }
-                if (array[s] == 3) {
+                if (array[s] === 3) {
                     setLevel3(true)
                 }
-                if (array[s] == 4) {
+                if (array[s] === 4) {
                     setLevel4(true)
                 }
             }
@@ -488,47 +486,49 @@ const AddEditBankExam = (props) => {
                 typesListArr.push(<MenuItem value={type.extype_id}>{type.extest_type}</MenuItem>)
             }
             setTestTypes(typesListArr);
-            if (examdetails.exam_type_cat == 'T') {
+            if (examdetails.exam_type_cat === 'T') {
                 setShowTestTypes(true);
             } else {
                 setShowTestTypes(false);
             }
-            if (examdetails.exam_type_cat == 'C') {
+            if (examdetails.exam_type_cat === 'C') {
                 setShowChapterWise(true);
             } else {
                 setShowChapterWise(false);
             }
-            if (examdetails.exam_type_cat == 'P') {
+            if (examdetails.exam_type_cat === 'P') {
                 setShowPreviousYear(true);
             } else {
                 setShowPreviousYear(false);
             }
             const { data: sectionres } = await examService.getExamById(examdetails.exam_id);
             const { Section: sectionRow } = sectionres;
-            console.log(sectionRow);
             let sectionArr = [];
             let count = 0;
-            for (let section of sectionRow) {
-                let sectionObj = {};
-                sectionObj.menu_title = section.menu_title;
-                sectionObj.no_ofquest = section.no_ofquest;
-                sectionObj.mark_perquest = section.mark_perquest;
-                sectionObj.neg_mark = section.neg_mark;
-                sectionObj.cut_off = section.cut_off;
-                sectionObj.sect_time = section.sect_time;
-                sectionObj.tot_marks = section.tot_marks;
-                if (count == 0) {
-                    sectionObj.addtype = true;
-                    sectionObj.deltype = false;
-                } else {
-                    sectionObj.deltype = true;
-                    sectionObj.addtype = false;
+            if(sectionres && sectionres.count > 0 ){
+                for (let section of sectionRow) {
+                    let sectionObj = {};
+                    sectionObj.menu_title = section.menu_title;
+                    sectionObj.no_ofquest = section.no_ofquest;
+                    sectionObj.mark_perquest = section.mark_perquest;
+                    sectionObj.neg_mark = section.neg_mark;
+                    sectionObj.cut_off = section.cut_off;
+                    sectionObj.sect_time = section.sect_time;
+                    sectionObj.tot_marks = section.tot_marks;
+                    sectionObj.sect_id = section.sect_id;
+                    if (count === 0) {
+                        sectionObj.addtype = true;
+                        sectionObj.deltype = false;
+                    } else {
+                        sectionObj.deltype = true;
+                        sectionObj.addtype = false;
+                    }
+                    sectionArr.push(sectionObj);
+                    count = count + 1;
+                    console.log(sectionArr);
                 }
-                sectionArr.push(sectionObj);
-                count = count + 1;
-                console.log(sectionArr);
+                setAutoSectionRow(sectionArr);
             }
-            setAutoSectionRow(sectionArr);
         } else {
             setExam_title('');
             const { data: typeslistres } = await examServices.getTestTypes(subcatdetails.exa_cat_id);
@@ -580,17 +580,17 @@ const AddEditBankExam = (props) => {
 
     const handleAddedExamTypes = (e) => {
         setAddedExamTypes(e.target.value);
-        if (e.target.value == 'T') {
+        if (e.target.value === 'T') {
             setShowTestTypes(true);
         } else {
             setShowTestTypes(false);
         }
-        if (e.target.value == 'C') {
+        if (e.target.value === 'C') {
             setShowChapterWise(true);
         } else {
             setShowChapterWise(false);
         }
-        if (e.target.value == 'P') {
+        if (e.target.value === 'P') {
             setShowPreviousYear(true);
         } else {
             setShowPreviousYear(false);
@@ -599,7 +599,7 @@ const AddEditBankExam = (props) => {
 
     const handlePaidExamTypes = (e) => {
         setPaymentFlag(e.target.value);
-        if (e.target.value == "Y") {
+        if (e.target.value === "Y") {
             setShowPrice(true);
         } else {
             setShowPrice(false);
@@ -618,6 +618,24 @@ const AddEditBankExam = (props) => {
         setAssignModal(false);
     };
 
+    const handleStartDateChange = (date) => {
+        if(date === null ){
+            setStartDateChange(null);
+        }else{
+            let fromdate = Moment(date).format('YYYY-MM-DD HH:mm:ss');
+            setStartDateChange(fromdate);
+        }
+    }
+
+    const handleEndDateChange = (date) => {
+        if(date === null ){
+            setEndDateChange(null);
+        }else{
+            let fromdate = Moment(date).format('YYYY-MM-DD HH:mm:ss');
+            setEndDateChange(fromdate);
+        }
+    }
+
     const saveAssignedData = () => {
         console.log(automatic);
         console.log(autosectionrow);
@@ -629,7 +647,7 @@ const AddEditBankExam = (props) => {
                 totalquestion = totalquestion + parseInt(data.noofquest);
         }
         console.log(totalquestion);
-        if (totalquestion < sectionquestion || totalquestion > sectionquestion || totalquestion == 0 || totalquestion == undefined) {
+        if (totalquestion < sectionquestion || totalquestion > sectionquestion || totalquestion === 0 || totalquestion === undefined) {
             setAlertMessage('Question Count is mismatch!!!');
             setShowMessage(true);
             setTimeout(() => {
@@ -651,7 +669,7 @@ const AddEditBankExam = (props) => {
         setCurrentIndex(index);
         setAutomaticRow([]);
         //if (autosectionrow.questionbank.length > 0) {
-        let filtered = autosectionrow.filter(row => row.rowsNo == rowsNo);
+        let filtered = autosectionrow.filter(row => row.rowsNo === rowsNo);
         console.log(filtered);
         if (filtered.length > 0) {
             if (filtered[0].questionbank.length > 0) {
@@ -660,7 +678,7 @@ const AddEditBankExam = (props) => {
                 let filterarr = [];
                 filtereddata.map((row, index) => {
                     console.log(index);
-                    if (index == 0) {
+                    if (index === 0) {
                         filterarr.push({ rowsNo: index + 1, maincategoryId: row.maincategoryId, subcategoryitems: row.subcategoryitems, subcategoryId: row.subcategoryId, noofquest: row.noofquest, addtype: true, deltype: false })
                     } else {
                         filterarr.push({ rowsNo: index + 1, maincategoryId: row.maincategoryId, subcategoryitems: row.subcategoryitems, subcategoryId: row.subcategoryId, noofquest: row.noofquest, addtype: false, deltype: true })
@@ -676,7 +694,7 @@ const AddEditBankExam = (props) => {
     };
 
     const handleQuestionType = async (e) => {
-        if (e.target.value == 'MANU') {
+        if (e.target.value === 'MANU') {
             setAutoSectionRow([
                 { rowsNo: 1, menu_title: '', no_ofquest: '', mark_perquest: '', neg_mark: '', cut_off: '0', sect_time: '0', tot_marks: '', addtype: true, deltype: false, btn: false, questionbank: [] }
             ]);
@@ -694,7 +712,7 @@ const AddEditBankExam = (props) => {
         newArr[index].maincategoryId = event.target.value; // replace e.target.value with whatever you want to change it to
         let itemArr = [];
         for (let subcategory of subcategoryitems) {
-            if (event.target.value == subcategory.pid)
+            if (event.target.value === subcategory.pid)
                 itemArr.push(<MenuItem value={subcategory.cat_id}>{subcategory.cat_name}</MenuItem>)
         }
         newArr[index].subcategoryitems = itemArr;
@@ -704,7 +722,7 @@ const AddEditBankExam = (props) => {
     const handleSubCategoryChange = async (event, index) => {
         let newArr = [...automatic]; // copying the old datas array
         for (let data of newArr) {
-            if (data.subcategoryId == event.target.value) {
+            if (data.subcategoryId === event.target.value) {
                 console.log("false");
                 setAlertMessage('Sub category already selected');
                 setShowMessage(true);
@@ -751,7 +769,7 @@ const AddEditBankExam = (props) => {
             arr.push(e.target.value);
         } else {
             for (var i = 0; i < arr.length; i++) {
-                if (arr[i] == e.target.value) {
+                if (arr[i] === e.target.value) {
                     arr.splice(i, 1);
                 }
             }
@@ -771,7 +789,7 @@ const AddEditBankExam = (props) => {
             arr.push(e.target.value);
         } else {
             for (var i = 0; i < arr.length; i++) {
-                if (arr[i] == e.target.value) {
+                if (arr[i] === e.target.value) {
                     arr.splice(i, 1);
                 }
             }
@@ -791,7 +809,7 @@ const AddEditBankExam = (props) => {
             arr.push(e.target.value);
         } else {
             for (var i = 0; i < arr.length; i++) {
-                if (arr[i] == e.target.value) {
+                if (arr[i] === e.target.value) {
                     arr.splice(i, 1);
                 }
             }
@@ -811,7 +829,7 @@ const AddEditBankExam = (props) => {
             arr.push(e.target.value);
         } else {
             for (var i = 0; i < arr.length; i++) {
-                if (arr[i] == e.target.value) {
+                if (arr[i] === e.target.value) {
                     arr.splice(i, 1);
                 }
             }
@@ -824,14 +842,32 @@ const AddEditBankExam = (props) => {
     }
 
     const handleTestTypeChange = async (event, value) => {
-        console.log(event.target.value);
         setTestTypeId(event.target.value);
     }
 
+    const saveBankExamClick = async () => {
+        if(selectedStartDate && selectedEndDate ){
+            if( Date.parse(selectedStartDate) > Date.parse(selectedEndDate) ){
+                setShowMessage(true);
+                setAlertMessage('Start Date should be less than or equal to End Date');
+                setTimeout(() => {
+                    setShowMessage(false)
+                }, 1500);
+            }else{
+                saveBankExam();
+            }
+        }else if(!selectedStartDate && selectedEndDate ){
+            setShowMessage(true);
+            setAlertMessage('Start Date should be less than or equal to End Date');
+            setTimeout(() => {
+                setShowMessage(false)
+            }, 1500);
+        }else{
+            saveBankExam();
+        }
+    }
+
     const saveBankExam = async () => {
-        console.log(autosectionrow);
-        // if(validateSections()) {
-        // }
         let data = {};
         data.exam_cat = exam_cat;
         data.exam_sub = exam_sub;
@@ -859,7 +895,8 @@ const AddEditBankExam = (props) => {
         data.exam_level = examlevel;
         data.ip_addr = ipaddr;
         data.sections = autosectionrow;
-        console.log(data);
+        data.startDate = selectedStartDate;
+        data.endDate = selectedEndDate;
         let validateData = {
             exam_name: exam_title,
             exam_slug: slug,
@@ -874,7 +911,6 @@ const AddEditBankExam = (props) => {
             exam_type_id: testtypeid,
         }
         let errs = validate(validateData);
-        console.log("errs", errs)
         if (errs) {
             setErrors(errs);
             return false;
@@ -1046,7 +1082,7 @@ const AddEditBankExam = (props) => {
             }
             {!loader &&
                 <div className="row no-gutters">
-                    {mode == 'Add' ? <div style={{ padding: '1%' }} className="col-lg-11 d-flex flex-column order-lg-1">
+                    {mode === 'Add' ? <div style={{ padding: '1%' }} className="col-lg-11 d-flex flex-column order-lg-1">
                         <h1>Add Bank Exam</h1>
                     </div> :
                         <div style={{ padding: '1%' }} className="col-lg-11 d-flex flex-column order-lg-1">
@@ -1335,6 +1371,28 @@ const AddEditBankExam = (props) => {
                                 <FormControlLabel value="AUTO" control={<Radio color="primary" />} label="Automatic" />
                             </RadioGroup>
                         </FormControl>
+                        <div class="row" style={{marginBottom : 10 }}>
+                            <div class="col-lg-4" style={{ "margin": "0px" }}>
+                                <DateTimePicker
+                                    clearable
+                                    value={selectedStartDate}
+                                    onChange={handleStartDateChange}
+                                    label="Start Date"
+                                    format="DD/MM/YYYY HH:mm:ss"
+                                    style={{ width : '100%'}}
+                                />
+                            </div>
+                            <div class="col-lg-4" style={{ "margin": "0px" }}>
+                                <DateTimePicker
+                                    clearable
+                                    value={selectedEndDate}
+                                    onChange={handleEndDateChange}
+                                    label="End Date"
+                                    format="DD/MM/YYYY HH:mm:ss"
+                                    style={{ width : '100%'}}
+                                />
+                            </div>
+                        </div>
                         <TextField
                             autoComplete='off'
                             required
@@ -1342,7 +1400,8 @@ const AddEditBankExam = (props) => {
                             name={'exam_pos'}
                             onChange={(event) => setPosition(event.target.value)}
                             value={position}
-                            margin="none" />
+                            margin="none" 
+                        />
                         <div><h6 style={{ color: 'red', paddingTop: '1%' }}>{errors['exam_pos']}</h6></div>
                         <h3>Sectional Details</h3>
                         <div className="row no-gutters">
@@ -1358,12 +1417,12 @@ const AddEditBankExam = (props) => {
                             <div style={{ textAlign: 'center' }} className="col-lg-1 d-flex flex-column order-lg-1">
                                 Neg Mark
                             </div>
-                            {sectionalCutoff == 'Y' &&
+                            {sectionalCutoff === 'Y' &&
                                 <div style={{ textAlign: 'center' }} className="col-lg-1 d-flex flex-column order-lg-1">
                                     Cut off
                             </div>
                             }
-                            {sectionalTiming == 'Y' &&
+                            {sectionalTiming === 'Y' &&
                                 <div style={{ textAlign: 'left' }} className="col-lg-1 d-flex flex-column order-lg-1">
                                     Time(mins)
                             </div>
@@ -1374,13 +1433,13 @@ const AddEditBankExam = (props) => {
                             <div style={{ textAlign: 'left' }} className="col-lg-1 d-flex flex-column order-lg-1">
                                 Add/Remove
                             </div>
-                            {questionType == 'AUTO' &&
+                            {questionType === 'AUTO' &&
                                 <div style={{ textAlign: 'center' }} className="col-lg-1 d-flex flex-column order-lg-1">
                                     Assign
                             </div>
                             }
                         </div>
-                        {/*questionType == 'MANU' &&
+                        {/*questionType === 'MANU' &&
                             renderSectionRows()
                         */}
 
@@ -1389,8 +1448,8 @@ const AddEditBankExam = (props) => {
                             <span style={{ color: 'red', paddingTop: '1%' }}>{errors && errors.section}</span>
                         </div>
 
-                        {mode == 'Add' ? <div style={{ paddingTop: '2%', textAlign: 'right' }} className="col-lg-6 col-sm-6 col-12">
-                            <Button onClick={() => saveBankExam()} disabled={submitDisabled} variant="contained" color="primary" className="jr-btn text-white">
+                        {mode === 'Add' ? <div style={{ paddingTop: '2%', textAlign: 'right' }} className="col-lg-6 col-sm-6 col-12">
+                            <Button onClick={() => saveBankExamClick()} disabled={submitDisabled} variant="contained" color="primary" className="jr-btn text-white">
                                 Submit
                             </Button>
                         </div> :

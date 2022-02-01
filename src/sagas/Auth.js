@@ -1,4 +1,4 @@
-import {all, call, fork, put, takeEvery} from "redux-saga/effects";
+import { all, call, fork, put, takeEvery } from "redux-saga/effects";
 import {
   auth,
   facebookAuthProvider,
@@ -6,7 +6,7 @@ import {
   googleAuthProvider,
   twitterAuthProvider
 } from "../firebase/firebase";
-import http from "../services/httpService";
+import { setJwt } from "../services/httpService";
 import {
   SIGNIN_FACEBOOK_USER,
   SIGNIN_GITHUB_USER,
@@ -17,7 +17,7 @@ import {
   SIGNUP_USER
 } from "constants/ActionTypes";
 import * as authentication from '../services/authService';
-import {showAuthMessage, userSignInSuccess, userSignOutSuccess, userSignUpSuccess} from "actions/Auth";
+import { showAuthMessage, userSignInSuccess, userSignOutSuccess, userSignUpSuccess } from "actions/Auth";
 import {
   userFacebookSignInSuccess,
   userGithubSignInSuccess,
@@ -26,46 +26,46 @@ import {
 } from "../actions/Auth";
 const tokenKey = "token";
 
-http.setJwt(getJwt());
+setJwt(getJwt());
 
 const createUserWithEmailPasswordRequest = async (email, password) =>
-  await  auth.createUserWithEmailAndPassword(email, password)
+  await auth.createUserWithEmailAndPassword(email, password)
     .then(authUser => authUser)
     .catch(error => error);
 
-const signInUserWithEmailPasswordRequest = async (admin_name, admin_pass,type,logintype) =>
-  await authentication.signInWithEmailAndPassword(admin_name, admin_pass,type,logintype)
+const signInUserWithEmailPasswordRequest = async (admin_name, admin_pass, type, logintype) =>
+  await authentication.signInWithEmailAndPassword(admin_name, admin_pass, type, logintype)
     .then(authUser => authUser)
     .catch(error => error);
 
 const signOutRequest = async () =>
-  await  auth.signOut()
+  await auth.signOut()
     .then(authUser => authUser)
     .catch(error => error);
 
 
 const signInUserWithGoogleRequest = async () =>
-  await  auth.signInWithPopup(googleAuthProvider)
+  await auth.signInWithPopup(googleAuthProvider)
     .then(authUser => authUser)
     .catch(error => error);
 
 const signInUserWithFacebookRequest = async () =>
-  await  auth.signInWithPopup(facebookAuthProvider)
+  await auth.signInWithPopup(facebookAuthProvider)
     .then(authUser => authUser)
     .catch(error => error);
 
 const signInUserWithGithubRequest = async () =>
-  await  auth.signInWithPopup(githubAuthProvider)
+  await auth.signInWithPopup(githubAuthProvider)
     .then(authUser => authUser)
     .catch(error => error);
 
 const signInUserWithTwitterRequest = async () =>
-  await  auth.signInWithPopup(twitterAuthProvider)
+  await auth.signInWithPopup(twitterAuthProvider)
     .then(authUser => authUser)
     .catch(error => error);
 
-function* createUserWithEmailPassword({payload}) {
-  const {email, password} = payload;
+function* createUserWithEmailPassword({ payload }) {
+  const { email, password } = payload;
   try {
     const signUpUser = yield call(createUserWithEmailPasswordRequest, email, password);
     if (signUpUser.message) {
@@ -142,18 +142,15 @@ function* signInUserWithTwitter() {
   }
 }
 
-function* signInUserWithEmailPassword({payload}) {
-  console.log(payload);
-  const {loginId, password,type,logintype} = payload;
+function* signInUserWithEmailPassword({ payload }) {
+  const { loginId, password, type, logintype } = payload;
   try {
-    const signInUser = yield call(signInUserWithEmailPasswordRequest, loginId, password,type,logintype);
- //   console.log(signInUser.message)
+    const signInUser = yield call(signInUserWithEmailPasswordRequest, loginId, password, type, logintype);
     if (signInUser.message) {
       yield put(showAuthMessage(signInUser.message));
     } else {
-     // localStorage.setItem('token', signInUser.token);
-     localStorage.setItem(tokenKey, signInUser.token);
-     http.setJwt(getJwt());
+      localStorage.setItem(tokenKey, signInUser.token);
+      setJwt(getJwt());
       yield put(userSignInSuccess(signInUser.token));
     }
   } catch (error) {
@@ -204,16 +201,16 @@ export function* signOutUser() {
 }
 
 export function getJwt() {
-  // console.log(localStorage.getItem(tokenKey));
   return localStorage.getItem(tokenKey);
 }
+
 export default function* rootSaga() {
   yield all([fork(signInUser),
-    fork(createUserAccount),
-    fork(signInWithGoogle),
-    fork(signInWithFacebook),
-    fork(signInWithTwitter),
-    fork(signInWithGithub),
-    getJwt(),
-    fork(signOutUser)]);
+  fork(createUserAccount),
+  fork(signInWithGoogle),
+  fork(signInWithFacebook),
+  fork(signInWithTwitter),
+  fork(signInWithGithub),
+  getJwt(),
+  fork(signOutUser)]);
 }

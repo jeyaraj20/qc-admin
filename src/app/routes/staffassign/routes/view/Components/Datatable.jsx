@@ -81,7 +81,7 @@ const DataTable = (props) => {
           console.log(selectedCatArr);
         } else {
           for (var i = 0; i < selectedCatArr.length; i++) {
-            if (selectedCatArr[i] == row.op_id) {
+            if (selectedCatArr[i] === row.op_id) {
               selectedCatArr.splice(i, 1);
             }
           }
@@ -108,7 +108,7 @@ const DataTable = (props) => {
       console.log(selectedNameArr);
     } else {
       for (var i = 0; i < selectedNameArr.length; i++) {
-        if (selectedNameArr[i] == obj.op_id) {
+        if (selectedNameArr[i] === obj.op_id) {
           selectedNameArr.splice(i, 1);
         }
       }
@@ -130,7 +130,7 @@ const DataTable = (props) => {
         rowarr.push(row);
       } else {
         for (var i = 0; i < selectedAllFeatureArr.length; i++) {
-          if (selectedAllFeatureArr[i] == row.menu_id) {
+          if (selectedAllFeatureArr[i] === row.menu_id) {
             selectedAllFeatureArr.splice(i, 1);
             str = selectedAllFeatureArr.toString();
           }
@@ -253,10 +253,10 @@ const DataTable = (props) => {
       rowcount = rowcount + 1;
       for (let fieldName of rowFields)
         row[fieldName] = obj[fieldName] // fetching required fields in req order
-      if (obj.op_type == 'A') {
+      if (obj.op_type === 'A') {
         row.op_type = 'Admin'
       }
-      if (obj.op_type == 'O') {
+      if (obj.op_type === 'O') {
         row.op_type = 'Faculty'
       }
       row.sno = <span>{rowcount}</span>
@@ -283,7 +283,7 @@ const DataTable = (props) => {
       str = selectedFeatureArr.toString();
     } else {
       for (var i = 0; i < selectedFeatureArr.length; i++) {
-        if (selectedFeatureArr[i] == obj.menu_id) {
+        if (selectedFeatureArr[i] === obj.menu_id) {
           selectedFeatureArr.splice(i, 1);
           str = selectedFeatureArr.toString();
         }
@@ -301,14 +301,14 @@ const DataTable = (props) => {
 
   const handleAction = async () => {
     let selectedNameObj = selectedOp;
-    if (action == '') {
+    if (action === '') {
       setAlertMessage('Please select an action');
       setShowMessage(true);
       setTimeout(() => {
         setShowMessage(false)
       }, 1500);
     } else {
-      if (action == 'Inactive') {
+      if (action === 'Inactive') {
         selectedNameObj.status = 'N';
         if (selectedOp.opId.length != 0) {
           await adminService.changeStatus(selectedNameObj);
@@ -326,7 +326,7 @@ const DataTable = (props) => {
           }, 1500);
         }
       }
-      if (action == 'Active') {
+      if (action === 'Active') {
         selectedNameObj.status = 'Y';
         console.log(selectedNameObj);
         if (selectedOp.opId.length != 0) {
@@ -346,7 +346,7 @@ const DataTable = (props) => {
           }, 1500);
         }
       }
-      if (action == 'Delete') {
+      if (action === 'Delete') {
         selectedNameObj.status = 'D';
         if (selectedOp.opId.length != 0) {
           await adminService.changeStatus(selectedNameObj);
@@ -608,7 +608,7 @@ const DataTable = (props) => {
             <MDBDataTable
               striped
               bordered
-              entriesOptions={[5, 10, 20, 25, 50, 100]}
+              entriesOptions={[5, 10, 20, 25, 50, 100, 1000]}
               entries={5}
               hover
               data={{ rows: namerows, columns }}
@@ -619,7 +619,7 @@ const DataTable = (props) => {
             />
             <Modal className="modal-box" backdrop={"static"} openview={onViewModalClose} isOpen={viewmodal}>
               {/* <ModalHeader className="modal-box-header bg-primary text-white">
-              {isView == false ? " Operator" :
+              {isView === false ? " Operator" :
                 "View Operator"}
             </ModalHeader> */}
 
@@ -677,7 +677,7 @@ const DataTable = (props) => {
             </Modal>
             <Modal className="modal-box" backdrop={"static"} toggle={onModalClose} isOpen={newmodal}>
               <ModalHeader className="modal-box-header bg-primary text-white">
-                {isEdit == false ? "Staff Assign" :
+                {isEdit === false ? "Staff Assign" :
                   "Staff Re-assign"}
               </ModalHeader>
 
@@ -710,7 +710,7 @@ const DataTable = (props) => {
                 </div>
               </div>
               <ModalFooter>
-                {isEdit == false ?
+                {isEdit === false ?
                   <div className="d-flex flex-row">
                     <Button style={{ marginRight: '5%' }} onClick={() => createStaffAssign()} disabled={savedisabled} variant="contained" color="primary">Assign</Button>
                     <Button variant="contained" color="secondary" onClick={onModalClose}>Cancel</Button>

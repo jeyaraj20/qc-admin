@@ -100,14 +100,12 @@ const MapQuestionCommon = (props) => {
             if (document.getElementById(row.qid)) {
                 document.getElementById(row.qid).checked = e.currentTarget.checked;
                 if (e.currentTarget.checked) {
-
                     if (e.currentTarget.checked)
-                        row.quest_status = 1
+                        row.isChecked = true;
                     else
-                        row.quest_status = 0;
+                        row.isChecked = false;
                     data[rowcount] = row
                     setData([...data])
-
                     selectedCatArr.push(row.qid);
                     selected[row.qid] = {
                         "isselected": e.currentTarget.checked
@@ -115,16 +113,14 @@ const MapQuestionCommon = (props) => {
                     setSelectedCategory({ "qid": selectedCatArr });
                     console.log(selectedCatArr);
                 } else {
-
                     if (e.currentTarget.checked)
-                        row.quest_status = 1
+                        row.isChecked = true;
                     else
-                        row.quest_status = 0;
+                        row.isChecked = false;
                     data[rowcount] = row
                     setData([...data])
-
                     for (var i = 0; i < selectedCatArr.length; i++) {
-                        if (selectedCatArr[i] == row.qid) {
+                        if (selectedCatArr[i] === row.qid) {
                             selectedCatArr.splice(i, 1);
                         }
                     }
@@ -153,11 +149,10 @@ const MapQuestionCommon = (props) => {
                     console.log(selectedAssignedArr);
                 } else {
                     for (var i = 0; i < selectedAssignedArr.length; i++) {
-                        if (selectedAssignedArr[i] == row.qid) {
+                        if (selectedAssignedArr[i] === row.qid) {
                             selectedAssignedArr.splice(i, 1);
                         }
                     }
-                    console.log(selectedAssignedArr);
                     setSelectedAssignedQues({ "exq_id": selectedAssignedArr });
                 }
             }
@@ -287,7 +282,7 @@ const MapQuestionCommon = (props) => {
         data.exam_id = examdetails.exam_id;
         data.exam_master_id = examdetails.exam_cat;
         data.exam_cat_id = examdetails.exam_sub;
-        if (examdetails.exam_status == "Y") {
+        if (examdetails.exam_status === "Y") {
             setShowAssignBtn(false);
             setShowRemoveBtn(false);
         }
@@ -303,7 +298,7 @@ const MapQuestionCommon = (props) => {
             setListCount(totcount);
         }
         let getAssinedRedData = {};
-        if (examdetails.exam_type_cat == "P") {
+        if (examdetails.exam_type_cat === "P") {
             setDataType('Assigned Questions');
             setTxtClass('bg-success text-white');
             setShowAssignBtn(false);
@@ -324,7 +319,7 @@ const MapQuestionCommon = (props) => {
         setAssignedCount(assignedcount);
         let ip = await publicIp.v4();
         setIpAddr(ip);
-        if (examtype == 'C') {
+        if (examtype === 'C') {
             setShowSections(false);
         } else {
             setShowSections(true);
@@ -357,8 +352,6 @@ const MapQuestionCommon = (props) => {
     }
 
     useEffect(() => {
-
-        //if (data && data.length)
         mapRows(data);
     }, [data])
 
@@ -385,15 +378,10 @@ const MapQuestionCommon = (props) => {
     }, [listcount])
 
     useEffect(() => {
-
-        //if (data && data.length)
         mapAssignedRows(assigneddata);
     }, [assigneddata])
 
     useEffect(() => () => {
-        //handleRefresh();
-        console.log(checked);
-
     }, [checked]);
 
     useEffect(() => {
@@ -408,22 +396,17 @@ const MapQuestionCommon = (props) => {
         columns.forEach(column => rowFields.push(column.field))
         let sno = ((dataset - 1) * 1000) + 1;
         let categoryrows = rows.map((obj, index) => {
-
-            let checkedflg = false;
-            if (obj.quest_status == "1")
-                checkedflg = true;
-
             let row = {}
             for (let fieldName of rowFields)
                 row[fieldName] = obj[fieldName] // fetching required fields in req order
             let questionvalue = <div dangerouslySetInnerHTML={{ __html: entities.decode(obj.question) }}></div>
-            let filtered = examquestions.filter(quest => quest.qid == obj.qid);
+            let filtered = examquestions.filter(quest => quest.qid === obj.qid);
             row.q_sno = sno;
             sno = sno + 1;
             if (filtered.length > 0) {
-                row.q_type = <span style={{ color: 'red' }}>{obj.q_type == 'T' ? 'Text' : 'Image'}</span>
+                row.q_type = <span style={{ color: 'red' }}>{obj.q_type === 'T' ? 'Text' : 'Image'}</span>
                 row.Subcategory = <span style={{ color: 'red' }}>{obj.Subcategory}</span>
-                if (obj.q_type == 'T')
+                if (obj.q_type === 'T')
                     row.question = <span style={{ color: 'red' }}>{questionvalue}</span>
                 else
                     row.question = <img style={{ width: 25, height: 25 }} src="https://myadmin.questioncloud.in/images/WhatsApp.png" border="0"></img>
@@ -432,22 +415,22 @@ const MapQuestionCommon = (props) => {
                 row.quest_level = <span style={{ color: 'red' }}>{obj.quest_level}</span>
                 row.select = <MDBInput style={{ marginTop: '0px', width: '20px' }}
                     label="." type="checkbox"
-                    checked={checkedflg}
+                    checked={obj.isChecked}
                     name={obj.qid} id={obj.qid}
                     onChange={(e) => { onCategorySelect(e, obj, index) }}
                 />;
                 row.quest_date = <span style={{ color: 'red' }}>{Moment(obj.quest_date).format('DD-MM-YYYY')}</span>
                 row.view = <IconButton style={{ color: 'red' }} onClick={() => toggleView(true, obj)} className="icon-btn"><i className="zmdi zmdi-file-text zmdi-hc-fw" /></IconButton>
             } else {
-                if (obj.q_type == 'T')
+                if (obj.q_type === 'T')
                     row.question = questionvalue
                 else
                     row.question = <img style={{ width: 25, height: 25 }} src="https://myadmin.questioncloud.in/images/WhatsApp.png" border="0"></img>
 
-                row.q_type = <span>{obj.q_type == 'T' ? 'Text' : 'Image'}</span>
+                row.q_type = <span>{obj.q_type === 'T' ? 'Text' : 'Image'}</span>
                 row.select = <MDBInput style={{ marginTop: '0px', width: '20px' }}
                     label="." type="checkbox"
-                    checked={checkedflg}
+                    checked={obj.isChecked}
                     name={obj.qid} id={obj.qid}
                     onChange={(e) => { onCategorySelect(e, obj, index) }}
                 />;
@@ -464,20 +447,16 @@ const MapQuestionCommon = (props) => {
     const onCategorySelect = (e, obj, index) => {
         selectedCategoryArr = selectedCategory.qid;
         if (e.currentTarget.checked)
-            obj.quest_status = 1
+            obj.isChecked = true;
         else
-            obj.quest_status = 0;
+            obj.isChecked = false;
         data[index] = obj
         setData([...data])// to avoid shallow checking
-
-        console.log(e.currentTarget.checked);
-        console.log(selectedCategoryArr);
         if (e.currentTarget.checked) {
             selectedCategoryArr.push(obj.qid)
-
         } else {
             for (var i = 0; i < selectedCategoryArr.length; i++) {
-                if (selectedCategoryArr[i] == obj.qid) {
+                if (selectedCategoryArr[i] === obj.qid) {
                     selectedCategoryArr.splice(i, 1);
                 }
             }
@@ -488,20 +467,16 @@ const MapQuestionCommon = (props) => {
     const mapAssignedRows = (rows) => {
         let rowFields = []// fields in required order
         assignedcolumns.forEach(column => rowFields.push(column.field))
-
         let assignedrows = rows.map((obj, index) => {
-            let checkedflg = false;
-            if (obj.exam_queststatus == "1")
-                checkedflg = true;
             let row = {}
             for (let fieldName of rowFields)
                 row[fieldName] = obj[fieldName] // fetching required fields in req order
             let questionvalue = <div dangerouslySetInnerHTML={{ __html: entities.decode(obj.question) }}></div>
-            row.q_type = <span>{obj.q_type == 'T' ? 'Text' : 'Image'}</span>
+            row.q_type = <span>{obj.q_type === 'T' ? 'Text' : 'Image'}</span>
             row.question = questionvalue
             row.select = <MDBInput style={{ marginTop: '0px', width: '20px' }}
                 label="." type="checkbox"
-                checked={checkedflg}
+                checked={obj.isChecked}
                 name={obj.exq_id} id={obj.exq_id}
                 onChange={(e) => { onAssignedSelect(e, obj, index) }}
             />;
@@ -517,20 +492,16 @@ const MapQuestionCommon = (props) => {
     const onAssignedSelect = (e, obj, index) => {
         selectedAssiArr = selectedAssignedQues.exq_id;
         if (e.currentTarget.checked)
-            obj.exam_queststatus = 1
+            obj.isChecked = true;
         else
-            obj.exam_queststatus = 0;
+            obj.isChecked = false;
         assigneddata[index] = obj
         setAssignedData([...assigneddata])// to avoid shallow checking
-
-        console.log(e.currentTarget.checked);
-        console.log(selectedAssiArr);
         if (e.currentTarget.checked) {
             selectedAssiArr.push(obj.exq_id)
-
         } else {
             for (var i = 0; i < selectedAssiArr.length; i++) {
-                if (selectedAssiArr[i] == obj.exq_id) {
+                if (selectedAssiArr[i] === obj.exq_id) {
                     selectedAssiArr.splice(i, 1);
                 }
             }
@@ -601,7 +572,7 @@ const MapQuestionCommon = (props) => {
         const { examquestion: examquestionres } = searchresultres;
         setExamQuestions(examquestionres);
         console.log(countflag);
-        if (countflag == 1) {
+        if (countflag === 1) {
             const { totalcount: totalsearchcount } = searchresultres;
             console.log(searchresultres);
             setListCount(totalsearchcount);
@@ -627,7 +598,7 @@ const MapQuestionCommon = (props) => {
         if (selectedCategory.qid.length != 0) {
             selectedCategoryObj.ip_addr = ipaddr;
             selectedCategoryObj.exam_id = examdetails.exam_id;
-            if (examtype == 'C') {
+            if (examtype === 'C') {
                 selectedCategoryObj.sect_id = 0;
                 await examQuestionService.createExamQuestion(selectedCategoryObj);
                 setSelectedCategory({ "qid": [] });
@@ -638,9 +609,20 @@ const MapQuestionCommon = (props) => {
                     setShowMessage(false)
                 }, 1500);
             }
-            if (examtype == 'B') {
+            if (examtype === 'B') {
                 selectedCategoryObj.sect_id = action;
                 await examQuestionService.createBankExamQuestion(selectedCategoryObj);
+                setSelectedCategory({ "qid": [] });
+                setAlertMessage('Question successfully inserted');
+                await handleRefresh();
+                setShowMessage(true);
+                setTimeout(() => {
+                    setShowMessage(false)
+                }, 1500);
+            }
+            if (examtype === 'D') {
+                selectedCategoryObj.sect_id = action;
+                await examQuestionService.createSectionExamQuestion(selectedCategoryObj);
                 setSelectedCategory({ "qid": [] });
                 setAlertMessage('Question successfully inserted');
                 await handleRefresh();
@@ -687,7 +669,7 @@ const MapQuestionCommon = (props) => {
         }
         setMode(mode);
         if (open) {
-            if (examType == 'C') {
+            if (examType === 'C') {
                 setShowAddExam(open);
             } else {
                 setShowAddBankExam(open);
@@ -744,7 +726,7 @@ const MapQuestionCommon = (props) => {
         const { question: examres } = res;
         const { examquestion: examquestionres } = res;
         setExamQuestions(examquestionres);
-        if (countflag == 1) {
+        if (countflag === 1) {
             const { data: countres } = await questionService.getAllQuestionsCount(data);
             const { totalcount: totcount } = countres;
             setActiveCount(totcount);
@@ -928,7 +910,7 @@ const MapQuestionCommon = (props) => {
                             <MDBDataTable
                                 striped
                                 bordered
-                                entriesOptions={[5, 10, 20, 25, 50, 100, 500]}
+                                entriesOptions={[5, 10, 20, 25, 50, 100, 500, 1000]}
                                 entries={100}
                                 hover
                                 data={{ rows: categoryrows, columns: columns }}
@@ -941,7 +923,7 @@ const MapQuestionCommon = (props) => {
                             <MDBDataTable
                                 striped
                                 bordered
-                                entriesOptions={[5, 10, 20, 25, 50, 100]}
+                                entriesOptions={[5, 10, 20, 25, 50, 100, 1000]}
                                 entries={100}
                                 hover
                                 data={{ rows: categoryrows, columns: assignedcolumns }}

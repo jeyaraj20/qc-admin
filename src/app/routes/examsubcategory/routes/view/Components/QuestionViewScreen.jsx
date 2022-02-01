@@ -41,7 +41,7 @@ const QuestionViewScreen = (props) => {
         let opt5;
 
 
-        if (examdetail.q_type == 'I') {
+        if (examdetail.q_type === 'I') {
             mainquestion = <img alt={examdetail.question}
                 src={questionImageDirfinal + '/' + examdetail.question}
                 
@@ -49,7 +49,7 @@ const QuestionViewScreen = (props) => {
         } else {
             mainquestion = <div dangerouslySetInnerHTML={{ __html: entities.decode(examdetail.question) }}></div>
         }
-        if (examdetails.opt_type1 == 'I') {
+        if (examdetails.opt_type1 === 'I') {
             opt1 = <img alt={examdetail.opt_1}
                 src={questionImageDirfinal + '/' + examdetail.opt_1}
                 style={{ width: '100px', height: '100px' }}
@@ -57,7 +57,7 @@ const QuestionViewScreen = (props) => {
         } else {
             opt1 = <div dangerouslySetInnerHTML={{ __html: entities.decode(examdetail.opt_1) }}></div>
         }
-        if (examdetail.opt_type2 == 'I') {
+        if (examdetail.opt_type2 === 'I') {
             opt2 = <img alt={examdetail.opt_2}
                 src={questionImageDirfinal + '/' + examdetail.opt_2}
                 style={{ width: '100px', height: '100px' }}
@@ -65,7 +65,7 @@ const QuestionViewScreen = (props) => {
         } else {
             opt2 = <div dangerouslySetInnerHTML={{ __html: entities.decode(examdetail.opt_2) }}></div>
         }
-        if (examdetail.opt_type3 == 'I') {
+        if (examdetail.opt_type3 === 'I') {
             opt3 = <img alt={examdetail.opt_3}
                 src={questionImageDirfinal + '/' + examdetail.opt_3}
                 style={{ width: '100px', height: '100px' }}
@@ -73,7 +73,7 @@ const QuestionViewScreen = (props) => {
         } else {
             opt3 = <div dangerouslySetInnerHTML={{ __html: entities.decode(examdetail.opt_3) }}></div>
         }
-        if (examdetail.opt_type4 == 'I') {
+        if (examdetail.opt_type4 === 'I') {
             opt4 = <img alt={examdetail.opt_4}
                 src={questionImageDirfinal + '/' + examdetail.opt_4}
                 style={{ width: '100px', height: '100px' }}
@@ -81,7 +81,7 @@ const QuestionViewScreen = (props) => {
         } else {
             opt4 = <div dangerouslySetInnerHTML={{ __html: entities.decode(examdetail.opt_4) }}></div>
         }
-        if (examdetail.opt_type5 == 'I') {
+        if (examdetail.opt_type5 === 'I') {
             opt5 = <img alt={examdetail.opt_5}
                 src={questionImageDirfinal + '/' + examdetail.opt_5}
                 style={{ width: '100px', height: '100px' }}
@@ -144,7 +144,7 @@ const QuestionViewScreen = (props) => {
                         <h4>Question Type :</h4>
                     </div>
                     <div style={{ padding: '1%', textAlign: 'left' }} className="col-lg-4 d-flex flex-column order-lg-1">
-                        {examdetails.q_type == 'T' ? 'Text' : 'Image'}
+                        {examdetails.q_type === 'T' ? 'Text' : 'Image'}
                     </div>
                 </div>
                 <div className="row no-gutters">
@@ -168,7 +168,7 @@ const QuestionViewScreen = (props) => {
                         <h4>Option Type 1 :</h4>
                     </div>
                     <div style={{ padding: '1%', textAlign: 'left' }} className="col-lg-4 d-flex flex-column order-lg-1">
-                        {examdetails.opt_type1 == 'T' ? 'Text' : 'Image'}
+                        {examdetails.opt_type1 === 'T' ? 'Text' : 'Image'}
                     </div>
                 </div>
                 <div className="row no-gutters">
@@ -184,7 +184,7 @@ const QuestionViewScreen = (props) => {
                         <h4>Option Type 2 :</h4>
                     </div>
                     <div style={{ padding: '1%', textAlign: 'left' }} className="col-lg-4 d-flex flex-column order-lg-1">
-                        {examdetails.opt_type2 == 'T' ? 'Text' : 'Image'}
+                        {examdetails.opt_type2 === 'T' ? 'Text' : 'Image'}
                     </div>
                 </div>
                 <div className="row no-gutters">
@@ -200,7 +200,7 @@ const QuestionViewScreen = (props) => {
                         <h4>Option Type 3 :</h4>
                     </div>
                     <div style={{ padding: '1%', textAlign: 'left' }} className="col-lg-4 d-flex flex-column order-lg-1">
-                        {examdetails.opt_type3 == 'T' ? 'Text' : 'Image'}
+                        {examdetails.opt_type3 === 'T' ? 'Text' : 'Image'}
                     </div>
                 </div>
                 <div className="row no-gutters">
@@ -216,7 +216,7 @@ const QuestionViewScreen = (props) => {
                         <h4>Option Type 4 :</h4>
                     </div>
                     <div style={{ padding: '1%', textAlign: 'left' }} className="col-lg-4 d-flex flex-column order-lg-1">
-                        {examdetails.opt_type4 == 'T' ? 'Text' : 'Image'}
+                        {examdetails.opt_type4 === 'T' ? 'Text' : 'Image'}
                     </div>
                 </div>
                 <div className="row no-gutters">
@@ -232,7 +232,7 @@ const QuestionViewScreen = (props) => {
                         <h4>Option Type 5 :</h4>
                     </div>
                     <div style={{ padding: '1%', textAlign: 'left' }} className="col-lg-4 d-flex flex-column order-lg-1">
-                        {examdetails.opt_type5 == 'T' ? 'Text' : 'Image'}
+                        {examdetails.opt_type5 === 'T' ? 'Text' : 'Image'}
                     </div>
                 </div>
                 <div className="row no-gutters">
@@ -272,7 +272,7 @@ const QuestionViewScreen = (props) => {
                         <h4>Status :</h4>
                     </div>
                     <div style={{ padding: '1%', textAlign: 'left' }} className="col-lg-4 d-flex flex-column order-lg-1">
-                        {examdetails.quest_status == 'Y' ? 'Active' : 'Inactive'}
+                        {examdetails.quest_status === 'Y' ? 'Active' : 'Inactive'}
                     </div>
                 </div>
 

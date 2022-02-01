@@ -6,7 +6,7 @@ const schoolapiEndpoint = `${schoolApiUrl}/exammaincategory`;
 
 export function getExamMainCategory() {
     let user = auth.getCurrentUser();
-    if (user.user.logintype == "G")
+    if (user.user.logintype === "G")
         return http.get(apiEndpoint + '/master');
     else
         return http.get(schoolapiEndpoint + '/master');
@@ -14,23 +14,36 @@ export function getExamMainCategory() {
 
 export function getExamSubCategoryById(id) {
     let user = auth.getCurrentUser();
-    if (user.user.logintype == "G")
+    if (user.user.logintype === "G")
         return http.get(apiEndpoint + '/main/' + id);
     else
         return http.get(schoolapiEndpoint + '/main/' + id);
 }
 
-export function getExamSubCategoryByCatId(id) {
+export function getExamSubSubCategoryById(id) {
     let user = auth.getCurrentUser();
-    if (user.user.logintype == "G")
+    if (user.user.logintype === "G")
         return http.get(apiEndpoint + '/sub/' + id);
     else
         return http.get(schoolapiEndpoint + '/sub/' + id);
 }
 
+export function getExamSubCategoryByCatId(id) {
+    return http.get(apiEndpoint + '/sub/' + id);
+    // let user = auth.getCurrentUser();
+    // if (user.user.logintype === "G")
+    //     return http.get(apiEndpoint + '/sub/' + id);
+    // else
+    //     return http.get(schoolapiEndpoint + '/sub/' + id);
+}
+
+export function getExamChaptersBySubCatId(ids) {
+    return http.post(`${apiUrl}/examsubcategory/chapter`, { subCatIds : ids });
+}
+
 export function getAllQuestionMainCategory(status) {
     let user = auth.getCurrentUser();
-    if (user.user.logintype == "G")
+    if (user.user.logintype === "G")
         return http.get(apiEndpoint + '/' + status);
     else
         return http.get(schoolapiEndpoint + '/' + status);
@@ -38,15 +51,23 @@ export function getAllQuestionMainCategory(status) {
 
 export function getInactiveExamMainCategory() {
     let user = auth.getCurrentUser();
-    if (user.user.logintype == "G")
+    if (user.user.logintype === "G")
         return http.get(apiEndpoint + '/inactive');
     else
         return http.get(schoolapiEndpoint + '/inactive');
 }
 
+export function bulkUpdateMasterCat(masterCategory) {
+    let user = auth.getCurrentUser();
+    if (user.user.logintype === "G")
+        return http.put(apiEndpoint + '/bulkUpdateMasterCat', { masterCategory });
+    else
+        return http.put(schoolapiEndpoint + '/bulkUpdateMasterCat', { masterCategory });
+}
+
 export function saveExamMainCategory(formdata) {
     let user = auth.getCurrentUser();
-    if (user.user.logintype == "G")
+    if (user.user.logintype === "G")
         return http.post(apiEndpoint + '/', formdata);
     else
         return http.post(schoolapiEndpoint + '/', formdata);
@@ -54,7 +75,7 @@ export function saveExamMainCategory(formdata) {
 
 export function editExamMainCategory(categoryId, formdata) {
     let user = auth.getCurrentUser();
-    if (user.user.logintype == "G")
+    if (user.user.logintype === "G")
         return http.put(apiEndpoint + '/catId/' + categoryId, formdata);
     else
         return http.put(schoolapiEndpoint + '/catId/' + categoryId, formdata);
@@ -62,7 +83,7 @@ export function editExamMainCategory(categoryId, formdata) {
 
 export function inactiveCategory(categoryIdArr) {
     let user = auth.getCurrentUser();
-    if (user.user.logintype == "G")
+    if (user.user.logintype === "G")
         return http.put(apiEndpoint + '/inactive', categoryIdArr);
     else
         return http.put(schoolapiEndpoint + '/inactive', categoryIdArr);
@@ -70,7 +91,7 @@ export function inactiveCategory(categoryIdArr) {
 
 export function deleteCategory(categoryIdArr) {
     let user = auth.getCurrentUser();
-    if (user.user.logintype == "G")
+    if (user.user.logintype === "G")
         return http.delete(apiEndpoint + '/', {
             headers: {
                 "Content-Type": "application/json"
@@ -88,7 +109,7 @@ export function deleteCategory(categoryIdArr) {
 
 export function changePosition(categoryIdArr) {
     let user = auth.getCurrentUser();
-    if (user.user.logintype == "G")
+    if (user.user.logintype === "G")
         return http.put(apiEndpoint + '/position', categoryIdArr);
     else
         return http.put(schoolapiEndpoint + '/position', categoryIdArr);
@@ -96,7 +117,7 @@ export function changePosition(categoryIdArr) {
 
 export function getHomeExamMasterCategory(id) {
     let user = auth.getCurrentUser();
-    if (user.user.logintype == "G")
+    if (user.user.logintype === "G")
         return http.get(apiEndpoint + '/category/' + id);
     else
         return http.get(schoolapiEndpoint + '/category/' + id);
@@ -104,7 +125,7 @@ export function getHomeExamMasterCategory(id) {
 
 export function getExamChapterById(id) {
     let user = auth.getCurrentUser();
-    if (user.user.logintype == "G")
+    if (user.user.logintype === "G")
         return http.get(apiEndpoint + '/chapter/' + id);
     else
         return http.get(schoolapiEndpoint + '/chapter/' + id);

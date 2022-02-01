@@ -81,31 +81,26 @@ const QuestionsView = (props) => {
             if (document.getElementById(row.qid)) {
                 document.getElementById(row.qid).checked = e.currentTarget.checked;
                 if (e.currentTarget.checked) {
-
                     if (e.currentTarget.checked)
-                        row.quest_status = 1
+                        row.isChecked = true;
                     else
-                        row.quest_status = 0;
+                        row.isChecked = false;
                     data[rowcount] = row
                     setData([...data])
-
                     selectedCatArr.push(row.qid);
                     selected[row.qid] = {
                         "isselected": e.currentTarget.checked
                     };
-                    //setSelectedCategory({ "catId": selectedCatArr });
                     setSelectedCategory({ "qid": selectedCatArr });
                 } else {
-
                     if (e.currentTarget.checked)
-                        row.quest_status = 1
+                        row.isChecked = true;
                     else
-                        row.quest_status = 0;
+                        row.isChecked = false;
                     data[rowcount] = row
                     setData([...data])
-
                     for (var i = 0; i < selectedCatArr.length; i++) {
-                        if (selectedCatArr[i] == row.qid) {
+                        if (selectedCatArr[i] === row.qid) {
                             selectedCatArr.splice(i, 1);
                         }
                     }
@@ -178,38 +173,26 @@ const QuestionsView = (props) => {
         setDisplayLoader("block");
         let status = "";
         let { categoryIdprops, subcategoryIdprops, datatypeprops } = props;
-
         setCategoryId(categoryIdprops);
         setSubCategoryId(subcategoryIdprops);
-
-
-        //  let { categoryId, subcategoryId, datatype } = props;
-
-        // console.log(categoryId);
-        // if(props.location.state){
-        //    categoryId=props.location.state.categoryId;
-        //    subcategoryId=props.location.state.subcategoryId;
-        //   datatype=props.location.state.datatype;
-        if (datatypeprops == 'Waiting') {
+        if (datatypeprops === 'Waiting') {
             status = 'W';
         }
-        if (datatypeprops == 'Active') {
+        if (datatypeprops === 'Active') {
             status = 'Y';
         }
-        if (datatypeprops == 'Inactive') {
+        if (datatypeprops === 'Inactive') {
             status = 'N';
         }
-        /*let classname = localStorage.getItem('class');
-        setTxtClass(classname);*/
-        if (status == 'Y') {
+        if (status === 'Y') {
             setDataType('Active');
             setTxtClass('bg-success text-white');
         }
-        if (status == 'N') {
+        if (status === 'N') {
             setDataType('Inactive');
             setTxtClass('bg-danger text-white');
         }
-        if (status == 'W') {
+        if (status === 'W') {
             setDataType('Waiting');
             setTxtClass('bg-warning text-white');
         }
@@ -266,68 +249,59 @@ const QuestionsView = (props) => {
             await handleRefresh()
         }
         if (showQuestions)
-            //setDisplayQuestions("block");
             fetchData();
     }, [showQuestions])
 
     const mapRows = (rows, questionImageDirfinal) => {
         let rowFields = []// fields in required order
         columns.forEach(column => rowFields.push(column.field))
-
         let categoryrows = rows.map((obj, index) => {
-            let checkedflg = false;
-            if (obj.quest_status == "1")
-                checkedflg = true;
-
             let row = {}
             for (let fieldName of rowFields)
                 row[fieldName] = obj[fieldName] // fetching required fields in req order
-            if (row.q_type == "T") {
+            if (row.q_type === "T") {
                 let questionvalue = entities.decode(row.question);
                 row.question = <div dangerouslySetInnerHTML={{ __html: questionvalue }}></div>;
             }
-            if (row.q_type == "I") {
+            if (row.q_type === "I") {
                 row.question = <img src={questionImageDirfinal + '/' + row.question} />;
             }
-            if (row.q_type == "P") {
+            if (row.q_type === "P") {
                 row.question = row.question;
             }
-            if (row.q_type == "T") {
+            if (row.q_type === "T") {
                 row.q_type = "Text"
             }
-            if (row.q_type == "I") {
+            if (row.q_type === "I") {
                 row.q_type = "Image"
             }
-            if (row.q_type == "P") {
+            if (row.q_type === "P") {
                 row.q_type = "Passage"
             }
-            if (row.quest_level == "1") {
+            if (row.quest_level === "1") {
                 row.quest_level = 'Level 1'
-            } else if (row.quest_level == "2") {
+            } else if (row.quest_level === "2") {
                 row.quest_level = 'Level 2'
-            } else if (row.quest_level == "3") {
+            } else if (row.quest_level === "3") {
                 row.quest_level = 'Level 3'
-            } else if (row.quest_level == "4") {
+            } else if (row.quest_level === "4") {
                 row.quest_level = 'Level 4'
             }
             row.select = <MDBInput style={{ marginTop: '0px', width: '20px' }}
                 label="." type="checkbox"
-                checked={checkedflg}
+                checked={obj.isChecked}
                 name={obj.qid} id={obj.qid}
                 onChange={(e) => { onCategorySelect(e, obj, index) }}
             />;
             row.quest_date = Moment(obj.quest_date).format('DD-MM-YYYY')
             row.examview = <IconButton onClick={() => toggleView(true, 'Examview', obj)} className="icon-btn"><i className="zmdi zmdi-file-text zmdi-hc-fw" /></IconButton>
             row.view = <IconButton onClick={() => toggleView(true, 'View', obj)} className="icon-btn"><i className="zmdi zmdi-file-text zmdi-hc-fw" /></IconButton>
-            //row.edit = <IconButton onClick={() => toggle(true, 'Edit', obj)} className="icon-btn"><i className="zmdi zmdi-edit zmdi-hc-fw" /></IconButton>
-
             let tovalue = '/app/addeditquestion/addedit?categoryId=' + catId
                 + '&subcategoryId=' + subcatId + '&questionid=' + obj.qid
                 + '&mode=Edit&type=' + datatype
                 + '&maincategory=' + maincategoryname
                 + '&subcategory=' + subcategoryname
             row.edit = <IconButton className="icon-btn"><Link style={{ color: 'rgba(0, 0, 0, 0.54)', textDecoration: 'none' }} to={tovalue} target="_blank"><i className="zmdi zmdi-edit zmdi-hc-fw" /></Link></IconButton>
-
             return row;
         })
         setCategoryrows(categoryrows);
@@ -336,16 +310,16 @@ const QuestionsView = (props) => {
     const onCategorySelect = (e, obj, index) => {
         selectedCategoryArr = selectedCategory.qid;
         if (e.currentTarget.checked)
-            obj.quest_status = 1
+            obj.isChecked = true;
         else
-            obj.quest_status = 0;
+            obj.isChecked = false;
         data[index] = obj
         setData([...data])// to avoid shallow checking
         if (e.currentTarget.checked) {
             selectedCategoryArr.push(obj.qid)
         } else {
             for (var i = 0; i < selectedCategoryArr.length; i++) {
-                if (selectedCategoryArr[i] == obj.qid) {
+                if (selectedCategoryArr[i] === obj.qid) {
                     selectedCategoryArr.splice(i, 1);
                 }
             }
@@ -388,13 +362,13 @@ const QuestionsView = (props) => {
         searchdata.sortBy = sortby;
         searchdata.cat_id = catId;
         searchdata.sub_id = subcatId;
-        if (datatype == 'Active') {
+        if (datatype === 'Active') {
             searchdata.datatype = 'Y';
         }
-        if (datatype == 'Waiting') {
+        if (datatype === 'Waiting') {
             searchdata.datatype = 'W';
         }
-        if (datatype == 'Inactive') {
+        if (datatype === 'Inactive') {
             searchdata.datatype = 'N';
         }
         const { data: searchresultres } = await questionService.getSearchResult(searchdata);
@@ -411,27 +385,27 @@ const QuestionsView = (props) => {
         setFacultyId("");
         setSearchString("");
         setSortBy("");
-        if (datatype == "Active") {
+        if (datatype === "Active") {
             await getAllActive();
         }
-        if (datatype == "Waiting") {
+        if (datatype === "Waiting") {
             await getAllWaiting();
         }
-        if (datatype == "Inactive") {
+        if (datatype === "Inactive") {
             await getAllInactive();
         }
     }
 
     const handleAction = async () => {
         let selectedCategoryObj = selectedCategory;
-        if (action == '') {
+        if (action === '') {
             setAlertMessage('Please select an action');
             setShowMessage(true);
             setTimeout(() => {
                 setShowMessage(false)
             }, 1500);
         } else {
-            if (action == 'Inactive') {
+            if (action === 'Inactive') {
                 selectedCategoryObj.status = 'N';
                 if (selectedCategory.qid.length != 0) {
                     await questionService.inactiveQuestion(selectedCategoryObj);
@@ -450,7 +424,7 @@ const QuestionsView = (props) => {
                     }, 1500);
                 }
             }
-            if (action == 'Active') {
+            if (action === 'Active') {
                 selectedCategoryObj.status = 'Y';
                 if (selectedCategory.qid.length != 0) {
                     await questionService.inactiveQuestion(selectedCategoryObj);
@@ -469,7 +443,7 @@ const QuestionsView = (props) => {
                     }, 1500);
                 }
             }
-            if (action == 'Delete') {
+            if (action === 'Delete') {
                 selectedCategoryObj.status = 'D';
                 if (selectedCategory.qid.length != 0) {
                     await questionService.inactiveQuestion(selectedCategoryObj);
@@ -488,7 +462,7 @@ const QuestionsView = (props) => {
                     }, 1500);
                 }
             }
-            if (action == 'Waiting') {
+            if (action === 'Waiting') {
                 selectedCategoryObj.status = 'W';
                 if (selectedCategory.qid.length != 0) {
                     await questionService.inactiveQuestion(selectedCategoryObj);
@@ -663,7 +637,7 @@ const QuestionsView = (props) => {
                         <div className="col-lg-2 col-sm-6 col-12">
                             <FormControl className="w-100 mb-2">
                                 <InputLabel htmlFor="age-simple">Actions</InputLabel>
-                                {datatype == 'Waiting' &&
+                                {datatype === 'Waiting' &&
                                     <Select onChange={(event, value) => {
                                         onActionChange(event, value)
                                     }} >
@@ -673,7 +647,7 @@ const QuestionsView = (props) => {
                                         <MenuItem value={'Delete'}>Delete</MenuItem>
                                     </Select>
                                 }
-                                {datatype == 'Active' &&
+                                {datatype === 'Active' &&
                                     <Select onChange={(event, value) => {
                                         onActionChange(event, value)
                                     }} >
@@ -683,7 +657,7 @@ const QuestionsView = (props) => {
                                         <MenuItem value={'Delete'}>Delete</MenuItem>
                                     </Select>
                                 }
-                                {datatype == 'Inactive' &&
+                                {datatype === 'Inactive' &&
                                     <Select onChange={(event, value) => {
                                         onActionChange(event, value)
                                     }} >
@@ -802,7 +776,7 @@ const QuestionsView = (props) => {
                     <MDBDataTable
                         striped
                         bordered
-                        entriesOptions={[5, 10, 20, 25, 50, 100]}
+                        entriesOptions={[5, 10, 20, 25, 50, 100, 1000]}
                         entries={50}
                         hover
                         data={{ rows: categoryrows, columns }}

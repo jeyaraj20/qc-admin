@@ -203,7 +203,7 @@ const AddEditPassage = (props) => {
             }
             setPassageQuestionArr(questdetail.question);
 
-            if (questiondatadetail.q_type == 'I') {
+            if (questiondatadetail.q_type === 'I') {
                 let file = {
                     name: questiondatadetail.question,
                     preview: questionImageDirfinal + '/' + questiondatadetail.question,
@@ -221,7 +221,7 @@ const AddEditPassage = (props) => {
                 setQuestionImageStyle('none');
                 setQuestionTextStyle('block');
             }
-            if (questiondatadetail.opt_type1 == 'I') {
+            if (questiondatadetail.opt_type1 === 'I') {
                 let opt1file = {
                     name: questiondatadetail.opt_1,
                     preview: questionImageDirfinal + '/' + questiondatadetail.opt_1,
@@ -239,7 +239,7 @@ const AddEditPassage = (props) => {
                 setOpt1ImageStyle('none');
                 setOpt1TextStyle('block');
             }
-            if (questiondatadetail.opt_type2 == 'I') {
+            if (questiondatadetail.opt_type2 === 'I') {
                 let opt2file = {
                     name: questiondatadetail.opt_2,
                     preview: questionImageDirfinal + '/' + questiondatadetail.opt_2,
@@ -257,7 +257,7 @@ const AddEditPassage = (props) => {
                 setOpt2ImageStyle('none');
                 setOpt2TextStyle('block');
             }
-            if (questiondatadetail.opt_type3 == 'I') {
+            if (questiondatadetail.opt_type3 === 'I') {
                 let opt3file = {
                     name: questiondatadetail.opt_3,
                     preview: questionImageDirfinal + '/' + questiondatadetail.opt_3,
@@ -275,7 +275,7 @@ const AddEditPassage = (props) => {
                 setOpt3ImageStyle('none');
                 setOpt3TextStyle('block');
             }
-            if (questiondatadetail.opt_type4 == 'I') {
+            if (questiondatadetail.opt_type4 === 'I') {
                 let opt4file = {
                     name: questiondatadetail.opt_4,
                     preview: questionImageDirfinal + '/' + questiondatadetail.opt_4,
@@ -293,7 +293,7 @@ const AddEditPassage = (props) => {
                 setOpt4ImageStyle('none');
                 setOpt4TextStyle('block');
             }
-            if (questiondatadetail.opt_type5 == 'I') {
+            if (questiondatadetail.opt_type5 === 'I') {
                 let opt5file = {
                     name: questiondatadetail.opt_5,
                     preview: questionImageDirfinal + '/' + questiondatadetail.opt_5,
@@ -329,7 +329,7 @@ const AddEditPassage = (props) => {
     };
 
     useEffect(() => {
-        if ((data && data.length) || data.length == 0) mapRows(data);
+        if ((data && data.length) || data.length === 0) mapRows(data);
     }, [data]);
 
     useEffect(() => {
@@ -340,7 +340,7 @@ const AddEditPassage = (props) => {
     }, []);
 
     useEffect(() => {
-        if (questionTypeData == 'I') {
+        if (questionTypeData === 'I') {
             //loadCkeditorfuncion()
         }
     }, [questionTypeData]);
@@ -357,7 +357,7 @@ const AddEditPassage = (props) => {
             rowcount = rowcount + 1;
             for (let fieldName of rowFields) row[fieldName] = obj[fieldName]; // fetching required fields in req order
             row.sno = <span>{rowcount}</span>;
-            if (obj.q_type == 'I') {
+            if (obj.q_type === 'I') {
                 row.question = 'Image Question';
             } else {
                 let questionvalue = entities.decode(obj.question);
@@ -422,7 +422,7 @@ const AddEditPassage = (props) => {
     const handleQuestionType = (e, opt) => {
         setQuestionType(e.target.value);
         setOpt(opt);
-        if (e.target.value == 'I') {
+        if (e.target.value === 'I') {
             setQuestionImageStyle('block');
             setQuestionTextStyle('none');
         } else {
@@ -434,7 +434,7 @@ const AddEditPassage = (props) => {
     const handleOptionType1 = (e, opt) => {
         setOption1Type(e.target.value);
         setOpt(opt);
-        if (e.target.value == 'I') {
+        if (e.target.value === 'I') {
             setOpt1ImageStyle('block');
             setOpt1TextStyle('none');
         } else {
@@ -446,7 +446,7 @@ const AddEditPassage = (props) => {
     const handleOptionType2 = (e, opt) => {
         setOption2Type(e.target.value);
         setOpt(opt);
-        if (e.target.value == 'I') {
+        if (e.target.value === 'I') {
             setOpt2ImageStyle('block');
             setOpt2TextStyle('none');
         } else {
@@ -457,7 +457,7 @@ const AddEditPassage = (props) => {
     const handleOptionType3 = (e, opt) => {
         setOption3Type(e.target.value);
         setOpt(opt);
-        if (e.target.value == 'I') {
+        if (e.target.value === 'I') {
             setOpt3ImageStyle('block');
             setOpt3TextStyle('none');
         } else {
@@ -468,7 +468,7 @@ const AddEditPassage = (props) => {
     const handleOptionType4 = (e, opt) => {
         setOption4Type(e.target.value);
         setOpt(opt);
-        if (e.target.value == 'I') {
+        if (e.target.value === 'I') {
             setOpt4ImageStyle('block');
             setOpt4TextStyle('none');
         } else {
@@ -479,7 +479,7 @@ const AddEditPassage = (props) => {
     const handleOptionType5 = (e, opt) => {
         setOption5Type(e.target.value);
         setOpt(opt);
-        if (e.target.value == 'I') {
+        if (e.target.value === 'I') {
             setOpt5ImageStyle('block');
             setOpt5TextStyle('none');
         } else {
@@ -493,7 +493,12 @@ const AddEditPassage = (props) => {
     };
 
     const onCorrectAnsChange = (e) => {
-        setCorrectAnswer(e.target.value);
+        const re = /^[0-9\b]+$/;
+        if ( re.test(e.target.value) && Number(e.target.value) <= 5) {
+          setCorrectAnswer(e.target.value);
+        }else if(e.target.value === ''){
+          setCorrectAnswer('');
+        }
     };
 
     const onDescriptionchange = (e) => {
@@ -503,7 +508,7 @@ const AddEditPassage = (props) => {
     const { getRootProps, getInputProps } = useDropzone({
         accept: 'image/*',
         onDrop: (acceptedFiles) => {
-            if (opt == 'question') {
+            if (opt === 'question') {
                 setFiles(
                     acceptedFiles.map((file) =>
                         Object.assign(file, {
@@ -514,7 +519,7 @@ const AddEditPassage = (props) => {
                 setviewQuesImg(true);
                 setQuesDropzone(false);
             }
-            if (opt == 'opt1') {
+            if (opt === 'opt1') {
                 console.log(acceptedFiles);
                 setOpt1Files(
                     acceptedFiles.map((file) =>
@@ -526,7 +531,7 @@ const AddEditPassage = (props) => {
                 setviewOpt1Img(true);
                 setOpt1Dropzone(false);
             }
-            if (opt == 'opt2') {
+            if (opt === 'opt2') {
                 setOpt2Files(
                     acceptedFiles.map((file) =>
                         Object.assign(file, {
@@ -537,7 +542,7 @@ const AddEditPassage = (props) => {
                 setviewOpt2Img(true);
                 setOpt2Dropzone(false);
             }
-            if (opt == 'opt3') {
+            if (opt === 'opt3') {
                 setOpt3Files(
                     acceptedFiles.map((file) =>
                         Object.assign(file, {
@@ -548,7 +553,7 @@ const AddEditPassage = (props) => {
                 setviewOpt3Img(true);
                 setOpt3Dropzone(false);
             }
-            if (opt == 'opt4') {
+            if (opt === 'opt4') {
                 setOpt4Files(
                     acceptedFiles.map((file) =>
                         Object.assign(file, {
@@ -559,7 +564,7 @@ const AddEditPassage = (props) => {
                 setviewOpt4Img(true);
                 setOpt4Dropzone(false);
             }
-            if (opt == 'opt5') {
+            if (opt === 'opt5') {
                 setOpt5Files(
                     acceptedFiles.map((file) =>
                         Object.assign(file, {
@@ -622,27 +627,27 @@ const AddEditPassage = (props) => {
     ));
 
     const deleteImage = (type) => {
-        if (type == 'question') {
+        if (type === 'question') {
             setviewQuesImg(false);
             setQuesDropzone(true);
         }
-        if (type == 'opt1') {
+        if (type === 'opt1') {
             setviewOpt1Img(false);
             setOpt1Dropzone(true);
         }
-        if (type == 'opt2') {
+        if (type === 'opt2') {
             setviewOpt2Img(false);
             setOpt2Dropzone(true);
         }
-        if (type == 'opt3') {
+        if (type === 'opt3') {
             setviewOpt3Img(false);
             setOpt3Dropzone(true);
         }
-        if (type == 'opt4') {
+        if (type === 'opt4') {
             setviewOpt4Img(false);
             setOpt4Dropzone(true);
         }
-        if (type == 'opt5') {
+        if (type === 'opt5') {
             setviewOpt5Img(false);
             setOpt5Dropzone(true);
         }
@@ -651,7 +656,7 @@ const AddEditPassage = (props) => {
     const deletePassageQuestion = (index) => {
         console.log(index)
         for (let data of passagequestionarr) {
-            if (data.index == index) {
+            if (data.index === index) {
                 let delindex = passagequestionarr.indexOf(data);
                 passagequestionarr.splice(delindex, 1);
                 mapRows(passagequestionarr);
@@ -709,7 +714,7 @@ const AddEditPassage = (props) => {
             const formdata = new FormData();
             formdata.append('q_type', questionType);
             passageobj.q_type = questionType;
-            if (questionType == 'I') {
+            if (questionType === 'I') {
                 console.log(files[0]);
                 if (files[0] != undefined) {
                     passageobj.question = files[0];
@@ -745,7 +750,7 @@ const AddEditPassage = (props) => {
             formdata.append('opt_type1', option1Type);
             passageobj.quest_desc = questionDesc;
             passageobj.opt_type1 = option1Type;
-            if (option1Type == 'I') {
+            if (option1Type === 'I') {
                 if (opt1files[0] != undefined) {
                     passageobj.opt_1 = opt1files[0];
                     formdata.append('opt_1', opt1files[0]);
@@ -777,7 +782,7 @@ const AddEditPassage = (props) => {
                 }
             }
             passageobj.opt_type2 = option2Type;
-            if (option2Type == 'I') {
+            if (option2Type === 'I') {
                 if (opt2files[0] != undefined) {
                     passageobj.opt_2 = opt2files[0];
                     formdata.append('opt_2', opt2files[0]);
@@ -809,7 +814,7 @@ const AddEditPassage = (props) => {
                 }
             }
             passageobj.opt_type3 = option3Type;
-            if (option3Type == 'I') {
+            if (option3Type === 'I') {
                 if (opt3files[0] != undefined) {
                     passageobj.opt_3 = opt3files[0];
                     formdata.append('opt_3', opt3files[0]);
@@ -841,7 +846,7 @@ const AddEditPassage = (props) => {
                 }
             }
             passageobj.opt_type4 = option4Type;
-            if (option4Type == 'I') {
+            if (option4Type === 'I') {
                 if (opt4files[0] != undefined) {
                     passageobj.opt_4 = opt4files[0];
                     formdata.append('opt_4', opt4files[0]);
@@ -873,7 +878,7 @@ const AddEditPassage = (props) => {
                 }
             }
             passageobj.opt_type5 = option5Type;
-            if (option5Type == 'I') {
+            if (option5Type === 'I') {
                 passageobj.opt_5 = opt5files[0];
                 formdata.append('opt_5', opt5files[0]);
             } else {
@@ -1012,7 +1017,7 @@ const AddEditPassage = (props) => {
         }
     };
     useEffect(() => {
-        if (ckeditorflag == true) {
+        if (ckeditorflag === true) {
             setLoader('none');
             setUnLoader('block');
         } else {
@@ -1022,7 +1027,7 @@ const AddEditPassage = (props) => {
     }, [ckeditorflag]);
 
     const loadCkeditorfuncion = () => {
-        if (scriptcount == 0) {
+        if (scriptcount === 0) {
             console.log('script');
             appendScript('/test.js');
             setScriptCount(scriptcount + 1);
@@ -1133,7 +1138,7 @@ const AddEditPassage = (props) => {
                         <MDBDataTable
                             striped
                             bordered
-                            entriesOptions={[5, 10, 20, 25, 50, 100]}
+                            entriesOptions={[5, 10, 20, 25, 50, 100, 1000]}
                             entries={5}
                             hover
                             data={{ rows: questionrows, columns }}
@@ -1160,7 +1165,7 @@ const AddEditPassage = (props) => {
                 </div>
                 <Modal className="modal-box" backdrop={'static'} toggle={onModalClose} isOpen={modal}>
                     <ModalHeader className="modal-box-header bg-primary text-white">
-                        {isEdit == false ? 'Add Passage Question' : 'Edit Passage Question'}
+                        {isEdit === false ? 'Add Passage Question' : 'Edit Passage Question'}
                     </ModalHeader>
 
                     <div className="modal-box-content">
@@ -1227,7 +1232,7 @@ const AddEditPassage = (props) => {
                                             ></textarea>
                                         </div>
                                         <div style={{ display: questionimagestyle }}>
-                                            {questionType == 'I' && (
+                                            {questionType === 'I' && (
                                                 <>
                                                     <h5>
                                                         Question Image<span style={{ color: 'red' }}>*</span>
@@ -1257,7 +1262,7 @@ const AddEditPassage = (props) => {
                                                                     className="dropzone-content"
                                                                     style={thumbsContainer}
                                                                 >
-                                                                    {screenmode == 'Edit'
+                                                                    {screenmode === 'Edit'
                                                                         ? questionThumb
                                                                         : questionThumb}
                                                                 </div>
@@ -1323,7 +1328,7 @@ const AddEditPassage = (props) => {
                                             ></textarea>
                                         </div>
                                         <div style={{ display: opt1imagestyle }}>
-                                            {option1Type == 'I' && (
+                                            {option1Type === 'I' && (
                                                 <>
                                                     <h5>
                                                         Image Option 1<span style={{ color: 'red' }}>*</span>
@@ -1352,7 +1357,7 @@ const AddEditPassage = (props) => {
                                                                     className="dropzone-content"
                                                                     style={thumbsContainer}
                                                                 >
-                                                                    {screenmode == 'Edit'
+                                                                    {screenmode === 'Edit'
                                                                         ? opt1Thumb
                                                                         : opt1Thumb}
                                                                 </div>
@@ -1407,7 +1412,7 @@ const AddEditPassage = (props) => {
                                                 name="passage_opt_2"
                                             ></textarea>
                                         </div>
-                                        {option2Type == 'I' && (
+                                        {option2Type === 'I' && (
                                             <div style={{ display: opt2imagestyle }}>
                                                 <h5>
                                                     Image Option 2<span style={{ color: 'red' }}>*</span>
@@ -1436,7 +1441,7 @@ const AddEditPassage = (props) => {
                                                                 className="dropzone-content"
                                                                 style={thumbsContainer}
                                                             >
-                                                                {screenmode == 'Edit' ? opt2Thumb : opt2Thumb}
+                                                                {screenmode === 'Edit' ? opt2Thumb : opt2Thumb}
                                                             </div>
                                                             <Button
                                                                 onClick={() => deleteImage('opt2')}
@@ -1488,7 +1493,7 @@ const AddEditPassage = (props) => {
                                                 name="passage_opt_3"
                                             ></textarea>
                                         </div>
-                                        {option3Type == 'I' && (
+                                        {option3Type === 'I' && (
                                             <div style={{ display: opt3imagestyle }}>
                                                 <h5>
                                                     Image Option 3<span style={{ color: 'red' }}>*</span>
@@ -1517,7 +1522,7 @@ const AddEditPassage = (props) => {
                                                                 className="dropzone-content"
                                                                 style={thumbsContainer}
                                                             >
-                                                                {screenmode == 'Edit' ? opt3Thumb : opt3Thumb}
+                                                                {screenmode === 'Edit' ? opt3Thumb : opt3Thumb}
                                                             </div>
                                                             <Button
                                                                 onClick={() => deleteImage('opt3')}
@@ -1569,7 +1574,7 @@ const AddEditPassage = (props) => {
                                                 name="passage_opt_4"
                                             ></textarea>
                                         </div>
-                                        {option4Type == 'I' && (
+                                        {option4Type === 'I' && (
                                             <div style={{ display: opt4imagestyle }}>
                                                 <h5>
                                                     Image Option 4<span style={{ color: 'red' }}>*</span>
@@ -1598,7 +1603,7 @@ const AddEditPassage = (props) => {
                                                                 className="dropzone-content"
                                                                 style={thumbsContainer}
                                                             >
-                                                                {screenmode == 'Edit' ? opt4Thumb : opt4Thumb}
+                                                                {screenmode === 'Edit' ? opt4Thumb : opt4Thumb}
                                                             </div>
                                                             <Button
                                                                 onClick={() => deleteImage('opt4')}
@@ -1650,7 +1655,7 @@ const AddEditPassage = (props) => {
                                                 name="passage_opt_5"
                                             ></textarea>
                                         </div>
-                                        {option5Type == 'I' && (
+                                        {option5Type === 'I' && (
                                             <div style={{ display: opt5imagestyle }}>
                                                 <h5>
                                                     Image Option 5<span style={{ color: 'red' }}>*</span>
@@ -1679,7 +1684,7 @@ const AddEditPassage = (props) => {
                                                                 className="dropzone-content"
                                                                 style={thumbsContainer}
                                                             >
-                                                                {screenmode == 'Edit' ? opt5Thumb : opt5Thumb}
+                                                                {screenmode === 'Edit' ? opt5Thumb : opt5Thumb}
                                                             </div>
                                                             <Button
                                                                 onClick={() => deleteImage('opt5')}
@@ -1697,7 +1702,7 @@ const AddEditPassage = (props) => {
                                     <div style={{ paddingTop: '2%' }} className="col-lg-12 col-sm-6 col-12">
                                         <input
                                             onChange={(e) => onCorrectAnsChange(e)}
-                                            defaultValue={correctAnswer}
+                                            value={correctAnswer}
                                             type="text"
                                             placeholder="Correct Answer"
                                             className="form-control form-control-lg"
@@ -1713,7 +1718,7 @@ const AddEditPassage = (props) => {
                     </div>
                     <ModalFooter>
                         <div className="d-flex flex-row">
-                            {isEdit == false ? (
+                            {isEdit === false ? (
                                 <Button
                                     onClick={() => saveQuestion()}
                                     variant="contained"

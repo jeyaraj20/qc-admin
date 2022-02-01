@@ -84,11 +84,10 @@ const QuestionsView = (props) => {
             if (document.getElementById(row.qid)) {
                 document.getElementById(row.qid).checked = e.currentTarget.checked;
                 if (e.currentTarget.checked) {
-
                     if (e.currentTarget.checked)
-                        row.quest_status = 1
+                        row.isChecked = true;
                     else
-                        row.quest_status = 0;
+                        row.isChecked = false;
                     data[rowcount] = row
                     setData([...data])
 
@@ -98,16 +97,14 @@ const QuestionsView = (props) => {
                     };
                     setSelectedCategory({ "qid": selectedCatArr });
                 } else {
-
                     if (e.currentTarget.checked)
-                        row.quest_status = 1
+                        row.isChecked = true;
                     else
-                        row.quest_status = 0;
+                        row.isChecked = false;
                     data[rowcount] = row
                     setData([...data])
-
                     for (var i = 0; i < selectedCatArr.length; i++) {
-                        if (selectedCatArr[i] == row.qid) {
+                        if (selectedCatArr[i] === row.qid) {
                             selectedCatArr.splice(i, 1);
                         }
                     }
@@ -222,14 +219,12 @@ const QuestionsView = (props) => {
     }
 
     useEffect(() => {
-        //if (data && data.length) {
         let user = auth.getCurrentUser();
         let questionImageDirfinal = questionImageDir;
         if (user.user.logintype != 'G') {
             questionImageDirfinal = schoolquestionImageDir;
         }
         mapRows(data, questionImageDirfinal);
-        //}
     }, [data])
 
 
@@ -239,61 +234,53 @@ const QuestionsView = (props) => {
             await handleRefresh()
         }
         if (showQuestions)
-            //setDisplayQuestions("block");
             fetchData();
     }, [showQuestions])
 
     const mapRows = (rows, questionImageDirfinal) => {
         let rowFields = []// fields in required order
         columns.forEach(column => rowFields.push(column.field))
-
         let categoryrows = rows.map((obj, index) => {
-            let checkedflg = false;
-            if (obj.quest_status == "1")
-                checkedflg = true;
-
             let row = {}
             for (let fieldName of rowFields)
                 row[fieldName] = obj[fieldName] // fetching required fields in req order
-            if (row.q_type == "T") {
+            if (row.q_type === "T") {
                 let questionvalue = entities.decode(row.question);
                 row.question = <div dangerouslySetInnerHTML={{ __html: questionvalue }}></div>;
             }
-            if (row.q_type == "I") {
+            if (row.q_type === "I") {
                 row.question = <img src={questionImageDirfinal + '/' + row.question} />;
             }
-            if (row.q_type == "P") {
+            if (row.q_type === "P") {
                 row.question = row.question;
             }
-            if (row.q_type == "T") {
+            if (row.q_type === "T") {
                 row.q_type = "Text"
             }
-            if (row.q_type == "I") {
+            if (row.q_type === "I") {
                 row.q_type = "Image"
             }
-            if (row.q_type == "P") {
+            if (row.q_type === "P") {
                 row.q_type = "Passage"
             }
-            if (row.quest_level == "1") {
+            if (row.quest_level === "1") {
                 row.quest_level = 'Level 1'
-            } else if (row.quest_level == "2") {
+            } else if (row.quest_level === "2") {
                 row.quest_level = 'Level 2'
-            } else if (row.quest_level == "3") {
+            } else if (row.quest_level === "3") {
                 row.quest_level = 'Level 3'
-            } else if (row.quest_level == "4") {
+            } else if (row.quest_level === "4") {
                 row.quest_level = 'Level 4'
             }
             row.select = <MDBInput style={{ marginTop: '0px', width: '20px' }}
                 label="." type="checkbox"
-                checked={checkedflg}
+                checked={obj.isChecked}
                 name={obj.qid} id={obj.qid}
                 onChange={(e) => { onCategorySelect(e, obj, index) }}
             />;
             row.quest_date = Moment(obj.quest_date).format('DD-MM-YYYY')
             row.examview = <IconButton onClick={() => toggleView(true, 'Examview', obj)} className="icon-btn"><i className="zmdi zmdi-file-text zmdi-hc-fw" /></IconButton>
             row.view = <IconButton onClick={() => toggleView(true, 'View', obj)} className="icon-btn"><i className="zmdi zmdi-file-text zmdi-hc-fw" /></IconButton>
-            // row.edit = <IconButton onClick={() => toggle(true, 'Edit', obj)} className="icon-btn"><i className="zmdi zmdi-edit zmdi-hc-fw" /></IconButton>
-            // row.edit = <Link to="myRoute" params={myParams} target="_blank"></Link>
             let tovalue = '';
             if (obj.q_type != 'P') {
                 tovalue = '/app/addeditquestion/addedit?categoryId=' + catId
@@ -302,7 +289,7 @@ const QuestionsView = (props) => {
                     + '&maincategory=' + maincategoryname
                     + '&subcategory=' + subcategoryname
             }
-            if (obj.q_type == 'P') {
+            if (obj.q_type === 'P') {
                 tovalue = '/app/addeditpassage/editpassage?categoryId=' + catId
                     + '&subcategoryId=' + subcatId + '&questionid=' + obj.qid
                     + '&mode=Edit&type=' + datatype
@@ -310,7 +297,6 @@ const QuestionsView = (props) => {
                     + '&subcategory=' + subcategoryname
             }
             row.edit = <IconButton className="icon-btn"><Link style={{ color: 'rgba(0, 0, 0, 0.54)', textDecoration: 'none' }} to={tovalue} target="_blank"><i className="zmdi zmdi-edit zmdi-hc-fw" /></Link></IconButton>
-
             return row;
         })
         setCategoryrows(categoryrows);
@@ -319,16 +305,16 @@ const QuestionsView = (props) => {
     const onCategorySelect = (e, obj, index) => {
         selectedCategoryArr = selectedCategory.qid;
         if (e.currentTarget.checked)
-            obj.quest_status = 1
+            obj.isChecked = true;
         else
-            obj.quest_status = 0;
+            obj.isChecked = false;
         data[index] = obj
         setData([...data])// to avoid shallow checking
         if (e.currentTarget.checked) {
             selectedCategoryArr.push(obj.qid)
         } else {
             for (var i = 0; i < selectedCategoryArr.length; i++) {
-                if (selectedCategoryArr[i] == obj.qid) {
+                if (selectedCategoryArr[i] === obj.qid) {
                     selectedCategoryArr.splice(i, 1);
                 }
             }
@@ -370,18 +356,17 @@ const QuestionsView = (props) => {
         searchdata.sortBy = sortby;
         searchdata.cat_id = catId;
         searchdata.sub_id = subcatId;
-        if (datatype == 'Active') {
+        if (datatype === 'Active') {
             searchdata.datatype = 'Y';
         }
-        if (datatype == 'Waiting') {
+        if (datatype === 'Waiting') {
             searchdata.datatype = 'W';
         }
-        if (datatype == 'Inactive') {
+        if (datatype === 'Inactive') {
             searchdata.datatype = 'N';
         }
         const { data: searchresultres } = await questionService.getSearchResult(searchdata);
         const { questions: searchresult } = searchresultres;
-        console.log(searchresult);
         setData(searchresult);
         setTimeout(() => {
             setLoader(false)
@@ -395,27 +380,18 @@ const QuestionsView = (props) => {
         setSearchString("");
         setSortBy("");
         await handleRefresh();
-        /*if (datatype == "Active") {
-            await getAllActive();
-        }
-        if (datatype == "Waiting") {
-            await getAllWaiting();
-        }
-        if (datatype == "Inactive") {
-            await getAllInactive();
-        }*/
     }
 
     const handleAction = async () => {
         let selectedCategoryObj = selectedCategory;
-        if (action == '') {
+        if (action === '') {
             setAlertMessage('Please select an action');
             setShowMessage(true);
             setTimeout(() => {
                 setShowMessage(false)
             }, 1500);
         } else {
-            if (action == 'Inactive') {
+            if (action === 'Inactive') {
                 selectedCategoryObj.status = 'N';
                 if (selectedCategory.qid.length != 0) {
                     await questionService.inactiveQuestion(selectedCategoryObj);
@@ -433,7 +409,7 @@ const QuestionsView = (props) => {
                     }, 1500);
                 }
             }
-            if (action == 'Active') {
+            if (action === 'Active') {
                 selectedCategoryObj.status = 'Y';
                 if (selectedCategory.qid.length != 0) {
                     await questionService.inactiveQuestion(selectedCategoryObj);
@@ -451,7 +427,7 @@ const QuestionsView = (props) => {
                     }, 1500);
                 }
             }
-            if (action == 'Delete') {
+            if (action === 'Delete') {
                 selectedCategoryObj.status = 'D';
                 if (selectedCategory.qid.length != 0) {
                     await questionService.inactiveQuestion(selectedCategoryObj);
@@ -469,7 +445,7 @@ const QuestionsView = (props) => {
                     }, 1500);
                 }
             }
-            if (action == 'Waiting') {
+            if (action === 'Waiting') {
                 selectedCategoryObj.status = 'W';
                 if (selectedCategory.qid.length != 0) {
                     await questionService.inactiveQuestion(selectedCategoryObj);
@@ -506,13 +482,13 @@ const QuestionsView = (props) => {
         } else {
             setQuestionData({});
             if (open) {
-                if (mode == 'Add') {
+                if (mode === 'Add') {
                     setShowAddQuestion(open);
                     setShowAddPassage(false);
                     setShowQuestions(false);
                     setDisplayQuestions("none");
                 }
-                if (mode == 'Passage') {
+                if (mode === 'Passage') {
                     console.log('in');
                     setShowAddQuestion(false);
                     setShowAddPassage(open);
@@ -533,18 +509,8 @@ const QuestionsView = (props) => {
         setQuestionData(data);
         setMode(mode);
         if (open) {
-            //setExamView(open);
-            /*
-            localStorage.setItem('qid', data.qid);
-            localStorage.setItem('mode', mode);
-            localStorage.setItem('maincategory', maincategoryname);
-            localStorage.setItem('subcategory', subcategoryname);
-            */
-            let path = "/app/qbanksubcategory/qexamview?qid=" + data.qid
-                + "&mode=" + mode + "&maincategory=" + maincategoryname + "&subcategory=" + subcategoryname
+            let path = "/app/qbanksubcategory/qexamview?qid=" + data.qid + "&mode=" + mode + "&maincategory=" + maincategoryname + "&subcategory=" + subcategoryname
             window.open(path, "_blank")
-            //setDisplayQuestions("none");
-            //setShowQuestions(false);
         } else {
             setExamView(false);
             setDisplayQuestions("block");
@@ -562,22 +528,8 @@ const QuestionsView = (props) => {
 
     const getAllInactive = async () => {
         setLoader(true);
-        //setDisplayLoader('block');
         setDataType('Inactive');
         setTxtClass('bg-danger text-white');
-        /*let getdata = {};
-        getdata.cat_id = categoryId;
-        getdata.sub_id = subcategoryId;
-        getdata.status = 'N';
-        const { data: inactiveres } = await qbankSubCategoryService.getInActiveQuestions(getdata);
-        const { questions: inactivedata } = inactiveres;
-        setData(inactivedata);
-        localStorage.setItem('mode', 'Inactive');
-        localStorage.setItem('class', 'bg-danger text-white');
-        localStorage.setItem('status', 'N');
-        localStorage.setItem('categoryId', catId);
-        localStorage.setItem('subcategoryId', subcatId);
-        */
         let path = "/app/questionsview/view?categoryId=" + catId
             + "&subcategoryId=" + subcatId + "&datatype=Inactive";
         window.open(path, "_blank")
@@ -588,51 +540,14 @@ const QuestionsView = (props) => {
     }
 
     const getAllActive = async () => {
-        //setLoader(true);
-        //setDisplayLoader('block');
-        //setDataType('Active');
-        //setTxtClass('bg-success text-white');
-        //console.log(catId);
-        /*let getdata = {};
-        getdata.cat_id = categoryId;
-        getdata.sub_id = subcategoryId;
-        getdata.status = 'Y';
-        const { data: activeres } = await qbankSubCategoryService.getActiveQuestions(getdata);
-        const { questions: activedata } = activeres;
-        //setData(activedata);
-        localStorage.setItem('mode', 'Active');
-        localStorage.setItem('class', 'bg-success text-white');
-        localStorage.setItem('status', 'Y');
-        localStorage.setItem('categoryId', catId);
-        localStorage.setItem('subcategoryId', subcatId);
-        */
-        let path = "/app/questionsview/view?categoryId=" + catId
-            + "&subcategoryId=" + subcatId + "&datatype=Active";
+        let path = "/app/questionsview/view?categoryId=" + catId + "&subcategoryId=" + subcatId + "&datatype=Active";
         window.open(path, "_blank")
-        /*setTimeout(() => {
-            setLoader(false)
-            setDisplayLoader('none');
-        }, 1000);*/
     }
 
     const getAllWaiting = async () => {
         setLoader(true);
-        //setDisplayLoader('block');
         setDataType('Waiting');
         setTxtClass('bg-warning text-white');
-        /*let getdata = {};
-        getdata.cat_id = localStorage.getItem('categoryId');
-        getdata.sub_id = localStorage.getItem('subcategoryId');;
-        getdata.status = 'W';
-        const { data: inactiveres } = await qbankSubCategoryService.getWaitingQuestions(getdata);
-        const { questions: inactivedata } = inactiveres;
-        //setData(inactivedata);
-        localStorage.setItem('mode', 'Waiting');
-        localStorage.setItem('class', 'bg-warning text-white');
-        localStorage.setItem('status', 'W');
-        localStorage.setItem('categoryId', catId);
-        localStorage.setItem('subcategoryId', subcatId);
-        */
         let path = "/app/questionsview/view?categoryId=" + catId
             + "&subcategoryId=" + subcatId + "&datatype=Waiting";
         window.open(path, "_blank")
@@ -656,7 +571,7 @@ const QuestionsView = (props) => {
                         <div className="col-lg-2 col-sm-6 col-12">
                             <FormControl className="w-100 mb-2">
                                 <InputLabel htmlFor="age-simple">Actions</InputLabel>
-                                {datatype == 'Waiting' &&
+                                {datatype === 'Waiting' &&
                                     <Select onChange={(event, value) => {
                                         onActionChange(event, value)
                                     }} >
@@ -666,7 +581,7 @@ const QuestionsView = (props) => {
                                         <MenuItem value={'Delete'}>Delete</MenuItem>
                                     </Select>
                                 }
-                                {datatype == 'Active' &&
+                                {datatype === 'Active' &&
                                     <Select onChange={(event, value) => {
                                         onActionChange(event, value)
                                     }} >
@@ -676,7 +591,7 @@ const QuestionsView = (props) => {
                                         <MenuItem value={'Delete'}>Delete</MenuItem>
                                     </Select>
                                 }
-                                {datatype == 'Inactive' &&
+                                {datatype === 'Inactive' &&
                                     <Select onChange={(event, value) => {
                                         onActionChange(event, value)
                                     }} >
@@ -800,7 +715,7 @@ const QuestionsView = (props) => {
                     <MDBDataTable
                         striped
                         bordered
-                        entriesOptions={[5, 10, 20, 25, 50, 100]}
+                        entriesOptions={[5, 10, 20, 25, 50, 100, 1000]}
                         entries={50}
                         hover
                         data={{ rows: categoryrows, columns }}

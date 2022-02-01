@@ -156,7 +156,7 @@ const DataTable = (props) => {
           setData([...data])
 
           for (var i = 0; i < selectedCatArr.length; i++) {
-            if (selectedCatArr[i] == row.exa_cat_id) {
+            if (selectedCatArr[i] === row.exa_cat_id) {
               selectedCatArr.splice(i, 1);
             }
           }
@@ -250,7 +250,7 @@ const DataTable = (props) => {
   }
 
   useEffect(() => {
-    if (data && data.length || data.length == 0)
+    if (data && data.length || data.length === 0)
       mapRows(data);
   }, [data])
 
@@ -269,16 +269,16 @@ const DataTable = (props) => {
     let categoryrows = rows.map((obj, index) => {
       console.log(obj);
       let checkedflg = false;
-      if (obj.package_status == "1")
+      if (obj.package_status === "1")
         checkedflg = true;
       let maincat;
       let subcat;
-      if (obj.maincategory == null) {
+      if (obj.maincategory === null) {
         maincat = "---"
       } else {
         maincat = obj.maincategory
       }
-      if (obj.subcategory == null) {
+      if (obj.subcategory === null) {
         subcat = "---"
       } else {
         subcat = obj.subcategory
@@ -379,7 +379,7 @@ const DataTable = (props) => {
       selectedCategoryArr.push(obj.package_id)
     } else {
       for (var i = 0; i < selectedCategoryArr.length; i++) {
-        if (selectedCategoryArr[i] == obj.package_id) {
+        if (selectedCategoryArr[i] === obj.package_id) {
           selectedCategoryArr.splice(i, 1);
         }
       }
@@ -393,14 +393,14 @@ const DataTable = (props) => {
 
   const handleAction = async () => {
     let selectedCategoryObj = selectedCategory;
-    if (action == '') {
+    if (action === '') {
       setAlertMessage('Please select an action');
       setShowMessage(true);
       setTimeout(() => {
         setShowMessage(false)
       }, 1500);
     } else {
-      if (action == 'Inactive') {
+      if (action === 'Inactive') {
         selectedCategoryObj.status = 'N';
         if (selectedCategory.packageId.length != 0) {
           await examPackageService.changeStatus(selectedCategoryObj);
@@ -418,7 +418,7 @@ const DataTable = (props) => {
           }, 1500);
         }
       }
-      if (action == 'Active') {
+      if (action === 'Active') {
         selectedCategoryObj.status = 'Y';
         if (selectedCategory.packageId.length != 0) {
           await examPackageService.changeStatus(selectedCategoryObj);
@@ -436,7 +436,7 @@ const DataTable = (props) => {
           }, 1500);
         }
       }
-      if (action == 'Delete') {
+      if (action === 'Delete') {
         selectedCategoryObj.status = 'D';
         if (selectedCategory.packageId.length != 0) {
           await examPackageService.changeStatus(selectedCategoryObj);
@@ -492,7 +492,7 @@ const DataTable = (props) => {
       let filterarr = [];
       examdurations.map((row, index) => {
         console.log(index);
-        if (index == 0) {
+        if (index === 0) {
           filterarr.push({ rowsNo: index + 1, durationId: row.duration_id, price: row.price, addtype: true, deltype: false })
         } else {
           filterarr.push({ rowsNo: index + 1, durationId: row.duration_id, price: row.price, addtype: false, deltype: true })
@@ -645,7 +645,7 @@ const DataTable = (props) => {
                 <div className="col-lg-3 col-sm-6 col-12">
                   <FormControl className="w-100 mb-2">
                     <InputLabel htmlFor="age-simple">Actions</InputLabel>
-                    {datatype == 'Active' &&
+                    {datatype === 'Active' &&
                       <Select onChange={(event, value) => {
                         onActionChange(event, value)
                       }} >
@@ -653,7 +653,7 @@ const DataTable = (props) => {
                         <MenuItem value={'Delete'}>Delete</MenuItem>
                       </Select>
                     }
-                    {datatype == 'Inactive' &&
+                    {datatype === 'Inactive' &&
                       <Select onChange={(event, value) => {
                         onActionChange(event, value)
                       }} >
@@ -690,7 +690,7 @@ const DataTable = (props) => {
               <MDBDataTable
                 striped
                 bordered
-                entriesOptions={[5, 10, 20, 25, 50, 100]}
+                entriesOptions={[5, 10, 20, 25, 50, 100, 1000]}
                 entries={10}
                 hover
                 data={{ rows: categoryrows, columns }}
@@ -700,7 +700,7 @@ const DataTable = (props) => {
                 disableRetreatAfterSorting={true} />
               <Modal className="modal-box" backdrop={"static"} toggle={onModalClose} isOpen={modal}>
                 <ModalHeader className="modal-box-header bg-primary text-white">
-                  {isEdit == false ? "Add Exam Package" :
+                  {isEdit === false ? "Add Exam Package" :
                     "Edit Exam Package"}
                 </ModalHeader>
 
@@ -780,7 +780,7 @@ const DataTable = (props) => {
                   </div>
                 </div>
                 <ModalFooter>
-                  {isEdit == false ?
+                  {isEdit === false ?
                     <div className="d-flex flex-row">
                       <Button style={{ marginRight: '5%' }} onClick={() => saveExamPackage()} disabled={savedisabled} variant="contained" color="primary">Save</Button>
                       <Button variant="contained" color="secondary" onClick={onModalClose}>Cancel</Button>

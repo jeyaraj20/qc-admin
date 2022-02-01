@@ -31,7 +31,6 @@ const HomeDashboardView = props => {
     console.log(user.user.logintype);
     const { data: res } = await adminService.getUserMenu();
     const { Adminmenu: menures } = res;
-    console.log(menures);
     const { data: countres } = await questionService.getQuestionsCount();
     const { count: count } = countres;
     setQuesCount(count);

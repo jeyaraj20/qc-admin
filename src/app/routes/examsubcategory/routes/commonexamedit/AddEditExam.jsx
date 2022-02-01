@@ -19,11 +19,11 @@ import * as examServices from '../../../../../services/examServices';
 import Snackbar from '@material-ui/core/Snackbar';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import IconButton from "@material-ui/core/IconButton";
+import { DateTimePicker } from '@material-ui/pickers';
+import Moment from "moment";
 
 const AddEditExam = (props) => {
-
     const history = useHistory();
-
     const [mode, setMode] = useState("");
     const [loader, setLoader] = useState(false);
     const [exam_cat, setExam_cat] = useState("");
@@ -73,7 +73,8 @@ const AddEditExam = (props) => {
     const [offerprice, setOfferPrice] = useState('');
     const [ipaddr, setIpAddr] = useState('');
     const publicIp = require('public-ip');
-
+    const [selectedStartDate, setStartDateChange] = useState(null);
+    const [selectedEndDate, setEndDateChange] = useState(null);
 
     const navigateTo = () => {
         localStorage.setItem('subId', exam_sub_sub);
@@ -89,17 +90,15 @@ const AddEditExam = (props) => {
         let mastercat = localStorage.getItem('mastercategory');
         let catname = localStorage.getItem('category');
         let subcatname = localStorage.getItem('subcategory');
-        console.log(mastercat);
         setMasterCategory(mastercat);
         setCategory(catname);
         setSubCategory(subcatname);
         setExamType(examtype);
         let mode = localStorage.getItem('mode');
-        console.log(mode);
         setMode(mode);
         let examid = localStorage.getItem('examid');
-        const { data: autores } = await examServices.getAutomaticRows(examid);
-        const { automaticquestions: automaticdata } = autores;
+        // const { data: autores } = await examServices.getAutomaticRows(examid);
+        // const { automaticquestions: automaticdata } = autores;
         setExamId(examid);
         let examname = localStorage.getItem('examname');
         let examslug = localStorage.getItem('examslug');
@@ -121,8 +120,9 @@ const AddEditExam = (props) => {
         let paymentflag = localStorage.getItem('paymentflag');
         let sellingprice = localStorage.getItem('sellingprice');
         let offerprice = localStorage.getItem('offerprice');
-        if (mode == 'Edit') {
-            console.log(examname);
+        let startDate = localStorage.getItem('startDate');
+        let endDate = localStorage.getItem('endDate');
+        if (mode === 'Edit') {
             setExam_title(examname);
             setSlug(examslug);
             setExamcode(examcode);
@@ -137,7 +137,9 @@ const AddEditExam = (props) => {
             setPaymentFlag(paymentflag);
             setSellingPrice(sellingprice);
             setOfferPrice(offerprice);
-            if (paymentflag == 'Y') {
+            setStartDateChange(startDate === 'null' || startDate === null ? null : startDate );
+            setEndDateChange(endDate === 'null' || endDate === null ? null : endDate );
+            if (paymentflag === 'Y') {
                 setShowPrice(true);
             } else {
                 setShowPrice(false);
@@ -145,19 +147,19 @@ const AddEditExam = (props) => {
             var array = JSON.parse("[" + examlevel + "]");
             let arrayselect = []
             for (let s = 0; s < array.length; s++) {
-                if (array[s] == 1) {
+                if (array[s] === 1) {
                     setLevel1(true);
                     arrayselect.push("1");
                 }
-                if (array[s] == 2) {
+                if (array[s] === 2) {
                     setLevel2(true);
                     arrayselect.push("2");
                 }
-                if (array[s] == 3) {
+                if (array[s] === 3) {
                     setLevel3(true);
                     arrayselect.push("3");
                 }
-                if (array[s] == 4) {
+                if (array[s] === 4) {
                     setLevel4(true);
                     arrayselect.push("4");
                 }
@@ -180,17 +182,17 @@ const AddEditExam = (props) => {
                 chapListArr.push(<MenuItem value={chapter.chapt_id}>{chapter.chapter_name}</MenuItem>)
             }
             setChapterList(chapListArr);
-            if (examtypecat == 'T') {
+            if (examtypecat === 'T') {
                 setShowTestTypes(true);
             } else {
                 setShowTestTypes(false);
             }
-            if (examtypecat == 'C') {
+            if (examtypecat === 'C') {
                 setShowChapterWise(true);
             } else {
                 setShowChapterWise(false);
             }
-            if (examtypecat == 'P') {
+            if (examtypecat === 'P') {
                 setShowPreviousYear(true);
             } else {
                 setShowPreviousYear(false);
@@ -223,7 +225,6 @@ const AddEditExam = (props) => {
         const { data: prevres } = await examServices.getPreviousYear(prevData);
         const { count: prevCount } = prevres;
         const { Exam: prevYearData } = prevres;
-        console.log(prevCount);
         if (typeCount != 0) {
             setShowTypeOpt(true);
         } else {
@@ -269,17 +270,17 @@ const AddEditExam = (props) => {
 
     const handleAddedExamTypes = (e) => {
         setAddedExamTypes(e.target.value);
-        if (e.target.value == 'T') {
+        if (e.target.value === 'T') {
             setShowTestTypes(true);
         } else {
             setShowTestTypes(false);
         }
-        if (e.target.value == 'C') {
+        if (e.target.value === 'C') {
             setShowChapterWise(true);
         } else {
             setShowChapterWise(false);
         }
-        if (e.target.value == 'P') {
+        if (e.target.value === 'P') {
             setShowPreviousYear(true);
         } else {
             setShowPreviousYear(false);
@@ -288,7 +289,7 @@ const AddEditExam = (props) => {
 
     const handlePaidExamTypes = (e) => {
         setPaymentFlag(e.target.value);
-        if (e.target.value == "Y") {
+        if (e.target.value === "Y") {
             setShowPrice(true);
         } else {
             setShowPrice(false);
@@ -310,7 +311,6 @@ const AddEditExam = (props) => {
     };
 
     const handleMainCategoryChange = async (event, index) => {
-        console.log(index);
         let newArr = [...automatic]; // copying the old datas array
         newArr[index].maincategoryId = event.target.value; // replace e.target.value with whatever you want to change it to
         const { data: subcategoryres } = await exammainCategoryService.getExamSubCategoryById(event.target.value);
@@ -351,16 +351,14 @@ const AddEditExam = (props) => {
         setMarksPerQues(e.target.value)
     }
 
-    //const selectedLevelArr = [];
     const handleLevel1Change = (e) => {
-        console.log(selectedLevelArr);
         let arr = selectedLevelArr;
         if (e.target.checked) {
             setLevel1(true);
             arr.push(e.target.value);
         } else {
             for (var i = 0; i < arr.length; i++) {
-                if (arr[i] == e.target.value) {
+                if (arr[i] === e.target.value) {
                     arr.splice(i, 1);
                 }
             }
@@ -369,18 +367,16 @@ const AddEditExam = (props) => {
         setSelectedLevelArr(arr);
         let levelStr = arr.join();
         setExamLevel(levelStr);
-        console.log(levelStr);
     }
 
     const handleLevel2Change = (e) => {
-        console.log(selectedLevelArr);
         let arr = selectedLevelArr;
         if (e.target.checked) {
             setLevel2(true);
             arr.push(e.target.value);
         } else {
             for (var i = 0; i < arr.length; i++) {
-                if (arr[i] == e.target.value) {
+                if (arr[i] === e.target.value) {
                     arr.splice(i, 1);
                 }
             }
@@ -389,18 +385,16 @@ const AddEditExam = (props) => {
         setSelectedLevelArr(arr);
         let levelStr = arr.join();
         setExamLevel(levelStr);
-        console.log(levelStr);
     }
 
     const handleLevel3Change = (e) => {
-        console.log(selectedLevelArr);
         let arr = selectedLevelArr;
         if (e.target.checked) {
             setLevel3(true);
             arr.push(e.target.value);
         } else {
             for (var i = 0; i < arr.length; i++) {
-                if (arr[i] == e.target.value) {
+                if (arr[i] === e.target.value) {
                     arr.splice(i, 1);
                 }
             }
@@ -409,18 +403,16 @@ const AddEditExam = (props) => {
         setSelectedLevelArr(arr);
         let levelStr = arr.join();
         setExamLevel(levelStr);
-        console.log(levelStr);
     }
 
     const handleLevel4Change = (e) => {
-        console.log(selectedLevelArr);
         let arr = selectedLevelArr;
         if (e.target.checked) {
             setLevel4(true);
             arr.push(e.target.value);
         } else {
             for (var i = 0; i < arr.length; i++) {
-                if (arr[i] == e.target.value) {
+                if (arr[i] === e.target.value) {
                     arr.splice(i, 1);
                 }
             }
@@ -429,16 +421,13 @@ const AddEditExam = (props) => {
         setSelectedLevelArr(arr);
         let levelStr = arr.join();
         setExamLevel(levelStr);
-        console.log(levelStr);
     }
 
     const handleTestTypeChange = async (event, value) => {
-        console.log(event.target.value);
         setTestTypeId(event.target.value);
     }
 
     const saveCommonExam = async () => {
-        console.log(automatic);
         try {
             let data = {};
             data.exam_cat = exam_cat;
@@ -462,19 +451,18 @@ const AddEditExam = (props) => {
             data.exam_type_id = testtypeid;
             data.exam_level = examlevel;
             data.payment_flag = paymentflag;
-            if (sellingprice == '') {
+            if (sellingprice === '') {
                 data.selling_price = 0;
             } else {
                 data.selling_price = sellingprice;
             }
             data.offer_price = offerprice;
-            if (questionType == 'AUTO') {
+            if (questionType === 'AUTO') {
                 data.automatic = automatic;
             } else {
                 data.automatic = [];
             }
             data.ip_addr = ipaddr;
-            console.log(data);
             await examServices.saveCommonExam(data);
             setAlertMessage('Exam added successfully!');
             setShowMessage(true);
@@ -490,7 +478,6 @@ const AddEditExam = (props) => {
             localStorage.setItem('exacatid', exam_sub_sub);
             history.push('/examslist');
         } catch (ex) {
-            console.log(ex.response);
             setAlertMessage('Something went wrong. Please try later');
             setShowMessage(true);
             setTimeout(() => {
@@ -499,8 +486,29 @@ const AddEditExam = (props) => {
         }
     }
 
+    const updateCommonExamClick = async () => {
+        if(selectedStartDate && selectedEndDate ){
+            if( Date.parse(selectedStartDate) > Date.parse(selectedEndDate) ){
+                setShowMessage(true);
+                setAlertMessage('Start Date should be less than or equal to End Date');
+                setTimeout(() => {
+                    setShowMessage(false)
+                }, 1500);
+            }else{
+                updateCommonExam();
+            }
+        }else if(!selectedStartDate && selectedEndDate ){
+            setShowMessage(true);
+            setAlertMessage('Start Date should be less than or equal to End Date');
+            setTimeout(() => {
+                setShowMessage(false)
+            }, 1500);
+        }else{
+            updateCommonExam();
+        }
+    }
+
     const updateCommonExam = async () => {
-        console.log("test");
         try {
             let data = {};
             data.exam_cat = exam_cat;
@@ -528,23 +536,41 @@ const AddEditExam = (props) => {
             data.selling_price = sellingprice;
             data.offer_price = offerprice;
             data.ip_addr = ipaddr;
-            console.log(data);
+            data.startDate = selectedStartDate;
+            data.endDate = selectedEndDate;
             await examServices.updateCommonExam(examId, data);
             setAlertMessage('Exam updated successfully!');
             setShowMessage(true);
             setTimeout(() => {
-                setShowMessage(false)
+                setShowMessage(false);
+                localStorage.setItem('subId', exam_sub_sub);
+                localStorage.setItem('examtype', examType);
+                history.push('/app/examsubcategory/view');
             }, 1500);
-            localStorage.setItem('subId', exam_sub_sub);
-            localStorage.setItem('examtype', examType);
-            history.push('/app/examsubcategory/examslist');
         } catch (ex) {
-            console.log(ex);
             setAlertMessage('Something went wrong. Please try later');
             setShowMessage(true);
             setTimeout(() => {
                 setShowMessage(false);
             }, 1500);
+        }
+    }
+
+    const handleStartDateChange = (date) => {
+        if(date === null ){
+            setStartDateChange(null);
+        }else{
+            let fromdate = Moment(date).format('YYYY-MM-DD HH:mm:ss');
+            setStartDateChange(fromdate);
+        }
+    }
+
+    const handleEndDateChange = (date) => {
+        if(date === null ){
+            setEndDateChange(null);
+        }else{
+            let fromdate = Moment(date).format('YYYY-MM-DD HH:mm:ss');
+            setEndDateChange(fromdate);
         }
     }
 
@@ -634,7 +660,7 @@ const AddEditExam = (props) => {
             }
             {!loader &&
                 <div className="row no-gutters">
-                    {mode == 'Add' ? <div style={{ padding: '1%' }} className="col-lg-11 d-flex flex-column order-lg-1">
+                    {mode === 'Add' ? <div style={{ padding: '1%' }} className="col-lg-11 d-flex flex-column order-lg-1">
                         <h1>Add Exam</h1>
                     </div> :
                         <div style={{ padding: '1%' }} className="col-lg-11 d-flex flex-column order-lg-1">
@@ -888,23 +914,46 @@ const AddEditExam = (props) => {
                                 <FormControlLabel value="AUTO" disabled={true} control={<Radio color="primary" />} label="Automatic" />
                             </RadioGroup>
                         </FormControl>
-                        {//questionType == 'AUTO' &&
+                        {//questionType === 'AUTO' &&
                             renderAutomaticTypes()
                         }
+                        <div class="row">
+                            <div class="col-lg-4" style={{ "margin": "0px" }}>
+                                <DateTimePicker
+                                    clearable
+                                    value={selectedStartDate}
+                                    onChange={handleStartDateChange}
+                                    label="Start Date"
+                                    format="DD/MM/YYYY HH:mm:ss"
+                                    style={{ width : '100%'}}
+                                />
+                            </div>
+                            <div class="col-lg-4" style={{ "margin": "0px" }}>
+                                <DateTimePicker
+                                    clearable
+                                    value={selectedEndDate}
+                                    onChange={handleEndDateChange}
+                                    label="End Date"
+                                    format="DD/MM/YYYY HH:mm:ss"
+                                    style={{ width : '100%'}}
+                                />
+                            </div>
+                        </div>
                         <TextField
                             autoComplete='off'
                             required
                             label={'Position'}
                             onChange={(event) => setPosition(event.target.value)}
                             value={position}
-                            margin="normal" />
-                        {mode == 'Add' ? <div style={{ paddingTop: '2%', textAlign: 'right' }} className="col-lg-6 col-sm-6 col-12">
+                            margin="normal" 
+                        />
+                        {mode === 'Add' ? <div style={{ paddingTop: '2%', textAlign: 'right' }} className="col-lg-6 col-sm-6 col-12">
                             <Button onClick={() => saveCommonExam()} variant="contained" color="primary" className="jr-btn text-white">
                                 Submit
                             </Button>
                         </div> :
                             <div style={{ paddingTop: '2%', textAlign: 'right' }} className="col-lg-6 col-sm-6 col-12">
-                                <Button onClick={() => updateCommonExam()} variant="contained" color="primary" className="jr-btn text-white">
+                                <Button onClick={() => updateCommonExamClick()} variant="contained" color="primary" className="jr-btn text-white">
                                     Update
                                 </Button>
                             </div>

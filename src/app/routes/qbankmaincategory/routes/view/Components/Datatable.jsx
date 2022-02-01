@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Modal, ModalHeader, ModalFooter } from 'reactstrap';
 import Button from '@material-ui/core/Button';
 import { MDBDataTable, MDBIcon, MDBInput } from 'mdbreact';
+import { Spin } from 'antd';
 import IconButton from "@material-ui/core/IconButton";
 import Checkbox from "@material-ui/core/Checkbox";
 import TextField from '@material-ui/core/TextField';
@@ -36,6 +37,7 @@ const DataTable = (props) => {
   const [inactiveCount, setInactiveCount] = useState('');
   const [activeCount, setActiveCount] = useState('');
   const [loader, setLoader] = useState(false);
+  const [saveLoader, setSaveLoader] = useState(false);
   const [errors, setErrors] = useState({})
   const [checked, setChecked] = useState(true);
   const [selectAll, setSelectAll] = useState(false);
@@ -54,11 +56,10 @@ const DataTable = (props) => {
       if (document.getElementById(row.cat_id)) {
         document.getElementById(row.cat_id).checked = e.currentTarget.checked;
         if (e.currentTarget.checked) {
-
           if (e.currentTarget.checked)
-            row.cat_status = 1
+            row.isSelected = true;
           else
-            row.cat_status = 0;
+            row.isSelected = false;
           data[rowcount] = row
           setData([...data])
 
@@ -71,36 +72,29 @@ const DataTable = (props) => {
           postionObj.catId = row.cat_id;
           postionObj.position = row.cat_pos;
           posArr.push(postionObj);
-          console.log(row);
-          console.log(posArr);
-          console.log(selectedCatArr);
           setChangePositionData({ "values": posArr });
         } else {
-
           if (e.currentTarget.checked)
-            row.cat_status = 1
+            row.isSelected = true;
           else
-            row.cat_status = 0;
+            row.isSelected = false;
           data[rowcount] = row
           setData([...data])
 
           for (var i = 0; i < selectedCatArr.length; i++) {
-            if (selectedCatArr[i] == row.cat_id) {
+            if (selectedCatArr[i] === row.cat_id) {
               selectedCatArr.splice(i, 1);
             }
           }
           if (posArr.length != 0) {
             for (var s = 0; s < posArr.length; s++) {
-              if (posArr[s].catId == row.cat_id) {
+              if (posArr[s].catId === row.cat_id) {
                 posArr.splice(s, 1);
               }
             }
           }
-          console.log(posArr);
-          console.log(selectedCatArr);
           setSelectedCategory({ "catId": selectedCatArr });
           setChangePositionData({ "values": posArr });
-          //console.log(selectedCategoryArr);
         }
       }
       setSelectAll(e.currentTarget.checked);
@@ -116,19 +110,16 @@ const DataTable = (props) => {
     selectedCategoryArr = selectedCategory.catId;
     changePosArr = changePositionData.values;
     if (e.currentTarget.checked)
-      obj.cat_status = 1
+      obj.isSelected = true;
     else
-      obj.cat_status = 0;
+      obj.isSelected = false;
     data[index] = obj
     setData([...data])// to avoid shallow checking
-
-    console.log(e.currentTarget.checked);
-    console.log(selectedCategoryArr);
     if (e.currentTarget.checked) {
       selectedCategoryArr.push(obj.cat_id)
       let postionObj = {};
       for (var i = 0; i < changePosArr.length; i++) {
-        if (changePosArr[i].catId == obj.cat_id) {
+        if (changePosArr[i].catId === obj.cat_id) {
           changePosArr.splice(i, 1);
         }
       }
@@ -138,20 +129,18 @@ const DataTable = (props) => {
       setChangePositionData({ "values": changePosArr });
     } else {
       for (var i = 0; i < selectedCategoryArr.length; i++) {
-        if (selectedCategoryArr[i] == obj.cat_id) {
+        if (selectedCategoryArr[i] === obj.cat_id) {
           selectedCategoryArr.splice(i, 1);
         }
       }
       if (changePosArr.length != 0) {
         for (var s = 0; s < changePosArr.length; s++) {
-          if (changePosArr[s].catId == obj.cat_id) {
+          if (changePosArr[s].catId === obj.cat_id) {
             changePosArr.splice(s, 1);
           }
         }
       }
-      console.log(changePositionData);
       setChangePositionData({ "values": changePosArr });
-      //console.log(selectedCategoryArr);
     }
     setSelectedCategory({ "catId": selectedCategoryArr });
   }
@@ -214,21 +203,14 @@ const DataTable = (props) => {
   }, [data])
 
   useEffect(() => () => {
-    //handleRefresh();
-    console.log("use effect");
-
     files.forEach(file => window.webkitURL.revokeObjectURL(file.preview));
   }, [files]);
 
   useEffect(() => () => {
-    //handleRefresh();
-    console.log(checked);
-
   }, [checked]);
 
 
   useEffect(() => {
-    console.log("use effect");
     async function fetchData() {
       await handleRefresh()
     }
@@ -239,23 +221,16 @@ const DataTable = (props) => {
   let rowcount = 0;
 
   const mapRows = (rows) => {
-    console.log(rows);
     let rowFields = []// fields in required order
     columns.forEach(column => rowFields.push(column.field))
-
     let categoryrowsdata = rows.map((obj, index) => {
-
-      let checkedflg = false;
-      if (obj.cat_status == "1")
-        checkedflg = true;
-
       let row = {};
       rowcount = rowcount + 1;
       for (let fieldName of rowFields)
         row[fieldName] = obj[fieldName] // fetching required fields in req order
       row.select = <MDBInput style={{ marginTop: '0px', width: '20px', marginLeft: '0px' }}
         label="." type="checkbox"
-        checked={checkedflg}
+        checked={obj.isSelected}
         name={obj.cat_id} id={obj.cat_id}
         onChange={(e) => { onCategorySelect(e, obj, index) }}
       />;
@@ -286,16 +261,15 @@ const DataTable = (props) => {
 
   const handleAction = async () => {
     let selectedCategoryObj = selectedCategory;
-    if (action == '') {
+    if (action === '') {
       setAlertMessage('Please select an action');
       setShowMessage(true);
       setTimeout(() => {
         setShowMessage(false)
       }, 1500);
     } else {
-      if (action == 'Inactive') {
+      if (action === 'Inactive') {
         selectedCategoryObj.status = 'N';
-        console.log(selectedCategoryObj);
         if (selectedCategory.catId.length != 0) {
           await qbankCategoryService.inactiveCategory(selectedCategoryObj);
           setSelectedCategory({ "catId": [] });
@@ -314,9 +288,8 @@ const DataTable = (props) => {
           }, 1500);
         }
       }
-      if (action == 'Active') {
+      if (action === 'Active') {
         selectedCategoryObj.status = 'Y';
-        console.log(selectedCategoryObj);
         if (selectedCategory.catId.length != 0) {
           await qbankCategoryService.inactiveCategory(selectedCategoryObj);
           setSelectedCategory({ "catId": [] });
@@ -335,8 +308,7 @@ const DataTable = (props) => {
           }, 1500);
         }
       }
-      if (action == 'Delete') {
-        console.log(selectedCategory);
+      if (action === 'Delete') {
         if (selectedCategory.catId.length != 0) {
           await qbankCategoryService.deleteCategory(selectedCategory);
           setSelectedCategory({ "catId": [] });
@@ -356,8 +328,7 @@ const DataTable = (props) => {
         }
       }
     }
-    if (action == 'Position') {
-      console.log(changePositionData);
+    if (action === 'Position') {
       if (changePositionData.values.length != 0) {
         await qbankCategoryService.changePosition(changePositionData);
         setChangePositionData({ "values": [] });
@@ -379,7 +350,6 @@ const DataTable = (props) => {
   }
 
   const toggle = (open, data) => {
-    console.log(data);
     setErrors({});
     setModal(open);
     if (data) {
@@ -396,26 +366,19 @@ const DataTable = (props) => {
       setSlug('');
       setIsEdit(false);
     }
-    console.log(data);
   }
-  const handleSaveButton = () => {
-    console.log(errors['Title'], errors['Slug'], errors['Position'])
-    if (errors['categoryName'] != null || errors['categoryName'] == undefined || errors['slug'] != null || errors['slug'] == undefined || errors['position'] != null || errors['position'] == undefined) {
-      setSavedisabled(true);
-    } else {
-      setSavedisabled(false);
-    }
-  };
+
   const saveQbankCategory = async () => {
     if (categoryName && slug && position) {
+      setSaveLoader(true);
       const saveObj = {};
       saveObj.cat_name = categoryName;
       saveObj.cat_slug = slug;
       saveObj.cat_pos = position;
-      console.log(saveObj);
       await qbankCategoryService.saveQbankCategory(saveObj);
       setAlertMessage('Qbank Main Category Added Successfully');
       await handleRefresh();
+      setSaveLoader(false);
       setShowMessage(true);
       setModal(false);
       setTimeout(() => {
@@ -432,14 +395,15 @@ const DataTable = (props) => {
 
   const editQbankCategory = async () => {
     if (categoryName && slug && position) {
+      setSaveLoader(true);
       const editObj = {};
       editObj.cat_name = categoryName;
       editObj.cat_slug = slug;
       editObj.cat_pos = position;
-      console.log(editObj);
       await qbankCategoryService.editQbankCategory(categoryId, editObj);
       setAlertMessage('Qbank Main Category Updated Successfully');
       await handleRefresh();
+      setSaveLoader(false);
       setShowMessage(true);
       setModal(false);
       setTimeout(() => {
@@ -455,7 +419,6 @@ const DataTable = (props) => {
   }
 
   const valiadateProperty = (e) => {
-    console.log(e);
     let { name, value, className } = e.currentTarget;
     const obj = { [name]: value };
     const filedSchema = { [name]: schema[name] };
@@ -468,9 +431,9 @@ const DataTable = (props) => {
       e.currentTarget.className = className.replace(" is-valid", "").replace(" is-invalid", "") + " is-invalid"
     else
       e.currentTarget.className = className.replace(" is-valid", "").replace(" is-invalid", "") + " is-valid"
-    if (name == 'Title')
+    if (name === 'Title')
       onCheckAlreadyExists(e.target.value);
-    if (name == 'Slug')
+    if (name === 'Slug')
       onCheckSlugExists(e.target.value);
   }
   const schema = {
@@ -486,7 +449,7 @@ const DataTable = (props) => {
     try {
       if (name != "") {
         let data = {};
-        if (usertype == 'G') {
+        if (usertype === 'G') {
           data.table = 'tbl__category';
         } else {
           data.table = 'tbl__school_question_category';
@@ -501,7 +464,6 @@ const DataTable = (props) => {
         }
         data.statusField = 'cat_status';
         const { data: response } = await utilService.checkAlreadyExists(data);
-        console.log(response.count);
         if (response.count > 0) {
           setSavedisabled(true);
           setErrortext(true);
@@ -523,7 +485,7 @@ const DataTable = (props) => {
     try {
       if (slug != "") {
         let data = {};
-        if (usertype == 'G') {
+        if (usertype === 'G') {
           data.table = 'tbl__category';
         } else {
           data.table = 'tbl__school_question_category';
@@ -538,7 +500,6 @@ const DataTable = (props) => {
         }
         data.statusField = 'cat_status';
         const { data: response } = await utilService.checkAlreadyExists(data);
-        console.log(response.count);
         if (response.count > 0) {
           setSavedisabled(true);
           setErrors({ ...errors, ['Slug']: 'Slug already exists', "errordetails": null })
@@ -611,132 +572,135 @@ const DataTable = (props) => {
           </div>
         }
         {!loader &&
-          <div>
-            <form className="row" autoComplete="off">
-              <div className="col-lg-3 col-sm-6 col-12">
-                <FormControl className="w-100 mb-2">
-                  <InputLabel htmlFor="age-simple">Actions</InputLabel>
-                  {datatype == 'Active' &&
-                    <Select onChange={(event, value) => {
-                      onActionChange(event, value)
-                    }} >
-                      <MenuItem value={'Inactive'}>Inactive</MenuItem>
-                      <MenuItem value={'Position'}>Position</MenuItem>
-                      <MenuItem value={'Delete'}>Delete</MenuItem>
-                    </Select>
-                  }
-                  {datatype == 'Inactive' &&
-                    <Select onChange={(event, value) => {
-                      onActionChange(event, value)
-                    }} >
-                      <MenuItem value={'Active'}>Active</MenuItem>
-                      <MenuItem value={'Position'}>Position</MenuItem>
-                      <MenuItem value={'Delete'}>Delete</MenuItem>
-                    </Select>
-                  }
-                </FormControl>
-              </div>
-              <div style={{ paddingTop: '2%' }} className="col-lg-2 col-sm-6 col-12">
-                <Button onClick={() => handleAction()} variant="contained" color="primary" className="jr-btn">
-                  <i className="zmdi zmdi-flash zmdi-hc-fw" />
-                  <span>Go</span>
-                </Button>
-              </div>
-              <div style={{ marginLeft: '0%', paddingTop: '2%' }} className="col-lg-6 col-sm-6 col-12">
-                <div className="jr-btn-group">
-                  <Button onClick={() => toggle(true, '')} variant="contained" color="primary" className="jr-btn">
-                    <i className="zmdi zmdi-plus zmdi-hc-fw" />
-                    <span>Add</span>
-                  </Button>
-                  <Button onClick={() => getAllActive()} variant="contained" className="jr-btn bg-success text-white">
-                    <i className="zmdi zmdi-check zmdi-hc-fw" />
-                    <span>Active ({activeCount})</span>
-                  </Button>
-                  <Button onClick={() => getAllInactive()} variant="contained" className="jr-btn bg-danger text-white">
-                    <i className="zmdi zmdi-block zmdi-hc-fw" />
-                    <span>Inactive ({inactiveCount})</span>
+          <Spin spinning={saveLoader} tip='Uploading...'>
+            <div>
+              <form className="row" autoComplete="off">
+                <div className="col-lg-3 col-sm-6 col-12">
+                  <FormControl className="w-100 mb-2">
+                    <InputLabel htmlFor="age-simple">Actions</InputLabel>
+                    {datatype === 'Active' &&
+                      <Select onChange={(event, value) => {
+                        onActionChange(event, value)
+                      }} >
+                        <MenuItem value={'Inactive'}>Inactive</MenuItem>
+                        <MenuItem value={'Position'}>Position</MenuItem>
+                        <MenuItem value={'Delete'}>Delete</MenuItem>
+                      </Select>
+                    }
+                    {datatype === 'Inactive' &&
+                      <Select onChange={(event, value) => {
+                        onActionChange(event, value)
+                      }} >
+                        <MenuItem value={'Active'}>Active</MenuItem>
+                        <MenuItem value={'Position'}>Position</MenuItem>
+                        <MenuItem value={'Delete'}>Delete</MenuItem>
+                      </Select>
+                    }
+                  </FormControl>
+                </div>
+                <div style={{ paddingTop: '2%' }} className="col-lg-2 col-sm-6 col-12">
+                  <Button onClick={() => handleAction()} variant="contained" color="primary" className="jr-btn">
+                    <i className="zmdi zmdi-flash zmdi-hc-fw" />
+                    <span>Go</span>
                   </Button>
                 </div>
-              </div>
-            </form>
-            <h4 style={{ padding: '0.5%' }} className={txtclass}>{datatype} Q Bank Main Category</h4>
-            <MDBDataTable
-              striped
-              bordered
-              entriesOptions={[5, 10, 20, 25, 50, 100]}
-              entries={5}
-              hover
-              data={{ rows: categoryrows, columns }}
-              small
-              responsive
-              disableRetreatAfterSorting={true} />
-            <Modal className="modal-box" backdrop={"static"} toggle={onModalClose} isOpen={modal}>
-              <ModalHeader className="modal-box-header bg-primary text-white">
-                {isEdit == false ? "Add Question Bank Main Category" :
-                  "Edit Question Bank Main Category"}
-              </ModalHeader>
-
-              <div className="modal-box-content">
-                <div className="row no-gutters">
-                  <div className="col-lg-8 d-flex flex-column order-lg-1">
-                    <TextField
-                      id="required"
-                      label={'Title'}
-                      name={'Title'}
-                      autoComplete={'off'}
-                      onChange={(event) => onCategoryNameChange(event.target.value)}
-                      defaultValue={categoryName}
-                      onBlur={valiadateProperty}
-                      margin="none" />
-                    {errortext &&
-                      <h6 style={{ color: 'red', paddingTop: '1%' }}>Main Category already exists</h6>
-                    }
-                    <div><h6 style={{ color: 'red', paddingTop: '1%' }}>{errors['Title']}</h6></div>
-                    <TextField
-                      required
-                      id="required"
-                      label={'Slug'}
-                      name={'Slug'}
-                      autoComplete={'off'}
-                      onChange={(event) => setSlug(event.target.value)}
-                      defaultValue={slug}
-                      value={slug}
-                      onBlur={valiadateProperty}
-                      margin="normal" />
-                    <div><h6 style={{ color: 'red', paddingTop: '1%' }}>{errors['Slug']}</h6></div>
-                    <label style={{ color: '#3274bb', margintop: '-15px' }}>Eg : title-slug</label>
-                    <TextField
-                      required
-                      id="required"
-                      label={'Position'}
-                      name={'Position'}
-                      onBlur={valiadateProperty}
-                      onChange={(event) => setPosition(event.target.value)}
-                      defaultValue={position}
-                      margin="normal" />
-                    <div><h6 style={{ color: 'red', paddingTop: '1%' }}>{errors['Position']}</h6></div>
+                <div style={{ marginLeft: '0%', paddingTop: '2%' }} className="col-lg-6 col-sm-6 col-12">
+                  <div className="jr-btn-group">
+                    <Button onClick={() => toggle(true, '')} variant="contained" color="primary" className="jr-btn">
+                      <i className="zmdi zmdi-plus zmdi-hc-fw" />
+                      <span>Add</span>
+                    </Button>
+                    <Button onClick={() => getAllActive()} variant="contained" className="jr-btn bg-success text-white">
+                      <i className="zmdi zmdi-check zmdi-hc-fw" />
+                      <span>Active ({activeCount})</span>
+                    </Button>
+                    <Button onClick={() => getAllInactive()} variant="contained" className="jr-btn bg-danger text-white">
+                      <i className="zmdi zmdi-block zmdi-hc-fw" />
+                      <span>Inactive ({inactiveCount})</span>
+                    </Button>
                   </div>
                 </div>
-              </div>
-              <ModalFooter>
-                {isEdit == false ?
-                  <div className="d-flex flex-row">
-                    <Button style={{ marginRight: '5%' }} onClick={() => saveQbankCategory()} variant="contained" disabled={savedisabled} color="primary">Save</Button>
-                    <Button variant="contained" color="secondary" onClick={onModalClose}>Cancel</Button>
-                  </div> :
-                  <div className="d-flex flex-row">
-                    <Button style={{ marginRight: '5%' }} onClick={() => editQbankCategory()} variant="contained" disabled={savedisabled} color="primary">Update</Button>
-                    <Button variant="contained" color="secondary" onClick={onModalClose}>Cancel</Button>
-                  </div>}
-              </ModalFooter>
-            </Modal>
-            <Snackbar
-              className="mb-3 bg-info"
-              anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-              open={showMessage}
-              message={alertMessage}
-            />
-          </div>
+              </form>
+              <h4 style={{ padding: '0.5%' }} className={txtclass}>{datatype} Q Bank Main Category</h4>
+              <MDBDataTable
+                striped
+                bordered
+                entriesOptions={[5, 10, 20, 25, 50, 100, 1000]}
+                entries={5}
+                hover
+                data={{ rows: categoryrows, columns }}
+                small
+                responsive
+                disableRetreatAfterSorting={true} />
+              <Modal className="modal-box" backdrop={"static"} toggle={onModalClose} isOpen={modal}>
+                <Spin spinning={saveLoader} tip='Uploading...'>
+                  <ModalHeader className="modal-box-header bg-primary text-white">
+                    {isEdit === false ? "Add Question Bank Main Category" :
+                      "Edit Question Bank Main Category"}
+                  </ModalHeader>
+                  <div className="modal-box-content">
+                    <div className="row no-gutters">
+                      <div className="col-lg-8 d-flex flex-column order-lg-1">
+                        <TextField
+                          id="required"
+                          label={'Title'}
+                          name={'Title'}
+                          autoComplete={'off'}
+                          onChange={(event) => onCategoryNameChange(event.target.value)}
+                          defaultValue={categoryName}
+                          onBlur={valiadateProperty}
+                          margin="none" />
+                        {errortext &&
+                          <h6 style={{ color: 'red', paddingTop: '1%' }}>Main Category already exists</h6>
+                        }
+                        <div><h6 style={{ color: 'red', paddingTop: '1%' }}>{errors['Title']}</h6></div>
+                        <TextField
+                          required
+                          id="required"
+                          label={'Slug'}
+                          name={'Slug'}
+                          autoComplete={'off'}
+                          onChange={(event) => setSlug(event.target.value)}
+                          defaultValue={slug}
+                          value={slug}
+                          onBlur={valiadateProperty}
+                          margin="normal" />
+                        <div><h6 style={{ color: 'red', paddingTop: '1%' }}>{errors['Slug']}</h6></div>
+                        <label style={{ color: '#3274bb', margintop: '-15px' }}>Eg : title-slug</label>
+                        <TextField
+                          required
+                          id="required"
+                          label={'Position'}
+                          name={'Position'}
+                          onBlur={valiadateProperty}
+                          onChange={(event) => setPosition(event.target.value)}
+                          defaultValue={position}
+                          margin="normal" />
+                        <div><h6 style={{ color: 'red', paddingTop: '1%' }}>{errors['Position']}</h6></div>
+                      </div>
+                    </div>
+                  </div>
+                  <ModalFooter>
+                    {isEdit === false ?
+                      <div className="d-flex flex-row">
+                        <Button style={{ marginRight: '5%' }} onClick={() => saveQbankCategory()} variant="contained" disabled={savedisabled} color="primary">Save</Button>
+                        <Button variant="contained" color="secondary" onClick={onModalClose}>Cancel</Button>
+                      </div> :
+                      <div className="d-flex flex-row">
+                        <Button style={{ marginRight: '5%' }} onClick={() => editQbankCategory()} variant="contained" disabled={savedisabled} color="primary">Update</Button>
+                        <Button variant="contained" color="secondary" onClick={onModalClose}>Cancel</Button>
+                      </div>}
+                  </ModalFooter>
+                </Spin>
+              </Modal>
+              <Snackbar
+                className="mb-3 bg-info"
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                open={showMessage}
+                message={alertMessage}
+              />
+            </div>
+          </Spin>
         }
       </div>
     </>

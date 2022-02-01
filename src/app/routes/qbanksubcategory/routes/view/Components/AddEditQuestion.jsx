@@ -164,7 +164,7 @@ const AddEditQuestion = (props) => {
                 questionImageDirfinal = schoolquestionImageDir;
             }
 
-            if (questiondatadetail.q_type == 'I') {
+            if (questiondatadetail.q_type === 'I') {
                 let file = {
                     name: questiondatadetail.question,
                     preview: questionImageDirfinal + '/' + questiondatadetail.question
@@ -183,7 +183,7 @@ const AddEditQuestion = (props) => {
                 setQuestionImageStyle("none");
                 setQuestionTextStyle("block");
             }
-            if (questiondatadetail.opt_type1 == 'I') {
+            if (questiondatadetail.opt_type1 === 'I') {
                 let opt1file = {
                     name: questiondatadetail.opt_1,
                     preview: questionImageDirfinal + '/' + questiondatadetail.opt_1
@@ -202,7 +202,7 @@ const AddEditQuestion = (props) => {
                 setOpt1ImageStyle("none");
                 setOpt1TextStyle("block");
             }
-            if (questiondatadetail.opt_type2 == 'I') {
+            if (questiondatadetail.opt_type2 === 'I') {
                 let opt2file = {
                     name: questiondatadetail.opt_2,
                     preview: questionImageDirfinal + '/' + questiondatadetail.opt_2
@@ -221,7 +221,7 @@ const AddEditQuestion = (props) => {
                 setOpt2ImageStyle("none");
                 setOpt2TextStyle("block");
             }
-            if (questiondatadetail.opt_type3 == 'I') {
+            if (questiondatadetail.opt_type3 === 'I') {
                 let opt3file = {
                     name: questiondatadetail.opt_3,
                     preview: questionImageDirfinal + '/' + questiondatadetail.opt_3
@@ -240,7 +240,7 @@ const AddEditQuestion = (props) => {
                 setOpt3ImageStyle("none");
                 setOpt3TextStyle("block");
             }
-            if (questiondatadetail.opt_type4 == 'I') {
+            if (questiondatadetail.opt_type4 === 'I') {
                 let opt4file = {
                     name: questiondatadetail.opt_4,
                     preview: questionImageDirfinal + '/' + questiondatadetail.opt_4
@@ -259,7 +259,7 @@ const AddEditQuestion = (props) => {
                 setOpt4ImageStyle("none");
                 setOpt4TextStyle("block");
             }
-            if (questiondatadetail.opt_type5 == 'I') {
+            if (questiondatadetail.opt_type5 === 'I') {
                 let opt5file = {
                     name: questiondatadetail.opt_5,
                     preview: questionImageDirfinal + '/' + questiondatadetail.opt_5
@@ -299,7 +299,7 @@ const AddEditQuestion = (props) => {
     }, [])
 
     useEffect(() => {
-        if (questionTypeData == 'I') {
+        if (questionTypeData === 'I') {
             //loadCkeditorfuncion()
         }
     }, [questionTypeData])
@@ -346,7 +346,7 @@ const AddEditQuestion = (props) => {
     const handleQuestionType = (e, opt) => {
         setQuestionType(e.target.value);
         setOpt(opt);
-        if (e.target.value == 'I') {
+        if (e.target.value === 'I') {
             setQuestionImageStyle("block");
             setQuestionTextStyle("none");
         }
@@ -359,7 +359,7 @@ const AddEditQuestion = (props) => {
     const handleOptionType1 = (e, opt) => {
         setOption1Type(e.target.value);
         setOpt(opt);
-        if (e.target.value == 'I') {
+        if (e.target.value === 'I') {
             setOpt1ImageStyle("block");
             setOpt1TextStyle("none");
         }
@@ -372,7 +372,7 @@ const AddEditQuestion = (props) => {
     const handleOptionType2 = (e, opt) => {
         setOption2Type(e.target.value);
         setOpt(opt);
-        if (e.target.value == 'I') {
+        if (e.target.value === 'I') {
             setOpt2ImageStyle("block");
             setOpt2TextStyle("none");
         }
@@ -384,7 +384,7 @@ const AddEditQuestion = (props) => {
     const handleOptionType3 = (e, opt) => {
         setOption3Type(e.target.value);
         setOpt(opt);
-        if (e.target.value == 'I') {
+        if (e.target.value === 'I') {
             setOpt3ImageStyle("block");
             setOpt3TextStyle("none");
         }
@@ -396,7 +396,7 @@ const AddEditQuestion = (props) => {
     const handleOptionType4 = (e, opt) => {
         setOption4Type(e.target.value);
         setOpt(opt);
-        if (e.target.value == 'I') {
+        if (e.target.value === 'I') {
             setOpt4ImageStyle("block");
             setOpt4TextStyle("none");
         }
@@ -408,7 +408,7 @@ const AddEditQuestion = (props) => {
     const handleOptionType5 = (e, opt) => {
         setOption5Type(e.target.value);
         setOpt(opt);
-        if (e.target.value == 'I') {
+        if (e.target.value === 'I') {
             setOpt5ImageStyle("block");
             setOpt5TextStyle("none");
         }
@@ -424,7 +424,12 @@ const AddEditQuestion = (props) => {
     };
 
     const onCorrectAnsChange = (e) => {
-        setCorrectAnswer(e.target.value);
+        const re = /^[0-9\b]+$/;
+        if ( re.test(e.target.value) && Number(e.target.value) <= 5) {
+          setCorrectAnswer(e.target.value);
+        }else if(e.target.value === ''){
+          setCorrectAnswer('');
+        }
     };
 
     const onDescriptionchange = (e) => {
@@ -434,14 +439,14 @@ const AddEditQuestion = (props) => {
     const { getRootProps, getInputProps } = useDropzone({
         accept: 'image/*',
         onDrop: acceptedFiles => {
-            if (opt == 'question') {
+            if (opt === 'question') {
                 setFiles(acceptedFiles.map(file => Object.assign(file, {
                     preview: window.webkitURL.createObjectURL(file)
                 })));
                 setviewQuesImg(true);
                 setQuesDropzone(false);
             }
-            if (opt == 'opt1') {
+            if (opt === 'opt1') {
                 console.log(acceptedFiles);
                 setOpt1Files(acceptedFiles.map(file => Object.assign(file, {
                     preview: window.webkitURL.createObjectURL(file)
@@ -449,28 +454,28 @@ const AddEditQuestion = (props) => {
                 setviewOpt1Img(true);
                 setOpt1Dropzone(false);
             }
-            if (opt == 'opt2') {
+            if (opt === 'opt2') {
                 setOpt2Files(acceptedFiles.map(file => Object.assign(file, {
                     preview: window.webkitURL.createObjectURL(file)
                 })));
                 setviewOpt2Img(true);
                 setOpt2Dropzone(false);
             }
-            if (opt == 'opt3') {
+            if (opt === 'opt3') {
                 setOpt3Files(acceptedFiles.map(file => Object.assign(file, {
                     preview: window.webkitURL.createObjectURL(file)
                 })));
                 setviewOpt3Img(true);
                 setOpt3Dropzone(false);
             }
-            if (opt == 'opt4') {
+            if (opt === 'opt4') {
                 setOpt4Files(acceptedFiles.map(file => Object.assign(file, {
                     preview: window.webkitURL.createObjectURL(file)
                 })));
                 setviewOpt4Img(true);
                 setOpt4Dropzone(false);
             }
-            if (opt == 'opt5') {
+            if (opt === 'opt5') {
                 setOpt5Files(acceptedFiles.map(file => Object.assign(file, {
                     preview: window.webkitURL.createObjectURL(file)
                 })));
@@ -548,27 +553,27 @@ const AddEditQuestion = (props) => {
 
     const deleteImage = (type) => {
 
-        if (type == 'question') {
+        if (type === 'question') {
             setviewQuesImg(false);
             setQuesDropzone(true);
         }
-        if (type == 'opt1') {
+        if (type === 'opt1') {
             setviewOpt1Img(false);
             setOpt1Dropzone(true);
         }
-        if (type == 'opt2') {
+        if (type === 'opt2') {
             setviewOpt2Img(false);
             setOpt2Dropzone(true);
         }
-        if (type == 'opt3') {
+        if (type === 'opt3') {
             setviewOpt3Img(false);
             setOpt3Dropzone(true);
         }
-        if (type == 'opt4') {
+        if (type === 'opt4') {
             setviewOpt4Img(false);
             setOpt4Dropzone(true);
         }
-        if (type == 'opt5') {
+        if (type === 'opt5') {
             setviewOpt5Img(false);
             setOpt5Dropzone(true);
         }
@@ -582,7 +587,7 @@ const AddEditQuestion = (props) => {
             formdata.append("cat_id", categoryId);
             formdata.append("sub_id", subcategoryId);
             formdata.append("q_type", questionType);
-            if (questionType == 'I') {
+            if (questionType === 'I') {
                 console.log(files[0]);
                 if (files[0] != undefined) {
                     formdata.append("question", files[0]);
@@ -614,7 +619,7 @@ const AddEditQuestion = (props) => {
             }
             formdata.append("quest_desc", questionDesc);
             formdata.append("opt_type1", option1Type);
-            if (option1Type == 'I') {
+            if (option1Type === 'I') {
                 if (opt1files[0] != undefined) {
                     formdata.append("opt_1", opt1files[0]);
                 } else {
@@ -644,7 +649,7 @@ const AddEditQuestion = (props) => {
                 }
             }
             formdata.append("opt_type2", option2Type);
-            if (option2Type == 'I') {
+            if (option2Type === 'I') {
                 if (opt2files[0] != undefined) {
                     formdata.append("opt_2", opt2files[0]);
                 } else {
@@ -674,7 +679,7 @@ const AddEditQuestion = (props) => {
                 }
             }
             formdata.append("opt_type3", option3Type);
-            if (option3Type == 'I') {
+            if (option3Type === 'I') {
                 if (opt3files[0] != undefined) {
                     formdata.append("opt_3", opt3files[0]);
                 } else {
@@ -704,7 +709,7 @@ const AddEditQuestion = (props) => {
                 }
             }
             formdata.append("opt_type4", option4Type);
-            if (option4Type == 'I') {
+            if (option4Type === 'I') {
                 if (opt4files[0] != undefined) {
                     formdata.append("opt_4", opt4files[0]);
                 } else {
@@ -734,7 +739,7 @@ const AddEditQuestion = (props) => {
                 }
             }
             formdata.append("opt_type5", option5Type);
-            if (option5Type == 'I') {
+            if (option5Type === 'I') {
                 formdata.append("opt_5", opt5files[0]);
             } else {
                 let opt5value = window.getOption5value();
@@ -817,7 +822,7 @@ const AddEditQuestion = (props) => {
         }
     }
     useEffect(() => {
-        if (ckeditorflag == true) {
+        if (ckeditorflag === true) {
             setLoader("none");
             setUnLoader("block");
         }
@@ -829,7 +834,7 @@ const AddEditQuestion = (props) => {
 
 
     const loadCkeditorfuncion = () => {
-        if (scriptcount == 0) {
+        if (scriptcount === 0) {
             appendScript("/test.js");
             setScriptCount(scriptcount + 1);
             return (<div></div>)
@@ -891,7 +896,7 @@ const AddEditQuestion = (props) => {
 
                         </div>
                         <div style={{ display: questionimagestyle }} >
-                            {questionType == 'I' &&
+                            {questionType === 'I' &&
                                 <>
                                     <h5>Question Image<span style={{ color: 'red' }}>*</span></h5>
                                     <div className="dropzone-card">
@@ -909,7 +914,7 @@ const AddEditQuestion = (props) => {
                                         {viewQuesImg &&
                                             <div>
                                                 <div className="dropzone-content" style={thumbsContainer}>
-                                                    {screenmode == 'Edit' ? questionThumb : questionThumb}
+                                                    {screenmode === 'Edit' ? questionThumb : questionThumb}
                                                 </div>
                                                 <Button onClick={() => deleteImage('question')} variant="contained" className="jr-btn bg-danger text-white">
                                                     <i className="zmdi zmdi-delete zmdi-hc-fw" />
@@ -954,7 +959,7 @@ const AddEditQuestion = (props) => {
                                 placeholder="Option 1" id="opt_1" name="opt_1"></textarea>
                         </div>
                         <div style={{ display: opt1imagestyle }} >
-                            {option1Type == 'I' &&
+                            {option1Type === 'I' &&
                                 <>
                                     <h5>Image Option 1<span style={{ color: 'red' }}>*</span></h5>
                                     <div className="dropzone-card">
@@ -970,7 +975,7 @@ const AddEditQuestion = (props) => {
                                         {viewOpt1Img &&
                                             <div>
                                                 <div className="dropzone-content" style={thumbsContainer}>
-                                                    {screenmode == 'Edit' ? opt1Thumb : opt1Thumb}
+                                                    {screenmode === 'Edit' ? opt1Thumb : opt1Thumb}
                                                 </div>
                                                 <Button onClick={() => deleteImage('opt1')} variant="contained" className="jr-btn bg-danger text-white">
                                                     <i className="zmdi zmdi-delete zmdi-hc-fw" />
@@ -1005,7 +1010,7 @@ const AddEditQuestion = (props) => {
                                 class="ckeditor form-control  validate[required]" rows="4"
                                 placeholder="Option 2" id="opt_2" name="opt_2"></textarea>
                         </div>
-                        {option2Type == 'I' &&
+                        {option2Type === 'I' &&
                             <div style={{ display: opt2imagestyle }} >
                                 <h5>Image Option 2<span style={{ color: 'red' }}>*</span></h5>
                                 <div className="dropzone-card">
@@ -1020,7 +1025,7 @@ const AddEditQuestion = (props) => {
                                     {viewOpt2Img &&
                                         <div>
                                             <div className="dropzone-content" style={thumbsContainer}>
-                                                {screenmode == 'Edit' ? opt2Thumb : opt2Thumb}
+                                                {screenmode === 'Edit' ? opt2Thumb : opt2Thumb}
                                             </div>
                                             <Button onClick={() => deleteImage('opt2')} variant="contained" className="jr-btn bg-danger text-white">
                                                 <i className="zmdi zmdi-delete zmdi-hc-fw" />
@@ -1054,7 +1059,7 @@ const AddEditQuestion = (props) => {
                                 class="ckeditor form-control  validate[required]" rows="4"
                                 placeholder="Option 3" id="opt_3" name="opt_3"></textarea>
                         </div>
-                        {option3Type == 'I' &&
+                        {option3Type === 'I' &&
                             <div style={{ display: opt3imagestyle }} >
                                 <h5>Image Option 3<span style={{ color: 'red' }}>*</span></h5>
                                 <div className="dropzone-card">
@@ -1069,7 +1074,7 @@ const AddEditQuestion = (props) => {
                                     {viewOpt3Img &&
                                         <div>
                                             <div className="dropzone-content" style={thumbsContainer}>
-                                                {screenmode == 'Edit' ? opt3Thumb : opt3Thumb}
+                                                {screenmode === 'Edit' ? opt3Thumb : opt3Thumb}
                                             </div>
                                             <Button onClick={() => deleteImage('opt3')} variant="contained" className="jr-btn bg-danger text-white">
                                                 <i className="zmdi zmdi-delete zmdi-hc-fw" />
@@ -1103,7 +1108,7 @@ const AddEditQuestion = (props) => {
                                 class="ckeditor form-control  validate[required]" rows="4"
                                 placeholder="Option 4" id="opt_4" name="opt_4"></textarea>
                         </div>
-                        {option4Type == 'I' &&
+                        {option4Type === 'I' &&
                             <div style={{ display: opt4imagestyle }} >
                                 <h5>Image Option 4<span style={{ color: 'red' }}>*</span></h5>
                                 <div className="dropzone-card">
@@ -1118,7 +1123,7 @@ const AddEditQuestion = (props) => {
                                     {viewOpt4Img &&
                                         <div>
                                             <div className="dropzone-content" style={thumbsContainer}>
-                                                {screenmode == 'Edit' ? opt4Thumb : opt4Thumb}
+                                                {screenmode === 'Edit' ? opt4Thumb : opt4Thumb}
                                             </div>
                                             <Button onClick={() => deleteImage('opt4')} variant="contained" className="jr-btn bg-danger text-white">
                                                 <i className="zmdi zmdi-delete zmdi-hc-fw" />
@@ -1152,7 +1157,7 @@ const AddEditQuestion = (props) => {
                                 class="ckeditor form-control  validate[required]" rows="4"
                                 placeholder="Option 5" id="opt_5" name="opt_5"></textarea>
                         </div>
-                        {option5Type == 'I' &&
+                        {option5Type === 'I' &&
                             <div style={{ display: opt5imagestyle }} >
                                 <h5>Image Option 5<span style={{ color: 'red' }}>*</span></h5>
                                 <div className="dropzone-card">
@@ -1167,7 +1172,7 @@ const AddEditQuestion = (props) => {
                                     {viewOpt5Img &&
                                         <div>
                                             <div className="dropzone-content" style={thumbsContainer}>
-                                                {screenmode == 'Edit' ? opt5Thumb : opt5Thumb}
+                                                {screenmode === 'Edit' ? opt5Thumb : opt5Thumb}
                                             </div>
                                             <Button onClick={() => deleteImage('opt5')} variant="contained" className="jr-btn bg-danger text-white">
                                                 <i className="zmdi zmdi-delete zmdi-hc-fw" />
@@ -1179,7 +1184,7 @@ const AddEditQuestion = (props) => {
                         }
                     </div>
                     <div style={{ paddingTop: '2%' }} className="col-lg-12 col-sm-6 col-12">
-                        <input onChange={(e) => onCorrectAnsChange(e)} defaultValue={correctAnswer} type="text" placeholder="Correct Answer" className="form-control form-control-lg" />
+                        <input onChange={(e) => onCorrectAnsChange(e)} value={correctAnswer} type="text" placeholder="Correct Answer" className="form-control form-control-lg" />
                     </div>
                     <div style={{ paddingTop: '2%' }} className="col-lg-12 col-sm-6 col-12">
                         <FormControl component="fieldset" required>

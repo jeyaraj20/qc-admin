@@ -52,15 +52,17 @@ const SignInSchool = (props) => {
       className="app-login-container d-flex justify-content-center align-items-center animated slideInUpTiny animation-duration-3">
       <div className="app-login-main-content">
 
-        <div className="app-logo-content d-flex align-items-center justify-content-center">
+        <div className="app-logo-content d-flex align-items-center text-center justify-content-center school-login">
           <Link className="logo-lg" to="/" title="Jambo">
-            <img src={require("assets/images/favicon.png")} alt="jambo" title="jambo" />
+            {/* <img src={require("assets/images/favicon.png")} alt="jambo" title="jambo" /> */}
+            <p style={{color: '#fff', fontWeight: 600, fontSize:'18px'}}>Enter the login details provided by the Question Cloud to create and conduct tests with Multiple
+Choice Questions (MCQs) for your Institution</p>
           </Link>
         </div>
 
         <div className="app-login-content">
           <div className="app-login-header mb-4">
-            <h1><IntlMessages id="appModule.institute" /></h1>
+            <h1 class="text-center"><IntlMessages id="appModule.institute" /></h1>
           </div>
 
           <div className="app-login-form">
@@ -104,9 +106,9 @@ const SignInSchool = (props) => {
                     <IntlMessages id="appModule.signIn" />
                   </Button>
 
-                  <Link to="/signin">
+                  {/* <Link to="/signin">
                     <IntlMessages id="appModule.company"/>
-                  </Link>
+                  </Link> */}
 
                 </div>
 

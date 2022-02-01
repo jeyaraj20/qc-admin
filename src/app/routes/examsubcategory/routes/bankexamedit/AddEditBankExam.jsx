@@ -15,7 +15,6 @@ import FormHelperText from '@material-ui/core/FormHelperText';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
 import * as examSubCategoryService from '../../../../../services/examSubCategoryService';
-import * as exammainCategoryService from '../../../../../services/exammainCategoryService';
 import * as qbankSubCategoryService from '../../../../../services/qbankSubCategoryService';
 import * as examServices from '../../../../../services/examServices';
 import Snackbar from '@material-ui/core/Snackbar';
@@ -23,11 +22,12 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import SweetAlert from 'react-bootstrap-sweetalert'
 import * as examService from '../../../../../services/examServices';
 import IconButton from "@material-ui/core/IconButton";
+import { DateTimePicker } from '@material-ui/pickers';
+import Moment from "moment";
+const publicIp = require('public-ip');
 
 const AddEditBankExam = (props) => {
-
     const history = useHistory();
-
     const [mode, setMode] = useState("");
     const [loader, setLoader] = useState(false);
     const [exam_cat, setExam_cat] = useState("");
@@ -48,12 +48,8 @@ const AddEditBankExam = (props) => {
     const [showchapterwise, setShowChapterWise] = useState(false);
     const [showpreviousyear, setShowPreviousYear] = useState(false);
     const [showTypeOpt, setShowTypeOpt] = useState(false);
-    const [showChapterOpt, setShowChapterOpt] = useState(false);
-    const [showPrevOpt, setShowPrevOpt] = useState(false);
     const [questionType, setQuestionType] = useState("");
     const [testtypes, setTestTypes] = useState([]);
-    const [chapterlist, setChapterList] = useState([]);
-    const [previousyearlist, setPreviousYearList] = useState([]);
     const [testtypeid, setTestTypeId] = useState("");
     const [examlevel, setExamLevel] = useState("");
     const [showMessage, setShowMessage] = useState(false);
@@ -82,7 +78,8 @@ const AddEditBankExam = (props) => {
     const [currentindex, setCurrentIndex] = useState(-1);
     const [assignmodal, setAssignModal] = useState(false);
     const [ipaddr, setIpAddr] = useState('');
-    const publicIp = require('public-ip');
+    const [selectedStartDate, setStartDateChange] = useState(null);
+    const [selectedEndDate, setEndDateChange] = useState(null);
 
     const renderAutomaticSectionRows = () => {
         let rowNum = 1;
@@ -122,7 +119,7 @@ const AddEditBankExam = (props) => {
                             </IconButton>}
                     </div>
                     <div style={{ textAlign: 'center' }} className="col-lg-1 d-flex flex-column order-lg-1">
-                        {questionType == 'AUTO' ?
+                        {questionType === 'AUTO' ?
                             <Button onClick={() => openAssignModal(rowsNo, index)} variant="contained" color="primary" className="jr-btn">
                                 <span>Assign</span>
                             </Button> :
@@ -138,9 +135,6 @@ const AddEditBankExam = (props) => {
     };
 
     const saveAssignedData = () => {
-        console.log(automatic);
-        console.log(autosectionrow);
-        console.log(currentindex);
         let newArr = [...autosectionrow]; // copying the old datas array
         newArr[currentindex].questionbank = automatic;
         setAutoSectionRow(newArr);
@@ -149,8 +143,6 @@ const AddEditBankExam = (props) => {
     }
 
     const onMenuTitleChange = (e, index) => {
-        /*console.log('index: ' + index);
-        console.log('value: ' + e.target.value);*/
         let newArr = [...sectionRow]; // copying the old datas array
         newArr[index].menu_title = e.target.value; // replace e.target.value with whatever you want to change it to
         setSectionRow(newArr); // ??
@@ -168,14 +160,14 @@ const AddEditBankExam = (props) => {
         newArr[index].no_ofquest = e.target.value; // replace e.target.value with whatever you want to change it to
         let totQuest = 0;
         for (var i = 0; i < 4; i++) {
-            if (newArr[i].no_ofquest != '') {
+            if (newArr[i].no_ofquest !== '') {
                 totQuest = parseInt(totQuest) + parseInt(newArr[i].no_ofquest);
             }
         }
         if (totQuest > totalQuestions) {
             setBasic(true);
         }
-        if (newArr[index].mark_perquest != '') {
+        if (newArr[index].mark_perquest !== '') {
             newArr[index].tot_marks = e.target.value * newArr[index].mark_perquest
         } else {
             newArr[index].tot_marks = e.target.value * 0
@@ -189,15 +181,14 @@ const AddEditBankExam = (props) => {
         newArr[index].no_ofquest = e.target.value; // replace e.target.value with whatever you want to change it to
         let totQuest = 0;
         for (var i = 0; i < newArr.length; i++) {
-            console.log(newArr[i]);
-            if (newArr[i].no_ofquest != '') {
+            if (newArr[i].no_ofquest !== '') {
                 totQuest = parseInt(totQuest) + parseInt(newArr[i].no_ofquest);
             }
         }
         if (totQuest > totalQuestions) {
             setBasic(true);
         }
-        if (newArr[index].mark_perquest != '') {
+        if (newArr[index].mark_perquest !== '') {
             newArr[index].tot_marks = e.target.value * newArr[index].mark_perquest
         } else {
             newArr[index].tot_marks = e.target.value * 0
@@ -209,21 +200,21 @@ const AddEditBankExam = (props) => {
         setBasic(false);
     };
 
-    const onMarkPerQuestChange = (e, index) => {
-        let newArr = [...sectionRow]; // copying the old datas array
-        newArr[index].mark_perquest = e.target.value; // replace e.target.value with whatever you want to change it to
-        if (newArr[index].no_ofquest != '') {
-            newArr[index].tot_marks = e.target.value * newArr[index].no_ofquest
-        } else {
-            newArr[index].tot_marks = e.target.value * 0
-        }
-        setSectionRow(newArr); // ??
-    }
+    // const onMarkPerQuestChange = (e, index) => {
+    //     let newArr = [...sectionRow]; // copying the old datas array
+    //     newArr[index].mark_perquest = e.target.value; // replace e.target.value with whatever you want to change it to
+    //     if (newArr[index].no_ofquest !== '') {
+    //         newArr[index].tot_marks = e.target.value * newArr[index].no_ofquest
+    //     } else {
+    //         newArr[index].tot_marks = e.target.value * 0
+    //     }
+    //     setSectionRow(newArr); // ??
+    // }
 
     const onAutoMarkPerQuestChange = (e, index) => {
         let newArr = [...autosectionrow]; // copying the old datas array
         newArr[index].mark_perquest = e.target.value; // replace e.target.value with whatever you want to change it to
-        if (newArr[index].no_ofquest != '') {
+        if (newArr[index].no_ofquest !== '') {
             newArr[index].tot_marks = e.target.value * newArr[index].no_ofquest
         } else {
             newArr[index].tot_marks = e.target.value * 0
@@ -231,11 +222,11 @@ const AddEditBankExam = (props) => {
         setAutoSectionRow(newArr); // ??
     }
 
-    const onNegMarkChange = (e, index) => {
-        let newArr = [...sectionRow]; // copying the old datas array
-        newArr[index].neg_mark = e.target.value; // replace e.target.value with whatever you want to change it to
-        setSectionRow(newArr); // ??
-    }
+    // const onNegMarkChange = (e, index) => {
+    //     let newArr = [...sectionRow]; // copying the old datas array
+    //     newArr[index].neg_mark = e.target.value; // replace e.target.value with whatever you want to change it to
+    //     setSectionRow(newArr); // ??
+    // }
 
     const onAutoNegMarkChange = (e, index) => {
         let newArr = [...autosectionrow]; // copying the old datas array
@@ -280,13 +271,10 @@ const AddEditBankExam = (props) => {
         setAssignModal(true);
         setCurrentIndex(index);
         setAutomaticRow([]);
-        //if (autosectionrow.questionbank.length > 0) {
-        let filtered = autosectionrow.filter(row => row.rowsNo == rowsNo);
-        console.log(filtered);
+        let filtered = autosectionrow.filter(row => row.rowsNo === rowsNo);
         if (filtered.length > 0) {
             if (filtered[0].questionbank.length > 0) {
                 let filtereddata = filtered[0].questionbank;
-                console.log(filtereddata);
                 let filterarr = [];
                 filtereddata.map((row, index) => {
                     filterarr.push({ rowsNo: index + 1, maincategoryId: row.maincategoryId, subcategoryitems: row.subcategoryitems, subcategoryId: row.subcategoryId, noofquest: row.noofquest, addtype: true, deltype: false })
@@ -339,6 +327,8 @@ const AddEditBankExam = (props) => {
         let paymentflag = localStorage.getItem('paymentflag');
         let sellingprice = localStorage.getItem('sellingprice');
         let offerprice = localStorage.getItem('offerprice');
+        let startDate = localStorage.getItem('startDate');
+        let endDate = localStorage.getItem('endDate');
         const { data: maincategoryres } = await qbankSubCategoryService.getAllQuestionSubCategoryOnly('Y');
         const { category: categories } = maincategoryres;
         let itemArr = [];
@@ -348,7 +338,7 @@ const AddEditBankExam = (props) => {
         setCategoryItems(itemArr);
         const { subcategory: subcategoryres } = maincategoryres;
         setSubCategoryItems(subcategoryres);
-        if (mode == 'Edit') {
+        if (mode === 'Edit') {
             setExam_title(examname);
             setSlug(examslug);
             setExamcode(examcode);
@@ -366,23 +356,25 @@ const AddEditBankExam = (props) => {
             setPaymentFlag(paymentflag);
             setSellingPrice(sellingprice);
             setOfferPrice(offerprice);
-            if (paymentflag == 'Y') {
+            setStartDateChange(startDate === 'null' || startDate === null ? null : startDate );
+            setEndDateChange(endDate === 'null' || endDate === null ? null : endDate );
+            if (paymentflag === 'Y') {
                 setShowPrice(true);
             } else {
                 setShowPrice(false);
             }
             var array = JSON.parse("[" + examlevel + "]");
             for (let s = 0; s < array.length; s++) {
-                if (array[s] == 1) {
+                if (array[s] === 1) {
                     setLevel1(true)
                 }
-                if (array[s] == 2) {
+                if (array[s] === 2) {
                     setLevel2(true)
                 }
-                if (array[s] == 3) {
+                if (array[s] === 3) {
                     setLevel3(true)
                 }
-                if (array[s] == 4) {
+                if (array[s] === 4) {
                     setLevel4(true)
                 }
             }
@@ -397,80 +389,78 @@ const AddEditBankExam = (props) => {
                 typesListArr.push(<MenuItem value={type.extype_id}>{type.extest_type}</MenuItem>)
             }
             setTestTypes(typesListArr);
-            if (examtypecat == 'T') {
+            if (examtypecat === 'T') {
                 setShowTestTypes(true);
             } else {
                 setShowTestTypes(false);
             }
-            if (examtypecat == 'C') {
+            if (examtypecat === 'C') {
                 setShowChapterWise(true);
             } else {
                 setShowChapterWise(false);
             }
-            if (examtypecat == 'P') {
+            if (examtypecat === 'P') {
                 setShowPreviousYear(true);
             } else {
                 setShowPreviousYear(false);
             }
             const { data: sectionres } = await examService.getExamById(examid);
-            console.log(sectionres);
             const { Section: sectionRow } = sectionres;
-            console.log(sectionRow);
             let sectionArr = [];
             let seccount = 0;
-            for (let section of sectionRow) {
-                let sectionObj = {};
-                sectionObj.rowsNo = seccount;
-                sectionObj.menu_title = section.menu_title;
-                sectionObj.no_ofquest = section.no_ofquest;
-                sectionObj.mark_perquest = section.mark_perquest;
-                sectionObj.neg_mark = section.neg_mark;
-                sectionObj.cut_off = section.cut_off;
-                sectionObj.sect_time = section.sect_time;
-                sectionObj.tot_marks = section.tot_marks;
-                let autoArr = [];
-                let count = 1;
-                //console.log(section.AutomaticQuestionDetails);
-                if (section.AutomaticQuestionDetails != undefined) {
-                    for (let auto of section.AutomaticQuestionDetails) {
-                        let subcatArr = [];
-                        for (let subcategory of subcategoryres) {
-                            if (auto.catid == subcategory.pid)
-                                subcatArr.push(<MenuItem value={subcategory.cat_id}>{subcategory.cat_name}</MenuItem>)
+            if(sectionres && sectionres.count > 0){
+                for (let section of sectionRow) {
+                    let sectionObj = {};
+                    sectionObj.rowsNo = seccount;
+                    sectionObj.menu_title = section.menu_title;
+                    sectionObj.no_ofquest = section.no_ofquest;
+                    sectionObj.mark_perquest = section.mark_perquest;
+                    sectionObj.neg_mark = section.neg_mark;
+                    sectionObj.cut_off = section.cut_off;
+                    sectionObj.sect_time = section.sect_time;
+                    sectionObj.tot_marks = section.tot_marks;
+                    sectionObj.sect_id = section.sect_id;
+                    let autoArr = [];
+                    let count = 1;
+                    if (section.AutomaticQuestionDetails !== undefined) {
+                        for (let auto of section.AutomaticQuestionDetails) {
+                            let subcatArr = [];
+                            for (let subcategory of subcategoryres) {
+                                if (auto.catid === subcategory.pid)
+                                    subcatArr.push(<MenuItem value={subcategory.cat_id}>{subcategory.cat_name}</MenuItem>)
+                            }
+                            let autoObj = {
+                                rowsNo: '', maincategoryId: '', subcategoryId: '', subcategoryitems: [], noofquest: '', addtype: true, deltype: false
+                            };
+                            autoObj.rowsNo = count;
+                            autoObj.maincategoryId = auto.catid;
+                            autoObj.subcategoryId = auto.subcatid;
+                            autoObj.subcategoryitems = subcatArr;
+                            autoObj.noofquest = auto.noofquestions;
+                            if (count === 1) {
+                                autoObj.addtype = true;
+                                autoObj.deltype = false;
+                            } else {
+                                autoObj.addtype = false;
+                                autoObj.deltype = true;
+                            }
+                            count = count + 1;
+                            autoArr.push(autoObj);
                         }
-                        let autoObj = {
-                            rowsNo: '', maincategoryId: '', subcategoryId: '', subcategoryitems: [], noofquest: '', addtype: true, deltype: false
-                        };
-                        autoObj.rowsNo = count;
-                        autoObj.maincategoryId = auto.catid;
-                        autoObj.subcategoryId = auto.subcatid;
-                        autoObj.subcategoryitems = subcatArr;
-                        autoObj.noofquest = auto.noofquestions;
-                        if (count == 1) {
-                            autoObj.addtype = true;
-                            autoObj.deltype = false;
-                        } else {
-                            autoObj.addtype = false;
-                            autoObj.deltype = true;
-                        }
-                        count = count + 1;
-                        autoArr.push(autoObj);
-                        console.log(autoArr);
                     }
+                    sectionObj.questionbank = autoArr;
+                    if (seccount === 0) {
+                        sectionObj.addtype = true;
+                        sectionObj.deltype = false;
+                    } else {
+                        sectionObj.deltype = true;
+                        sectionObj.addtype = false;
+                    }
+                    sectionArr.push(sectionObj);
+                    seccount = seccount + 1;
                 }
-                sectionObj.questionbank = autoArr;
-                if (seccount == 0) {
-                    sectionObj.addtype = true;
-                    sectionObj.deltype = false;
-                } else {
-                    sectionObj.deltype = true;
-                    sectionObj.addtype = false;
-                }
-                sectionArr.push(sectionObj);
-                seccount = seccount + 1;
-                console.log(sectionArr);
+                setAutoSectionRow(sectionArr);
             }
-            setAutoSectionRow(sectionArr);
         } else {
             setExam_title('');
             const { data: typeslistres } = await examServices.getTestTypes(exacatid);
@@ -490,7 +480,7 @@ const AddEditBankExam = (props) => {
         setExam_sub_sub(exacatid);
         const { data: typeres } = await examSubCategoryService.getExamSubCategoryType(exacatid);
         const { count: typeCount } = typeres;
-        if (typeCount != 0) {
+        if (typeCount !== 0) {
             setShowTypeOpt(true);
         } else {
             setShowTypeOpt(false);
@@ -520,17 +510,17 @@ const AddEditBankExam = (props) => {
 
     const handleAddedExamTypes = (e) => {
         setAddedExamTypes(e.target.value);
-        if (e.target.value == 'T') {
+        if (e.target.value === 'T') {
             setShowTestTypes(true);
         } else {
             setShowTestTypes(false);
         }
-        if (e.target.value == 'C') {
+        if (e.target.value === 'C') {
             setShowChapterWise(true);
         } else {
             setShowChapterWise(false);
         }
-        if (e.target.value == 'P') {
+        if (e.target.value === 'P') {
             setShowPreviousYear(true);
         } else {
             setShowPreviousYear(false);
@@ -539,7 +529,7 @@ const AddEditBankExam = (props) => {
 
     const handlePaidExamTypes = (e) => {
         setPaymentFlag(e.target.value);
-        if (e.target.value == "Y") {
+        if (e.target.value === "Y") {
             setShowPrice(true);
         } else {
             setShowPrice(false);
@@ -555,7 +545,7 @@ const AddEditBankExam = (props) => {
     }
 
     const handleQuestionType = async (e) => {
-        if (e.target.value == 'MANU') {
+        if (e.target.value === 'MANU') {
             setAutoSectionRow([
                 { rowsNo: 1, menu_title: '', no_ofquest: '', mark_perquest: '', neg_mark: '', cut_off: '', sect_time: '', tot_marks: '', addtype: true, deltype: false, btn: true, questionbank: [] }
             ]);
@@ -564,12 +554,11 @@ const AddEditBankExam = (props) => {
     };
 
     const handleMainCategoryChange = async (event, index) => {
-        console.log(index);
         let newArr = [...automatic]; // copying the old datas array
         newArr[index].maincategoryId = event.target.value; // replace e.target.value with whatever you want to change it to
         let itemArr = [];
         for (let subcategory of subcategoryitems) {
-            if (event.target.value == subcategory.pid)
+            if (event.target.value === subcategory.pid)
                 itemArr.push(<MenuItem value={subcategory.cat_id}>{subcategory.cat_name}</MenuItem>)
         }
         newArr[index].subcategoryitems = itemArr;
@@ -604,16 +593,14 @@ const AddEditBankExam = (props) => {
         setMarksPerQues(e.target.value)
     }
 
-    //const selectedLevelArr = [];
     const handleLevel1Change = (e) => {
-        console.log(selectedLevelArr);
         let arr = selectedLevelArr;
         if (e.target.checked) {
             setLevel1(true);
             arr.push(e.target.value);
         } else {
             for (var i = 0; i < arr.length; i++) {
-                if (arr[i] == e.target.value) {
+                if (arr[i] === e.target.value) {
                     arr.splice(i, 1);
                 }
             }
@@ -622,18 +609,16 @@ const AddEditBankExam = (props) => {
         setSelectedLevelArr(arr);
         let levelStr = arr.join();
         setExamLevel(levelStr);
-        console.log(levelStr);
     }
 
     const handleLevel2Change = (e) => {
-        console.log(selectedLevelArr);
         let arr = selectedLevelArr;
         if (e.target.checked) {
             setLevel2(true);
             arr.push(e.target.value);
         } else {
             for (var i = 0; i < arr.length; i++) {
-                if (arr[i] == e.target.value) {
+                if (arr[i] === e.target.value) {
                     arr.splice(i, 1);
                 }
             }
@@ -642,18 +627,16 @@ const AddEditBankExam = (props) => {
         setSelectedLevelArr(arr);
         let levelStr = arr.join();
         setExamLevel(levelStr);
-        console.log(levelStr);
     }
 
     const handleLevel3Change = (e) => {
-        console.log(selectedLevelArr);
         let arr = selectedLevelArr;
         if (e.target.checked) {
             setLevel3(true);
             arr.push(e.target.value);
         } else {
             for (var i = 0; i < arr.length; i++) {
-                if (arr[i] == e.target.value) {
+                if (arr[i] === e.target.value) {
                     arr.splice(i, 1);
                 }
             }
@@ -662,18 +645,16 @@ const AddEditBankExam = (props) => {
         setSelectedLevelArr(arr);
         let levelStr = arr.join();
         setExamLevel(levelStr);
-        console.log(levelStr);
     }
 
     const handleLevel4Change = (e) => {
-        console.log(selectedLevelArr);
         let arr = selectedLevelArr;
         if (e.target.checked) {
             setLevel4(true);
             arr.push(e.target.value);
         } else {
             for (var i = 0; i < arr.length; i++) {
-                if (arr[i] == e.target.value) {
+                if (arr[i] === e.target.value) {
                     arr.splice(i, 1);
                 }
             }
@@ -682,11 +663,9 @@ const AddEditBankExam = (props) => {
         setSelectedLevelArr(arr);
         let levelStr = arr.join();
         setExamLevel(levelStr);
-        console.log(levelStr);
     }
 
     const handleTestTypeChange = async (event, value) => {
-        console.log(event.target.value);
         setTestTypeId(event.target.value);
     }
 
@@ -717,7 +696,6 @@ const AddEditBankExam = (props) => {
         data.offer_price = offerprice;
         data.ip_addr = ipaddr;
         data.sections = sectionRow;
-        console.log(data);
         await examServices.saveBankExam(data);
         setAlertMessage('Bank Exam added successfully!');
         setShowMessage(true);
@@ -725,6 +703,28 @@ const AddEditBankExam = (props) => {
             setShowMessage(false)
         }, 1500);
         navigateTo();
+    }
+
+    const updateBankExamClick = async () => {
+        if(selectedStartDate && selectedEndDate ){
+            if( Date.parse(selectedStartDate) > Date.parse(selectedEndDate) ){
+                setShowMessage(true);
+                setAlertMessage('Start Date should be less than or equal to End Date');
+                setTimeout(() => {
+                    setShowMessage(false)
+                }, 1500);
+            }else{
+                updateBankExam();
+            }
+        }else if(!selectedStartDate && selectedEndDate ){
+            setShowMessage(true);
+            setAlertMessage('Start Date should be less than or equal to End Date');
+            setTimeout(() => {
+                setShowMessage(false)
+            }, 1500);
+        }else{
+            updateBankExam();
+        }
     }
 
     const updateBankExam = async () => {
@@ -754,7 +754,8 @@ const AddEditBankExam = (props) => {
         data.offer_price = offerprice;
         data.ip_addr = ipaddr;
         data.sections = autosectionrow;
-        console.log(data);
+        data.startDate = selectedStartDate;
+        data.endDate = selectedEndDate;
         await examServices.updateBankExam(examId, data);
         setAlertMessage('Bank Exam Updated successfully!');
         setShowMessage(true);
@@ -764,6 +765,24 @@ const AddEditBankExam = (props) => {
         localStorage.setItem('subId', exam_sub_sub);
         localStorage.setItem('examtype', examType);
         history.push('/app/examsubcategory/examslist');
+    }
+
+    const handleStartDateChange = (date) => {
+        if(date === null ){
+            setStartDateChange(null);
+        }else{
+            let fromdate = Moment(date).format('YYYY-MM-DD HH:mm:ss');
+            setStartDateChange(fromdate);
+        }
+    }
+
+    const handleEndDateChange = (date) => {
+        if(date === null ){
+            setEndDateChange(null);
+        }else{
+            let fromdate = Moment(date).format('YYYY-MM-DD HH:mm:ss');
+            setEndDateChange(fromdate);
+        }
     }
 
     const handleRequestClose = () => {
@@ -848,7 +867,7 @@ const AddEditBankExam = (props) => {
             }
             {!loader &&
                 <div className="row no-gutters">
-                    {mode == 'Add' ? <div style={{ padding: '1%' }} className="col-lg-11 d-flex flex-column order-lg-1">
+                    {mode === 'Add' ? <div style={{ padding: '1%' }} className="col-lg-11 d-flex flex-column order-lg-1">
                         <h1>Add Bank Exam</h1>
                     </div> :
                         <div style={{ padding: '1%' }} className="col-lg-11 d-flex flex-column order-lg-1">
@@ -1103,13 +1122,36 @@ const AddEditBankExam = (props) => {
                                 <FormControlLabel value="AUTO" control={<Radio color="primary" />} label="Automatic" />
                             </RadioGroup>
                         </FormControl>
+                        <div class="row">
+                            <div class="col-lg-4" style={{ "margin": "0px" }}>
+                                <DateTimePicker
+                                    clearable
+                                    value={selectedStartDate}
+                                    onChange={handleStartDateChange}
+                                    label="Start Date"
+                                    format="DD/MM/YYYY HH:mm:ss"
+                                    style={{ width : '100%'}}
+                                />
+                            </div>
+                            <div class="col-lg-4" style={{ "margin": "0px" }}>
+                                <DateTimePicker
+                                    clearable
+                                    value={selectedEndDate}
+                                    onChange={handleEndDateChange}
+                                    label="End Date"
+                                    format="DD/MM/YYYY HH:mm:ss"
+                                    style={{ width : '100%'}}
+                                />
+                            </div>
+                        </div>
                         <TextField
                             autoComplete='off'
                             required
                             label={'Position'}
                             onChange={(event) => setPosition(event.target.value)}
                             value={position}
-                            margin="normal" />
+                            margin="normal" 
+                        />
                         <h3>Sectional Details</h3>
                         <div className="row no-gutters">
                             <div style={{ textAlign: 'left' }} className="col-lg-4 d-flex flex-column order-lg-1">
@@ -1135,13 +1177,13 @@ const AddEditBankExam = (props) => {
                             </div>
                         </div>
                         {renderAutomaticSectionRows()}
-                        {mode == 'Add' ? <div style={{ paddingTop: '2%', textAlign: 'right' }} className="col-lg-6 col-sm-6 col-12">
+                        {mode === 'Add' ? <div style={{ paddingTop: '2%', textAlign: 'right' }} className="col-lg-6 col-sm-6 col-12">
                             <Button onClick={() => saveBankExam()} variant="contained" color="primary" className="jr-btn text-white">
                                 Submit
                             </Button>
                         </div> :
                             <div style={{ paddingTop: '2%', textAlign: 'right' }} className="col-lg-6 col-sm-6 col-12">
-                                <Button onClick={() => updateBankExam()} variant="contained" color="primary" className="jr-btn text-white">
+                                <Button onClick={() => updateBankExamClick()} variant="contained" color="primary" className="jr-btn text-white">
                                     Update
                                 </Button>
                             </div>

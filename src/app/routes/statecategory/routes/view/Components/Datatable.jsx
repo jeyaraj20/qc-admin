@@ -71,7 +71,7 @@ const DataTable = (props) => {
           setData([...data])
 
           for (var i = 0; i < selectedStaArr.length; i++) {
-            if (selectedStaArr[i] == row.state_id) {
+            if (selectedStaArr[i] === row.state_id) {
               selectedStaArr.splice(i, 1);
             }
           }
@@ -99,7 +99,7 @@ const DataTable = (props) => {
       console.log(selectedStateArr);
     } else {
       for (var i = 0; i < selectedStateArr.length; i++) {
-        if (selectedStateArr[i] == obj.state_id) {
+        if (selectedStateArr[i] === obj.state_id) {
           selectedStateArr.splice(i, 1);
         }
       }
@@ -212,7 +212,7 @@ const DataTable = (props) => {
     let staterows = rows.map((obj, index) => {
 
       let checkedflg = false;
-      if (obj.state_status == "1")
+      if (obj.state_status === "1")
         checkedflg = true;
 
       let row = {};
@@ -241,14 +241,14 @@ const DataTable = (props) => {
 
   const handleAction = async () => {
     let selectedStateObj = selectedState;
-    if (action == '') {
+    if (action === '') {
       setAlertMessage('Please select an action');
       setShowMessage(true);
       setTimeout(() => {
         setShowMessage(false)
       }, 1500);
     } else {
-      if (action == 'Inactive') {
+      if (action === 'Inactive') {
         selectedStateObj.status = 'N';
         console.log(selectedStateObj);
         if (selectedState.stateId.length != 0) {
@@ -268,7 +268,7 @@ const DataTable = (props) => {
           }, 1500);
         }
       }
-      if (action == 'Active') {
+      if (action === 'Active') {
         selectedStateObj.status = 'Y';
         console.log(selectedStateObj);
         if (selectedState.stateId.length != 0) {
@@ -289,7 +289,7 @@ const DataTable = (props) => {
           }, 1500);
         }
       }
-      if (action == 'Delete') {
+      if (action === 'Delete') {
         selectedStateObj.status = 'D';
         if (selectedStateObj.stateId.length != 0) {
           await locationService.changeStatus(selectedStateObj);
@@ -468,7 +468,7 @@ const DataTable = (props) => {
               <div className="col-lg-3 col-sm-6 col-12">
                 <FormControl className="w-100 mb-2">
                   <InputLabel htmlFor="age-simple">Actions</InputLabel>
-                  {datatype == 'Active' &&
+                  {datatype === 'Active' &&
                     <Select onChange={(event, value) => {
                       onActionChange(event, value)
                     }} >
@@ -476,7 +476,7 @@ const DataTable = (props) => {
                       <MenuItem value={'Delete'}>Delete</MenuItem>
                     </Select>
                   }
-                  {datatype == 'Inactive' &&
+                  {datatype === 'Inactive' &&
                     <Select onChange={(event, value) => {
                       onActionChange(event, value)
                     }} >
@@ -513,7 +513,7 @@ const DataTable = (props) => {
             <MDBDataTable
               striped
               bordered
-              entriesOptions={[5, 10, 20, 25, 50, 100]}
+              entriesOptions={[5, 10, 20, 25, 50, 100, 1000]}
               entries={5}
               hover
               data={{ rows: staterows, columns }}
@@ -524,7 +524,7 @@ const DataTable = (props) => {
             />
             <Modal className="modal-box" backdrop={"static"} toggle={onModalClose} isOpen={modal}>
               <ModalHeader className="modal-box-header bg-primary text-white">
-                {isEdit == false ? "Add State" :
+                {isEdit === false ? "Add State" :
                   "Edit State"}
               </ModalHeader>
 
@@ -572,7 +572,7 @@ const DataTable = (props) => {
                 </div>
               </div>
               {<ModalFooter>
-                {isEdit == false ?
+                {isEdit === false ?
                   <div className="d-flex flex-row">
                     <Button style={{ marginRight: '5%' }} onClick={() => saveState()} disabled={savedisabled} variant="contained" color="primary">Save</Button>
                     <Button variant="contained" color="secondary" onClick={onModalClose}>Cancel</Button>

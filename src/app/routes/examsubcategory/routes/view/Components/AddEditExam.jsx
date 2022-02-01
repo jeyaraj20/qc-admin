@@ -13,7 +13,6 @@ import FormHelperText from "@material-ui/core/FormHelperText";
 import Checkbox from "@material-ui/core/Checkbox";
 import FormGroup from "@material-ui/core/FormGroup";
 import * as examSubCategoryService from "../../../../../../services/examSubCategoryService";
-import * as exammainCategoryService from "../../../../../../services/exammainCategoryService";
 import * as qbankSubCategoryService from '../../../../../../services/qbankSubCategoryService';
 import * as examServices from "../../../../../../services/examServices";
 import Snackbar from "@material-ui/core/Snackbar";
@@ -21,6 +20,8 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import IconButton from "@material-ui/core/IconButton";
 import SweetAlert from 'react-bootstrap-sweetalert'
 import Joi from "joi-browser";
+import { DateTimePicker } from '@material-ui/pickers';
+import Moment from "moment";
 
 const AddEditExam = (props) => {
     const [errors, setErrors] = useState({});
@@ -72,17 +73,15 @@ const AddEditExam = (props) => {
     const [alertText, SetAlertText] = useState('');
     const [ipaddr, setIpAddr] = useState("");
     const publicIp = require("public-ip");
-
+    const [selectedStartDate, setStartDateChange] = useState(null);
+    const [selectedEndDate, setEndDateChange] = useState(null);
     let { toggle, examtype, subcatdetails, examdetails, mode } = props;
 
     const handleRefresh = async () => {
         setLoader(true);
         let ip = await publicIp.v4();
         setIpAddr(ip);
-        console.log(examdetails);
-        console.log(mode);
-        if (mode == "Edit") {
-            console.log(examdetails.exam_name);
+        if (mode === "Edit") {
             setExam_title(examdetails.exam_name);
             setSlug(examdetails.exam_slug);
             setExamcode(examdetails.exam_code);
@@ -97,19 +96,19 @@ const AddEditExam = (props) => {
             var array = JSON.parse("[" + examdetails.exam_level + "]");
             let arrayselect = [];
             for (let s = 0; s < array.length; s++) {
-                if (array[s] == 1) {
+                if (array[s] === 1) {
                     setLevel1(true);
                     arrayselect.push("1");
                 }
-                if (array[s] == 2) {
+                if (array[s] === 2) {
                     setLevel2(true);
                     arrayselect.push("2");
                 }
-                if (array[s] == 3) {
+                if (array[s] === 3) {
                     setLevel3(true);
                     arrayselect.push("3");
                 }
-                if (array[s] == 4) {
+                if (array[s] === 4) {
                     setLevel4(true);
                     arrayselect.push("4");
                 }
@@ -132,17 +131,17 @@ const AddEditExam = (props) => {
                 chapListArr.push(<MenuItem value={chapter.chapt_id}>{chapter.chapter_name}</MenuItem>);
             }
             setChapterList(chapListArr);
-            if (examdetails.exam_type_cat == "T") {
+            if (examdetails.exam_type_cat === "T") {
                 setShowTestTypes(true);
             } else {
                 setShowTestTypes(false);
             }
-            if (examdetails.exam_type_cat == "C") {
+            if (examdetails.exam_type_cat === "C") {
                 setShowChapterWise(true);
             } else {
                 setShowChapterWise(false);
             }
-            if (examdetails.exam_type_cat == "P") {
+            if (examdetails.exam_type_cat === "P") {
                 setShowPreviousYear(true);
             } else {
                 setShowPreviousYear(false);
@@ -180,18 +179,17 @@ const AddEditExam = (props) => {
         const { data: prevres } = await examServices.getPreviousYear(prevData);
         const { count: prevCount } = prevres;
         const { Exam: prevYearData } = prevres;
-        console.log(prevCount);
-        if (typeCount != 0) {
+        if (typeCount !== 0) {
             setShowTypeOpt(true);
         } else {
             setShowTypeOpt(false);
         }
-        if (chapterCount != 0) {
+        if (chapterCount !== 0) {
             setShowChapterOpt(true);
         } else {
             setShowChapterOpt(false);
         }
-        if (prevCount != 0) {
+        if (prevCount !== 0) {
             setShowPrevOpt(true);
         } else {
             setShowPrevOpt(false);
@@ -250,19 +248,19 @@ const AddEditExam = (props) => {
 
     const handleAddedExamTypes = (e) => {
         setAddedExamTypes(e.target.value);
-        if (e.target.value == "T") {
+        if (e.target.value === "T") {
             setShowTestTypes(true);
         } else {
             setShowTestTypes(false);
             setTestTypeId("");
         }
-        if (e.target.value == "C") {
+        if (e.target.value === "C") {
             setShowChapterWise(true);
         } else {
             setShowChapterWise(false);
             setTestTypeId("");
         }
-        if (e.target.value == "P") {
+        if (e.target.value === "P") {
             setShowPreviousYear(true);
         } else {
             setShowPreviousYear(false);
@@ -272,7 +270,7 @@ const AddEditExam = (props) => {
 
     const handlePaidExamTypes = (e) => {
         setPaymentFlag(e.target.value);
-        if (e.target.value == "Y") {
+        if (e.target.value === "Y") {
             setShowPrice(true);
         } else {
             setShowPrice(false);
@@ -292,13 +290,6 @@ const AddEditExam = (props) => {
             },
         ]);
         setQuestionType(e.target.value);
-        /*const { data: maincategoryres } = await exammainCategoryService.getExamMainCategory();
-        const { category: categories } = maincategoryres;
-        let itemArr = [];
-        for (let category of categories) {
-            itemArr.push(<MenuItem value={category.exa_cat_id}>{category.exa_cat_name}</MenuItem>);
-        }
-        setCategoryItems(itemArr);*/
         const { data: maincategoryres } = await qbankSubCategoryService.getAllQuestionSubCategoryOnly('Y');
         const { category: categories } = maincategoryres;
         let itemArr = [];
@@ -311,12 +302,11 @@ const AddEditExam = (props) => {
     };
 
     const handleMainCategoryChange = async (event, index) => {
-        console.log(index);
         let newArr = [...automatic]; // copying the old datas array
         newArr[index].maincategoryId = event.target.value; // replace e.target.value with whatever you want to change it to
         let itemArr = [];
         for (let subcategory of subcategoryitems) {
-            if (event.target.value == subcategory.pid)
+            if (event.target.value === subcategory.pid)
                 itemArr.push(<MenuItem value={subcategory.cat_id}>{subcategory.cat_name}</MenuItem>)
         }
         newArr[index].subcategoryitems = itemArr;
@@ -351,16 +341,14 @@ const AddEditExam = (props) => {
         setMarksPerQues(e.target.value);
     };
 
-    //const selectedLevelArr = [];
     const handleLevel1Change = (e) => {
-        console.log(selectedLevelArr);
         let arr = selectedLevelArr;
         if (e.target.checked) {
             setLevel1(true);
             arr.push(e.target.value);
         } else {
             for (var i = 0; i < arr.length; i++) {
-                if (arr[i] == e.target.value) {
+                if (arr[i] === e.target.value) {
                     arr.splice(i, 1);
                 }
             }
@@ -369,18 +357,16 @@ const AddEditExam = (props) => {
         setSelectedLevelArr(arr);
         let levelStr = arr.join();
         setExamLevel(levelStr);
-        console.log(levelStr);
     };
 
     const handleLevel2Change = (e) => {
-        console.log(selectedLevelArr);
         let arr = selectedLevelArr;
         if (e.target.checked) {
             setLevel2(true);
             arr.push(e.target.value);
         } else {
             for (var i = 0; i < arr.length; i++) {
-                if (arr[i] == e.target.value) {
+                if (arr[i] === e.target.value) {
                     arr.splice(i, 1);
                 }
             }
@@ -389,18 +375,16 @@ const AddEditExam = (props) => {
         setSelectedLevelArr(arr);
         let levelStr = arr.join();
         setExamLevel(levelStr);
-        console.log(levelStr);
     };
 
     const handleLevel3Change = (e) => {
-        console.log(selectedLevelArr);
         let arr = selectedLevelArr;
         if (e.target.checked) {
             setLevel3(true);
             arr.push(e.target.value);
         } else {
             for (var i = 0; i < arr.length; i++) {
-                if (arr[i] == e.target.value) {
+                if (arr[i] === e.target.value) {
                     arr.splice(i, 1);
                 }
             }
@@ -409,18 +393,16 @@ const AddEditExam = (props) => {
         setSelectedLevelArr(arr);
         let levelStr = arr.join();
         setExamLevel(levelStr);
-        console.log(levelStr);
     };
 
     const handleLevel4Change = (e) => {
-        console.log(selectedLevelArr);
         let arr = selectedLevelArr;
         if (e.target.checked) {
             setLevel4(true);
             arr.push(e.target.value);
         } else {
             for (var i = 0; i < arr.length; i++) {
-                if (arr[i] == e.target.value) {
+                if (arr[i] === e.target.value) {
                     arr.splice(i, 1);
                 }
             }
@@ -429,19 +411,13 @@ const AddEditExam = (props) => {
         setSelectedLevelArr(arr);
         let levelStr = arr.join();
         setExamLevel(levelStr);
-        console.log(levelStr);
     };
 
     const handleTestTypeChange = async (event, value) => {
-        console.log(event.target.value);
         setTestTypeId(event.target.value);
         if (showpreviousyear) {
             const { data: examresponse } = await examServices.getExamDetailsById(event.target.value);
             const { Exam: details } = examresponse;
-            console.log(details);
-            /*setExam_title(details.exam_name);
-            setSlug(details.exam_slug);
-            setExamcode(details.exam_code);*/
             setTotalQuestions(details.tot_questions);
             setMarksPerQues(details.mark_perquest);
             setNegativeMarks(details.neg_markquest);
@@ -452,19 +428,19 @@ const AddEditExam = (props) => {
             var array = JSON.parse("[" + details.exam_level + "]");
             let arrayselect = [];
             for (let s = 0; s < array.length; s++) {
-                if (array[s] == 1) {
+                if (array[s] === 1) {
                     setLevel1(true);
                     arrayselect.push("1");
                 }
-                if (array[s] == 2) {
+                if (array[s] === 2) {
                     setLevel2(true);
                     arrayselect.push("2");
                 }
-                if (array[s] == 3) {
+                if (array[s] === 3) {
                     setLevel3(true);
                     arrayselect.push("3");
                 }
-                if (array[s] == 4) {
+                if (array[s] === 4) {
                     setLevel4(true);
                     arrayselect.push("4");
                 }
@@ -479,7 +455,7 @@ const AddEditExam = (props) => {
     const validateForm = () => {
         let errors = {};
         let isValid = true;
-        if (paymentflag == 'Y') {
+        if (paymentflag === 'Y') {
             if (offerprice === "") {
                 errors["OfferPrice"] = "Selling Price Required";
                 isValid = false;
@@ -521,81 +497,93 @@ const AddEditExam = (props) => {
             errors["position"] = "Position Required";
             isValid = false;
         }
-        console.log(errors);
         setErrors(errors);
         return isValid;
     };
 
-    const saveCommonExam = async () => {
-        console.log(testtypeid);
-        //try {
+    const saveCommonExamClick = async () => {
         if (validateForm()) {
-            let data = {};
-            data.exam_cat = exam_cat;
-            data.exam_sub = exam_sub;
-            data.exam_sub_sub = exam_sub_sub;
-            data.exam_name = exam_title;
-            data.exam_slug = slug;
-            data.assign_test_type = assigntype;
-            data.exam_type = examtype;
-            data.exam_code = examcode;
-            data.sect_cutoff = "N";
-            data.sect_timing = "N";
-            data.tot_questions = totalquestions;
-            data.tot_mark = totalmarks;
-            data.mark_perquest = markperquestion;
-            data.neg_markquest = negativemarks;
-            data.total_time = totalminutes;
-            data.quest_type = questionType;
-            data.exam_pos = position;
-            data.exam_type_cat = addedexamtypes;
-            data.exam_type_id = testtypeid;
-            data.exam_level = examlevel;
-            data.payment_flag = paymentflag;
-            if (sellingprice == '') {
-                data.selling_price = 0;
-            } else {
-                data.selling_price = sellingprice;
-            }
-            if (offerprice == '') {
-                data.offer_price = 0;
-            } else {
-                data.offer_price = offerprice;
-            }
-            if (questionType == "AUTO") {
-                data.automatic = automatic;
-            } else {
-                data.automatic = [];
-            }
-            data.ip_addr = ipaddr;
-            console.log(data);
-            const { data: saveres } = await examServices.saveCommonExam(data);
-            const { message: saveresponse } = saveres;
-            if (saveresponse != 'Exam Code already exists') {
-                setAlertMessage("Exam added successfully!");
+            if (selectedStartDate && selectedEndDate) {
+                if (Date.parse(selectedStartDate) > Date.parse(selectedEndDate)) {
+                    setShowMessage(true);
+                    setAlertMessage('Start Date should be less than or equal to End Date');
+                    setTimeout(() => {
+                        setShowMessage(false)
+                    }, 1500);
+                } else {
+                    saveCommonExam();
+                }
+            } else if (!selectedStartDate && selectedEndDate) {
                 setShowMessage(true);
+                setAlertMessage('Start Date should be less than or equal to End Date');
                 setTimeout(() => {
-                    setShowMessage(false);
+                    setShowMessage(false)
                 }, 1500);
-                toggle(false);
             } else {
-                setAlertMessage("Exam Code already exists");
-                setShowMessage(true);
-                setTimeout(() => {
-                    setShowMessage(false);
-                }, 1500);
+                saveCommonExam();
             }
         } else {
             setShowError(true);
         }
-        /*} catch (ex) {
-            console.log(ex.response);
-            setAlertMessage("Something went wrong. Please try later");
+    }
+
+    const saveCommonExam = async () => {
+        let data = {};
+        data.exam_cat = exam_cat;
+        data.exam_sub = exam_sub;
+        data.exam_sub_sub = exam_sub_sub;
+        data.exam_name = exam_title;
+        data.exam_slug = slug;
+        data.assign_test_type = assigntype;
+        data.exam_type = examtype;
+        data.exam_code = examcode;
+        data.sect_cutoff = "N";
+        data.sect_timing = "N";
+        data.tot_questions = totalquestions;
+        data.tot_mark = totalmarks;
+        data.mark_perquest = markperquestion;
+        data.neg_markquest = negativemarks;
+        data.total_time = totalminutes;
+        data.quest_type = questionType;
+        data.exam_pos = position;
+        data.exam_type_cat = addedexamtypes;
+        data.exam_type_id = testtypeid;
+        data.exam_level = examlevel;
+        data.payment_flag = paymentflag;
+        if (sellingprice === '') {
+            data.selling_price = 0;
+        } else {
+            data.selling_price = sellingprice;
+        }
+        if (offerprice === '') {
+            data.offer_price = 0;
+        } else {
+            data.offer_price = offerprice;
+        }
+        if (questionType === "AUTO") {
+            data.automatic = automatic;
+        } else {
+            data.automatic = [];
+        }
+        data.ip_addr = ipaddr;
+        data.startDate = selectedStartDate;
+        data.endDate = selectedEndDate;
+        const { data: saveres } = await examServices.saveCommonExam(data);
+        const { message: saveresponse } = saveres;
+        if (saveresponse !== 'Exam Code already exists') {
+            setAlertMessage("Exam added successfully!");
             setShowMessage(true);
             setTimeout(() => {
                 setShowMessage(false);
             }, 1500);
-        }*/
+            toggle(false);
+        } else {
+            setAlertMessage("Exam Code already exists");
+            setShowMessage(true);
+            setTimeout(() => {
+                setShowMessage(false);
+            }, 1500);
+        }
     };
 
     const updateCommonExam = async () => {
@@ -623,18 +611,17 @@ const AddEditExam = (props) => {
             data.exam_level = examlevel;
             data.exam_level = examlevel;
             data.payment_flag = paymentflag;
-            if (sellingprice == '') {
+            if (sellingprice === '') {
                 data.selling_price = 0;
             } else {
                 data.selling_price = sellingprice;
             }
-            if (offerprice == '') {
+            if (offerprice === '') {
                 data.offer_price = 0;
             } else {
                 data.offer_price = offerprice;
             }
             data.ip_addr = ipaddr;
-            console.log(data);
             await examServices.updateCommonExam(examdetails.exam_id, data);
             setAlertMessage("Exam updated successfully!");
             setShowMessage(true);
@@ -643,7 +630,6 @@ const AddEditExam = (props) => {
             }, 1500);
             toggle(false);
         } catch (ex) {
-            console.log(ex.response);
             setAlertMessage("Something went wrong. Please try later");
             setShowMessage(true);
             setTimeout(() => {
@@ -719,10 +705,10 @@ const AddEditExam = (props) => {
                             <i className="zmdi zmdi-plus zmdi-hc-fw" />
                         </IconButton>
                     ) : (
-                            <IconButton onClick={() => removeAutomaticRow(rowsNo)} className="icon-btn">
-                                <i className="zmdi zmdi-delete zmdi-hc-fw" />
-                            </IconButton>
-                        )}
+                        <IconButton onClick={() => removeAutomaticRow(rowsNo)} className="icon-btn">
+                            <i className="zmdi zmdi-delete zmdi-hc-fw" />
+                        </IconButton>
+                    )}
                 </div>
             );
         });
@@ -754,7 +740,7 @@ const AddEditExam = (props) => {
         newArr[index].noofquest = e.target.value; // replace e.target.value with whatever you want to change it to
         let totQuest = 0;
         for (var i = 0; i < automatic.length; i++) {
-            if (newArr[i].noofquest != '') {
+            if (newArr[i].noofquest !== '') {
                 totQuest = parseInt(totQuest) + parseInt(newArr[i].noofquest);
             }
         }
@@ -768,6 +754,24 @@ const AddEditExam = (props) => {
         setAutomaticRow(newArr); // ??
     };
 
+    const handleStartDateChange = (date) => {
+        if (date === null) {
+            setStartDateChange(null);
+        } else {
+            let fromdate = Moment(date).format('YYYY-MM-DD HH:mm:ss');
+            setStartDateChange(fromdate);
+        }
+    }
+
+    const handleEndDateChange = (date) => {
+        if (date === null) {
+            setEndDateChange(null);
+        } else {
+            let fromdate = Moment(date).format('YYYY-MM-DD HH:mm:ss');
+            setEndDateChange(fromdate);
+        }
+    }
+
     return (
         <div className="row no-gutters">
             {loader && (
@@ -777,15 +781,15 @@ const AddEditExam = (props) => {
             )}
             {!loader && (
                 <div className="row no-gutters">
-                    {mode == "Add" ? (
+                    {mode === "Add" ? (
                         <div style={{ padding: "1%" }} className="col-lg-11 d-flex flex-column order-lg-1">
                             <h1>Add Exam</h1>
                         </div>
                     ) : (
-                            <div style={{ padding: "1%" }} className="col-lg-11 d-flex flex-column order-lg-1">
-                                <h1>Update Exam</h1>
-                            </div>
-                        )}
+                        <div style={{ padding: "1%" }} className="col-lg-11 d-flex flex-column order-lg-1">
+                            <h1>Update Exam</h1>
+                        </div>
+                    )}
                     <div style={{ padding: "1%" }} className="col-lg-12 d-flex flex-column order-lg-1">
                         <div className="row">
                             <div className="col-lg-10 col-sm-10 col-10">
@@ -1113,7 +1117,29 @@ const AddEditExam = (props) => {
                                 />
                             </RadioGroup>
                         </FormControl>
-                        {questionType == "AUTO" && renderAutomaticTypes()}
+                        {questionType === "AUTO" && renderAutomaticTypes()}
+                        <div class="row">
+                            <div class="col-lg-4" style={{ "margin": "0px" }}>
+                                <DateTimePicker
+                                    clearable
+                                    value={selectedStartDate}
+                                    onChange={handleStartDateChange}
+                                    label="Start Date"
+                                    format="DD/MM/YYYY HH:mm:ss"
+                                    style={{ width: '100%' }}
+                                />
+                            </div>
+                            <div class="col-lg-4" style={{ "margin": "0px" }}>
+                                <DateTimePicker
+                                    clearable
+                                    value={selectedEndDate}
+                                    onChange={handleEndDateChange}
+                                    label="End Date"
+                                    format="DD/MM/YYYY HH:mm:ss"
+                                    style={{ width: '100%' }}
+                                />
+                            </div>
+                        </div>
                         <TextField
                             autoComplete="off"
                             required
@@ -1124,14 +1150,14 @@ const AddEditExam = (props) => {
                             error={errors && errors.position}
                             helperText={errors.position}
                         />
-                        {mode == "Add" ? (
+                        {mode === "Add" ? (
                             <div
                                 style={{ paddingTop: "2%", textAlign: "right" }}
                                 className="col-lg-6 col-sm-6 col-12"
                             >
                                 <Button
                                     disabled={submitDisabled}
-                                    onClick={() => saveCommonExam()}
+                                    onClick={() => saveCommonExamClick()}
                                     variant="contained"
                                     color="primary"
                                     className="jr-btn text-white"
@@ -1140,20 +1166,20 @@ const AddEditExam = (props) => {
                                 </Button>
                             </div>
                         ) : (
-                                <div
-                                    style={{ paddingTop: "2%", textAlign: "right" }}
-                                    className="col-lg-6 col-sm-6 col-12"
+                            <div
+                                style={{ paddingTop: "2%", textAlign: "right" }}
+                                className="col-lg-6 col-sm-6 col-12"
+                            >
+                                <Button
+                                    onClick={() => updateCommonExam()}
+                                    variant="contained"
+                                    color="primary"
+                                    className="jr-btn text-white"
                                 >
-                                    <Button
-                                        onClick={() => updateCommonExam()}
-                                        variant="contained"
-                                        color="primary"
-                                        className="jr-btn text-white"
-                                    >
-                                        Update
+                                    Update
                                 </Button>
-                                </div>
-                            )}
+                            </div>
+                        )}
                     </div>
                     <Snackbar
                         className="mb-3 bg-info"

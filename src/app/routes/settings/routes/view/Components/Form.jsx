@@ -171,7 +171,7 @@ const DataTable = (props) => {
       console.log(selectedCategoryArr);
     } else {
       for (var i = 0; i < selectedCategoryArr.length; i++) {
-        if (selectedCategoryArr[i] == categoryId) {
+        if (selectedCategoryArr[i] === categoryId) {
           selectedCategoryArr.splice(i, 1);
         }
       }
@@ -185,7 +185,7 @@ const DataTable = (props) => {
     let postionObj = {};
     if (posVal != '') {
       for (var i = 0; i < changePositionArr.length; i++) {
-        if (changePositionArr[i].catId == categoryId) {
+        if (changePositionArr[i].catId === categoryId) {
           changePositionArr.splice(i, 1);
         }
       }
@@ -208,14 +208,14 @@ const DataTable = (props) => {
 
   const handleAction = async () => {
     let selectedCategoryObj = selectedCategory;
-    if (action == '') {
+    if (action === '') {
       setAlertMessage('Please select an action');
       setShowMessage(true);
       setTimeout(() => {
         setShowMessage(false)
       }, 1500);
     } else {
-      if (action == 'Inactive') {
+      if (action === 'Inactive') {
         selectedCategoryObj.status = 'N';
         console.log(selectedCategoryObj);
         if (selectedCategory.catId.length != 0) {
@@ -234,7 +234,7 @@ const DataTable = (props) => {
           }, 1500);
         }
       }
-      if (action == 'Active') {
+      if (action === 'Active') {
         selectedCategoryObj.status = 'Y';
         console.log(selectedCategoryObj);
         if (selectedCategory.catId.length != 0) {
@@ -253,7 +253,7 @@ const DataTable = (props) => {
           }, 1500);
         }
       }
-      if (action == 'Delete') {
+      if (action === 'Delete') {
         console.log(selectedCategory);
         if (selectedCategory.catId.length != 0) {
           await homeCategoryService.deleteCategory(selectedCategory);
@@ -272,7 +272,7 @@ const DataTable = (props) => {
         }
       }
     }
-    if (action == 'Position') {
+    if (action === 'Position') {
       console.log(changePositionData);
       if (changePositionData.values.length != 0) {
         await homeCategoryService.changePosition(changePositionData);
@@ -463,7 +463,7 @@ const DataTable = (props) => {
           <MDBDataTable
             striped
             bordered
-            entriesOptions={[5, 10, 20, 25, 50, 100]}
+            entriesOptions={[5, 10, 20, 25, 50, 100, 1000]}
             entries={5}
             hover
             data={{ rows: categoryrows, columns }}
@@ -472,7 +472,7 @@ const DataTable = (props) => {
           />
           <Modal className="modal-box" backdrop={"static"} toggle={onModalClose} isOpen={modal}>
             <ModalHeader className="modal-box-header bg-primary text-white">
-              {isEdit == false ? "Add State" :
+              {isEdit === false ? "Add State" :
                 "Edit State"}
             </ModalHeader>
 
@@ -515,7 +515,7 @@ const DataTable = (props) => {
                         </div>
                       </div>
                     }
-                    {viewEditImg == false ? <div className="dropzone-content" style={thumbsContainer}>
+                    {viewEditImg === false ? <div className="dropzone-content" style={thumbsContainer}>
                       {thumbs}
                     </div> :
                       <div className="dropzone-content" style={thumbsContainer}>
@@ -529,7 +529,7 @@ const DataTable = (props) => {
               </div>
             </div>
             <ModalFooter>
-              {isEdit == false ?
+              {isEdit === false ?
                 <div className="d-flex flex-row">
                   <Button style={{ marginRight: '5%' }} onClick={() => saveHomeCategory()} disabled={savedisabled} variant="contained" color="primary">Save</Button>
                   <Button variant="contained" color="secondary" onClick={onModalClose}>Cancel</Button>

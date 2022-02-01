@@ -164,7 +164,7 @@
     "appModule.email": "Email",
     "appModule.company": "Question Cloud",
     "appModule.school": "School Login",
-    "appModule.institute": "Question Cloud - Institute",
+    "appModule.institute": "Institution Login",
     "appModule.loginid": "Login ID",
     "appModule.name": "Name",
     "appModule.phone": "Phone",
@@ -598,5 +598,6 @@
   "sidebar.qcadminreport": "Admin Report",
   "sidebar.qcexampackage": "Exam Package",
   "sidebar.qccoupon": "Coupon",
-  "sidebar.qcexamreport": "Exam Reports"
+  "sidebar.qcexamreport": "Exam Reports",
+  "sidebar.studyMaterials": "Study Materials"
 }
