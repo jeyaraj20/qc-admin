@@ -1,6 +1,5 @@
 import http from './httpService';
 import { apiUrl, schoolApiUrl } from "../config";
-import { setJwt } from "../services/httpService";
 import auth from './authService';
 
 const apiEndpoint = `${apiUrl}/operator`;
@@ -34,7 +33,6 @@ export function getAllAdminmenu() {
     return http.get(apimenuEndpoint + '/all');
 
 }
-
 
 export function getUserMenu() {
     return http.get(apimenuEndpoint + '/');

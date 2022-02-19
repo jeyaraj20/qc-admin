@@ -1,10 +1,10 @@
 
-export const baseurlS="http://localhost:4003";
-export const baseurl="http://192.168.1.110:4002";
+// export const baseurl="http://localhost:4003";
+//export const baseurl="http://15.207.47.132:4002";
 export const baseurlSocket="https://myadmin.questioncloud.in";
-//export const baseurl="https://myadmin.questioncloud.in/adminapi";
+export const baseurl="https://myadmin.questioncloud.in/adminapi";
 export const apiUrl =baseurl+"/api";
-export const schoolApiUrl =baseurlS+"/api/school";
+export const schoolApiUrl =baseurl+"/api/school";
 export const baseurlimage="https://questioncloud.in/uploads";
 //export const baseurlimage="https://questionscloud.in/uploads";
 

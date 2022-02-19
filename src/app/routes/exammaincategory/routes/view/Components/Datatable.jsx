@@ -7,6 +7,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import { MDBDataTable, MDBInput } from 'mdbreact';
 import IconButton from "@material-ui/core/IconButton";
 import TextField from '@material-ui/core/TextField';
+import Checkbox from "@material-ui/core/Checkbox";
 import { useDropzone } from "react-dropzone";
 import Dropzone from 'react-dropzone'
 import Snackbar from '@material-ui/core/Snackbar';
@@ -493,37 +494,66 @@ const DataTable = (props) => {
   }
 
   const handleQCExamChange = async (value) => {
-    let result = await qcExamsCategoryService.getQCMainCategory(value);
+    let arr = selectedQCExams;
+    let index = arr.indexOf(value);
+    if (index >= 0) {
+      arr.splice(index, 1);
+    } else {
+      arr.push(value);
+    }
+    let result = await qcExamsCategoryService.getQCMainCategory(arr);
     if (result && result.data && result.data.mainCategory && result.data.mainCategory.length > 0) {
       setQcMainCategory(result.data.mainCategory);
     }
-    setSelectedQCExams(value);
+    setSelectedQCExams(arr);
     setSelectedQCMainCategory([]);
     setSelectedQCSubCategory([]);
     setSelectedChapters([]);
   }
 
   const handleQCMainCatChange = async (value) => {
-    let result = await qcExamsCategoryService.getQCSubCategory(value);
+    let arr = selectedQCMainCategory;
+    let index = arr.indexOf(value);
+    if (index >= 0) {
+      arr.splice(index, 1);
+    } else {
+      arr.push(value);
+    }
+    let result = await qcExamsCategoryService.getQCSubCategory(arr);
     if (result && result.data && result.data.subCategory && result.data.subCategory.length > 0) {
       setQcSubCategory(result.data.subCategory);
     }
-    setSelectedQCMainCategory(value);
+    setSelectedQCMainCategory(arr);
     setSelectedQCSubCategory([]);
     setSelectedChapters([]);
   }
 
   const handleQCSubCatChange = async (value) => {
-    let result = await qcExamsCategoryService.getQCChapterCategory(value);
+    let arr = selectedQCSubCategory;
+    let index = arr.indexOf(value);
+    if (index >= 0) {
+      arr.splice(index, 1);
+    } else {
+      arr.push(value);
+    }
+    let result = await qcExamsCategoryService.getQCChapterCategory(arr);
     if (result && result.data && result.data.chapters && result.data.chapters.length > 0) {
       setQcChapters(result.data.chapters);
     }
-    setSelectedQCSubCategory(value);
+    setSelectedQCSubCategory(arr);
     setSelectedChapters([]);
   }
 
   const handleQCChapterChange = async (value) => {
-    setSelectedChapters(value);
+    let arr = selectedQCChapters;
+    let index = arr.indexOf(value);
+    if (index >= 0) {
+      arr.splice(index, 1);
+    } else {
+      arr.push(value);
+    }
+    setSelectedChapters(arr);
+    setData([...data])
   }
 
   const onPositionChange = (e, obj, index) => {
@@ -1043,64 +1073,6 @@ const DataTable = (props) => {
                           onBlur={valiadateProperty}
                           margin="normal" />
                         <div><h6 style={{ color: 'red', paddingTop: '1%' }}>{errors['ExamDescription']}</h6></div>
-                        {(maincategoryId === 0 || !maincategoryId || maincategoryId === '0') && user && user.logintype !== "G" &&
-                          <div style={{ marginBottom: 10 }}>
-                            <FormControl className="w-100 mb-2" >
-                              <InputLabel htmlFor="age-simple">QC Master Category</InputLabel>
-                              <Select
-                                onChange={(event) => { handleQCExamChange(event.target.value) }}
-                                multiple={true}
-                                value={selectedQCExams}
-                              >
-                                {qcExams.map(qc => {
-                                  return (<MenuItem value={qc.exa_cat_id}>{qc.exa_cat_name}</MenuItem>)
-                                })}
-                              </Select>
-                            </FormControl>
-                            {selectedQCExams && selectedQCExams.length > 0 &&
-                              <FormControl className="w-100 mb-2" >
-                                <InputLabel htmlFor="age-simple">QC Main Category</InputLabel>
-                                <Select
-                                  onChange={(event) => { handleQCMainCatChange(event.target.value) }}
-                                  multiple={true}
-                                  value={selectedQCMainCategory}
-                                >
-                                  {qcMainCategory.map(qc => {
-                                    return (<MenuItem value={qc.exa_cat_id}>{`${qc.exa_cat_name} (${qc.masterName})`}</MenuItem>)
-                                  })}
-                                </Select>
-                              </FormControl>
-                            }
-                            {selectedQCMainCategory && selectedQCMainCategory.length > 0 &&
-                              <FormControl className="w-100 mb-2" >
-                                <InputLabel htmlFor="age-simple">QC Sub Category</InputLabel>
-                                <Select
-                                  onChange={(event) => { handleQCSubCatChange(event.target.value) }}
-                                  multiple={true}
-                                  value={selectedQCSubCategory}
-                                >
-                                  {qcSubCategory.map(qc => {
-                                    return (<MenuItem value={qc.exa_cat_id}>{`${qc.exa_cat_name} (${qc.masterName} - ${qc.mainName})`}</MenuItem>)
-                                  })}
-                                </Select>
-                              </FormControl>
-                            }
-                            {selectedQCSubCategory && selectedQCSubCategory.length > 0 &&
-                              <FormControl className="w-100 mb-2" >
-                                <InputLabel htmlFor="age-simple">QC Chapters</InputLabel>
-                                <Select
-                                  onChange={(event) => { handleQCChapterChange(event.target.value) }}
-                                  multiple={true}
-                                  value={selectedQCChapters}
-                                >
-                                  {qcChapters.map(qc => {
-                                    return (<MenuItem value={qc.chapt_id}>{`${qc.chapter_name} (${qc.subName})`}</MenuItem>)
-                                  })}
-                                </Select>
-                              </FormControl>
-                            }
-                          </div>
-                        }
                         {(maincategoryId === 0 || !maincategoryId || maincategoryId === '0') &&
                           <div style={{ marginBottom: 10 }}>
                             <label>Attachment</label>
@@ -1161,7 +1133,6 @@ const DataTable = (props) => {
                               />
                             </div>
                           </>}
-
                       </div>
                       <div className="col-lg-2 d-flex flex-column order-lg-1" style={{ marginLeft: 25 }}>
                         <div className="dropzone-card">
@@ -1181,6 +1152,108 @@ const DataTable = (props) => {
                         </div>
                       </div>
                     </div>
+                    {(maincategoryId === 0 || !maincategoryId || maincategoryId === '0') && user && user.logintype !== "G" &&
+                      <div style={{ marginTop: 10 }}>
+                        <InputLabel>QC Master Category</InputLabel>
+                        {qcExams.map(qc => {
+                          return (
+                            <label>
+                              <Checkbox
+                                color="primary"
+                                checked={selectedQCExams.indexOf(qc.exa_cat_id) >= 0}
+                                onChange={() => { handleQCExamChange(qc.exa_cat_id) }}
+                              />
+                              <span>{qc.exa_cat_name}</span>
+                            </label>
+                          )
+                        })}
+                        {selectedQCExams && selectedQCExams.length > 0 &&
+                          selectedQCExams.map(c => {
+                            let cat = qcExams.find(e => c === e.exa_cat_id);
+                            if (cat) {
+                              return (
+                                <>
+                                  <InputLabel>{`${cat.exa_cat_name} Main Category`}</InputLabel>
+                                  {qcMainCategory.map(qc => {
+                                    if (qc.exaid === c) {
+                                      return (
+                                        <label>
+                                          <Checkbox
+                                            color="primary"
+                                            checked={selectedQCMainCategory.indexOf(qc.exa_cat_id) >= 0}
+                                            onChange={() => { handleQCMainCatChange(qc.exa_cat_id) }}
+                                          />
+                                          <span>{qc.exa_cat_name}</span>
+                                        </label>
+                                      )
+                                    }
+                                  })}
+                                </>
+                              )
+                            }
+                          })
+                        }
+                        {selectedQCMainCategory && selectedQCMainCategory.length > 0 &&
+                          selectedQCMainCategory.map(c => {
+                            let cat = qcMainCategory.find(e => c === e.exa_cat_id);
+                            if (cat) {
+                              let masterCat = qcExams.find(e => cat.exaid === e.exa_cat_id);
+                              return (
+                                <>
+                                  <InputLabel>{` ${cat.exa_cat_name}(${masterCat.exa_cat_name}) Sub Category`}</InputLabel>
+                                  {qcSubCategory.map(qc => {
+                                    if (qc.exaid_sub === c) {
+                                      return (
+                                        <label>
+                                          <Checkbox
+                                            color="primary"
+                                            checked={selectedQCSubCategory.indexOf(qc.exa_cat_id) >= 0}
+                                            onChange={() => { handleQCSubCatChange(qc.exa_cat_id) }}
+                                          />
+                                          <span>{qc.exa_cat_name}</span>
+                                        </label>
+                                      )
+                                    }
+                                  })}
+                                </>
+                              )
+                            }
+                          })
+                        }
+                        {selectedQCSubCategory && selectedQCSubCategory.length > 0 &&
+                          selectedQCSubCategory.map(c => {
+                            let cat = qcSubCategory.find(e => c === e.exa_cat_id);
+                            if (cat) {
+                              let mainCat = cat ? qcMainCategory.find(e => cat.exaid_sub === e.exa_cat_id) : {};
+                              if (mainCat) {
+                                let masterCat = cat ? qcExams.find(e => cat.exaid === e.exa_cat_id) : {};
+                                if (masterCat) {
+                                  return (
+                                    <>
+                                      <InputLabel>{` ${cat.exa_cat_name}(${masterCat.exa_cat_name} - ${mainCat.exa_cat_name}) Chapters`}</InputLabel>
+                                      {qcChapters.map(qc => {
+                                        if (qc.exa_cat_id === c) {
+                                          return (
+                                            <label>
+                                              <Checkbox
+                                                color="primary"
+                                                checked={selectedQCChapters.indexOf(qc.chapt_id) >= 0}
+                                                onChange={() => { handleQCChapterChange(qc.chapt_id) }}
+                                              />
+                                              <span>{qc.chapter_name}</span>
+                                            </label>
+                                          )
+                                        }
+                                      })}
+                                    </>
+                                  )
+                                }
+                              }
+                            }
+                          })
+                        }
+                      </div>
+                    }
                   </div>
                   <ModalFooter>
                     {isEdit === false ?

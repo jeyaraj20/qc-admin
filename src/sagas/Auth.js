@@ -6,7 +6,7 @@ import {
   googleAuthProvider,
   twitterAuthProvider
 } from "../firebase/firebase";
-import { setJwt } from "../services/httpService";
+import http from "../services/httpService";
 import {
   SIGNIN_FACEBOOK_USER,
   SIGNIN_GITHUB_USER,
@@ -26,7 +26,7 @@ import {
 } from "../actions/Auth";
 const tokenKey = "token";
 
-setJwt(getJwt());
+http.setJwt(getJwt());
 
 const createUserWithEmailPasswordRequest = async (email, password) =>
   await auth.createUserWithEmailAndPassword(email, password)
@@ -150,7 +150,7 @@ function* signInUserWithEmailPassword({ payload }) {
       yield put(showAuthMessage(signInUser.message));
     } else {
       localStorage.setItem(tokenKey, signInUser.token);
-      setJwt(getJwt());
+      http.setJwt(getJwt());
       yield put(userSignInSuccess(signInUser.token));
     }
   } catch (error) {

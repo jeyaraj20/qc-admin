@@ -534,18 +534,45 @@ const DataTable = (props) => {
         ipaddress: ipaddr,
       }
       try {
-        await studentService.createStudent(data);
-        await handleRefresh();
-        setNewModal(false);
-        AntdModal.success({
-          title: 'Success',
-          content: 'Student Added Successfully'
-        });
+        let result = await studentService.createStudent(data);
+        if (result && result.data && result.data.statusCode === 200) {
+          await handleRefresh();
+          setNewModal(false);
+          AntdModal.success({
+            title: 'Success',
+            content: 'Student Added Successfully'
+          });
+        } else if (result && result.data && result.data.statusCode === 201) {
+          AntdModal.error({
+            title: 'Error',
+            content: result.data.message
+          });
+          setAlertMessage('Operator Created Failed.');
+          setShowMessage(true);
+          setTimeout(() => {
+            setShowMessage(false)
+          }, 1500);
+        } else {
+          AntdModal.error({
+            title: 'Error',
+            content: 'Operator Created Failed'
+          });
+          setAlertMessage('Operator Created Failed.');
+          setShowMessage(true);
+          setTimeout(() => {
+            setShowMessage(false)
+          }, 1500);
+        }
       } catch (e) {
         AntdModal.error({
           title: 'Error',
-          content: 'Student Already Exists'
+          content:  'Student Already Exists'
         });
+        setAlertMessage(e.message);
+        setShowMessage(true);
+        setTimeout(() => {
+          setShowMessage(false)
+        }, 1500);
       }
     } else {
       AntdModal.error({

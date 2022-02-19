@@ -24,6 +24,9 @@ import MenuLevels from "./menuLevels";
 import SocialApps from "./socialApps";
 import { withRouter } from "react-router";
 import HomeCategory from "./homecategory";
+import DashboardCategory from "./dashboardCategory";
+import ExaminationCalendar from "./examinationCalendar";
+//import Announcements from "./announcements";
 import StateCategory from "./statecategory";
 import CityCategory from "./citycategory";
 import Settings from "./settings";
@@ -64,6 +67,9 @@ const Routes = ({ match }) =>
         <Route path={`${match.url}/time-line`} component={TimeLine} />
         <Route path={`${match.url}/custom-views`} component={CustomViews} />
         <Route path={`${match.url}/homecategory`} component={HomeCategory} />
+        <Route path={`${match.url}/dashboardCategory`} component={DashboardCategory} />
+        <Route path={`${match.url}/examinationCalendar`} component={ExaminationCalendar} />
+        {/* <Route path={`${match.url}/announcements`} component={Announcements} /> */}
         <Route path={`${match.url}/statecategory`} component={StateCategory} />
         <Route path={`${match.url}/citycategory`} component={CityCategory} />
         <Route path={`${match.url}/settings`} component={Settings} />
